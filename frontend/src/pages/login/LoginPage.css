@@ -1,0 +1,67 @@
+/* Container for the entire page */
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* background: linear-gradient(to right, #e3f2fd, #bbdefb); */
+  
+}
+
+/* The card containing the sign-in form */
+.signin-card {
+  width: 400px;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Header section */
+.signin-header h2 {
+  color: #05448c;
+  margin-bottom: 10px;
+}
+
+.signin-header p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+/* Form styles */
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.signin-form input {
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.signin-form input:focus {
+  outline: none;
+  border-color: #05448c;
+  box-shadow: 0 0 5px rgba(62, 121, 189, 0.5);
+}
+
+/* Button styles */
+.signin-form button {
+  padding: 12px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.signin-form button:hover {
+  background: #05448c;
+}
