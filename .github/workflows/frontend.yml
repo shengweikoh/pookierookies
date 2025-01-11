@@ -3,7 +3,7 @@ name: React CI/CD with Firebase
 on:
   push:
     branches:
-      - React-CI/CD-Pipeline
+      - main
 
 jobs:
   deploy:
