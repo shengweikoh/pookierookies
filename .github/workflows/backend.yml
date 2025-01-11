@@ -3,7 +3,7 @@ name: Django CI/CD
 on:
   push:
     branches:
-      - CI/CD-Pipeline
+      - React-CI/CD-Pipeline
 
 jobs:
   build:
