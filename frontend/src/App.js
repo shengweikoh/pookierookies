@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/login/LoginPage'
+import Home from './pages/home/Home'
 // import Landing from './pages/LandingPage';
 // import logo from './logo.svg';
 // import './App.css';
@@ -27,13 +28,14 @@ function App() {
     <Router>
       <div>
         {/* Navigation */}
-        <nav>
-          <a href="/">Landing</a>
-        </nav>
+        {/* <nav>
+          <a href="/">Home</a>
+        </nav> */}
 
         {/* Routes */}
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/home" element={<Home />} />
         </Routes>
       </div>
     </Router>
