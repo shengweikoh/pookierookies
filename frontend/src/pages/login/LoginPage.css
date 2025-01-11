@@ -4,23 +4,29 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
+  /* white to blue gradient */
   /* background: linear-gradient(to right, #e3f2fd, #bbdefb); */
-  
+  /* pastel rainbow gradient */
+  /* background: linear-gradient(to right, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5); */
+  background: linear-gradient(120deg, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5);
+  background-size: 200% 200%;
+  animation: gradientAnimation 9s ease infinite;
 }
 
-/* The card containing the sign-in form */
+/* Card container */
 .signin-card {
-  width: 400px;
-  padding: 40px;
-  background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
+    width: 400px;
+    padding: 40px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
 
 /* Header section */
 .signin-header h2 {
-  color: #05448c;
+  color: #223f6b;
   margin-bottom: 10px;
 }
 
@@ -46,14 +52,16 @@
 
 .signin-form input:focus {
   outline: none;
-  border-color: #05448c;
-  box-shadow: 0 0 5px rgba(62, 121, 189, 0.5);
+  border-color: #223f6b;
+  box-shadow: 0 0 5px rgba(14, 42, 74, 0.5);
 }
 
 /* Button styles */
 .signin-form button {
   padding: 12px;
-  background: #4a90e2;
+  /* background: #4a90e2; */
+  background: #557cab;
+  /* background: #438099; */
   color: white;
   border: none;
   border-radius: 5px;
@@ -63,5 +71,45 @@
 }
 
 .signin-form button:hover {
-  background: #05448c;
+  background: #223f6b;
 }
+
+/* Google Login Button */
+.google-login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 10px;
+  }
+  
+  .google-login-button img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .google-login-button:hover {
+    background: #f1f1f1;
+    border-color: #ccc;
+  }  
+
+
+@keyframes gradientAnimation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
