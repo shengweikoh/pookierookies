@@ -22,6 +22,8 @@ const LoginPage = () => {
           <button type="submit">SIGN IN</button>
         </form> */}
                 <form className="signin-form">
+                    <input type="email" placeholder="Email" required />
+                    <input type="password" placeholder="Password" required />
                     <button type="button" className="google-login-button" onClick={handleGoogleLogin}>
                         <img src={googleLogo} alt="Google Logo" />
                         Sign in with Google

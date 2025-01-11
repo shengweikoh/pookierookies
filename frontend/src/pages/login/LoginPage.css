@@ -6,11 +6,11 @@
   height: 100vh;
   /* white to blue gradient */
   /* background: linear-gradient(to right, #e3f2fd, #bbdefb); */
-  /* pastel rainbow gradient */
+  /* static pastel rainbow gradient */
   /* background: linear-gradient(to right, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5); */
   background: linear-gradient(120deg, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5);
-  background-size: 200% 200%;
-  animation: gradientAnimation 9s ease infinite;
+  background-size: 300% 300%;
+  animation: gradientAnimation 15s ease infinite;
 }
 
 /* Card container */
@@ -27,6 +27,7 @@
 /* Header section */
 .signin-header h2 {
   color: #223f6b;
+  /* color: #596169; */
   margin-bottom: 10px;
 }
 
@@ -52,7 +53,7 @@
 
 .signin-form input:focus {
   outline: none;
-  border-color: #223f6b;
+  border-color: #596169;
   box-shadow: 0 0 5px rgba(14, 42, 74, 0.5);
 }
 
@@ -60,7 +61,8 @@
 .signin-form button {
   padding: 12px;
   /* background: #4a90e2; */
-  background: #557cab;
+  background: #6986aa;
+  /* background: #848d99; */
   /* background: #438099; */
   color: white;
   border: none;
@@ -72,6 +74,7 @@
 
 .signin-form button:hover {
   background: #223f6b;
+  ;
 }
 
 /* Google Login Button */
