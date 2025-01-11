@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - React-CI/CD-Pipeline
 
 jobs:
   deploy:
