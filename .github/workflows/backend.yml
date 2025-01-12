@@ -43,7 +43,7 @@ jobs:
       # Step 6: Build Docker image
       - name: Build Docker image
         working-directory: ./backend
-        run: docker build -t django-backend .
+        run: docker build --progress=plain -t django-backend .
 
       # Step 7: Push Docker image to Docker Hub
       - name: Login to Docker Hub
