@@ -10,7 +10,7 @@ import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
 // import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
 
-import PrivateRoute from "./routeProtection/privateRoute.js";
+import PrivateRoute from "./routeProtection/PrivateRoute.js";
 
 import './App.css';
 // import Landing from './pages/LandingPage';
