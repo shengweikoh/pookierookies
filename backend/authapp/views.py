@@ -1,63 +1,69 @@
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from firebase_admin import auth
 import json
 import logging
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from firebase_admin import auth, firestore
-from django.http import JsonResponse
+from authapp.utils import create_user_profile  # Import the function
 
-logger = logging.getLogger(__name__)
-db = firestore.client()
+logging.basicConfig(level=logging.INFO)  # Enable logging for debugging
 
 @csrf_exempt
-@require_http_methods(["POST"])
 def verify_token(request):
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON in request body: {str(e)}")
-        return JsonResponse({"error": "Invalid JSON in request body"}, status=400)
+    if request.method == "POST":
+        try:
+            # Check if request body exists
+            if not request.body:
+                logging.error("Empty request body received.")
+                return JsonResponse({"message": "Request body is empty"}, status=400)
 
-    token = data.get('token')
-    
-    if not token:
-        logger.warning("No token provided in request")
-        return JsonResponse({"error": "No token provided"}, status=400)
+            # Parse the JSON body
+            body = json.loads(request.body)
+            token = body.get("token")
+            
+            if not token:
+                logging.error("Token is missing from request.")
+                return JsonResponse({"message": "Token is missing"}, status=400)
 
-    try:
-        decoded_token = auth.verify_id_token(token)
-        uid = decoded_token["uid"]
-        email = decoded_token.get("email")
+            # Verify the token using Firebase Admin SDK
+            decoded_token = auth.verify_id_token(token)
+            
+            # Extract user details from the token
+            uid = decoded_token.get("uid")
+            email = decoded_token.get("email")
 
-        if not email:
-            logger.error(f"No email found in token for user {uid}")
-            return JsonResponse({"error": "No email found in token"}, status=400)
+            logging.info(f"Token verified successfully for user: {email} (UID: {uid})")
 
-        # Extract name (characters before @ in email)
-        name = email.split("@")[0]
+            # Create the user's profile in Firestore if it doesn't already exist
+            try:
+                create_user_profile(uid, email)
+                logging.info(f"Profile created/updated successfully for user: {email} (UID: {uid})")
+            except Exception as e:
+                logging.error(f"Failed to create profile: {str(e)}")
+                return JsonResponse({"message": "Failed to create profile", "error": str(e)}, status=500)
 
-        # Check if user already exists in Firestore
-        user_ref = db.collection("profile").document(uid)
-        user_doc = user_ref.get()
+            return JsonResponse({
+                "message": "Token verified",
+                "user": {
+                    "uid": uid,
+                    "email": email
+                }
+            }, status=200)
 
-        if not user_doc.exists:
-            # Create new profile
-            user_ref.set({
-                "userId": uid,
-                "name": name,
-                "email": email,
-            })
-            logger.info(f"Created new profile for user {uid}")
-        else:
-            logger.info(f"Profile already exists for user {uid}")
-        
-        return JsonResponse({"message": "User verified and profile checked!"}, status=200)
-    except auth.InvalidIdTokenError as e:
-        logger.error(f"Invalid token: {str(e)}")
-        return JsonResponse({"error": "Invalid token"}, status=401)
-    except firestore.FirebaseError as e:
-        logger.error(f"Firestore error: {str(e)}")
-        return JsonResponse({"error": "Database error"}, status=500)
-    except Exception as e:
-        logger.exception("Unexpected error in verify_token")
-        return JsonResponse({"error": "An unexpected error occurred"}, status=500)
+        except json.JSONDecodeError as e:
+            logging.error("Invalid JSON format.")
+            return JsonResponse({"message": "Invalid JSON", "error": str(e)}, status=400)
 
+        except auth.InvalidIdTokenError:
+            logging.error("Invalid Firebase token provided.")
+            return JsonResponse({"message": "Invalid token"}, status=401)
+
+        except auth.ExpiredIdTokenError:
+            logging.error("Firebase token has expired.")
+            return JsonResponse({"message": "Expired token"}, status=401)
+
+        except Exception as e:
+            logging.error(f"Unexpected error: {str(e)}")
+            return JsonResponse({"message": "An error occurred", "error": str(e)}, status=500)
+    else:
+        logging.error("Invalid HTTP method used.")
+        return JsonResponse({"message": "Invalid method"}, status=405)
