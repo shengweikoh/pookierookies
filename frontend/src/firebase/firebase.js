@@ -17,6 +17,11 @@ export const auth = getAuth(app);
 
 // Export providers
 export const provider = new GoogleAuthProvider();
+// Force account selection on Google Sign-In
+provider.setCustomParameters({
+    prompt: 'select_account',
+});
+
 
 // export db functions
 export const db = getFirestore(app);
