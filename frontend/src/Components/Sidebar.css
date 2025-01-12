@@ -41,7 +41,7 @@
     margin-bottom: 8px;
     transition: background 0.2s;
   }
-  
+
   .nav-item2 {
     display: flex;
     align-items: center;
@@ -58,7 +58,7 @@
   .nav-item:hover {
     background-color: #ececf1;
   }
-  
+
   .nav-item2:hover {
     background-color: #ececf1;
   }
