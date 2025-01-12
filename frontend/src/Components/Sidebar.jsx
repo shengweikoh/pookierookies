@@ -24,7 +24,7 @@ const Sidebar = () => {
           <li className="nav-item section-title" id="tools">Tools</li>
           <li className="nav-item2"><Link to="/tools/manage-people" className="links">Manage People</Link></li>
           <li className="nav-item2"><Link to="/tools/assign-task" className="links">Assign Task</Link></li>
-          <li className="nav-item2"><Link to="/tools/schedule-meeting" className="links">Schedule Meeting</Link></li>
+          <li className="nav-item2"><Link to="/tools/schedule-meeting" className="links">Manage Meetings</Link></li>
           <li className="nav-item2"><Link to="/tools/generate-summary" className="links">Generate Summary</Link></li>
         </ul>
       )}

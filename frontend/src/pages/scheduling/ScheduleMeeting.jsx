@@ -55,7 +55,7 @@ const ScheduleMeeting = () => {
         <Sidebar />
         <div className="main-content">
           <div className="header">
-            <h1 className="header-title">Scheduled Meetings</h1>
+            <h1 className="header-title">Upcoming Meetings</h1>
             <div className="header-buttons">
               <button className="button">Schedule Meeting</button>
               <button className="button">Send Reminder</button>
