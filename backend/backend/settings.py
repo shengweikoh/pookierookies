@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'healthcheck',
     'corsheaders',
     'authapp',
+    'tasks',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
