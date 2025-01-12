@@ -9,9 +9,9 @@ import AssignTask from './pages/assign_task/Assign_Task.jsx'
 import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
 
+import './App.css';
 // import Landing from './pages/LandingPage';
 // import logo from './logo.svg';
-// import './App.css';
 
 function App() {
   return (

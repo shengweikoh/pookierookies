@@ -25,7 +25,7 @@ const ManageMembers = () => {
               <option value="Admin">Admin</option>
               <option value="Member">Member</option>
             </select>
-            <button className="manage-button">Manage Members</button>
+            <button className="normal-button">Manage Members</button>
           </div>
         </div>
         {/* Table */}
