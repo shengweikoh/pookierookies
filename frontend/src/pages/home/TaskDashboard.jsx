@@ -5,15 +5,54 @@ const TaskDashboard = () => {
   const [isInProgressOpen, setIsInProgressOpen] = useState(true);
   const [isToDoOpen, setIsToDoOpen] = useState(true);
 
-return (
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      name: 'One-on-One Meeting',
+      priority: 'High',
+      dueDate: 'Today',
+      subtasks: [
+        { id: '1.1', name: 'Prepare meeting agenda', completed: false },
+        { id: '1.2', name: 'Send calendar invite', completed: true },
+      ],
+      isSubtasksOpen: false,
+    },
+    {
+      id: 2,
+      name: 'Send a summary email to stakeholders',
+      priority: 'Low',
+      dueDate: '3 days left',
+      subtasks: [],
+      isSubtasksOpen: false,
+    },
+    {
+      id: 3,
+      name: 'Identify any blockers and plan solutions',
+      priority: 'Low',
+      dueDate: '5 days left',
+      subtasks: [],
+      isSubtasksOpen: false,
+    },
+  ]);
+
+  const toggleSubtasks = (id) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id ? { ...task, isSubtasksOpen: !task.isSubtasksOpen } : task
+      )
+    );
+  };
+
+  return (
     <div className="dashboard">
-      <div className="header">
-      </div>
-      <h2>My Tasks</h2>
+      {/* "In Progress" Section */}
       <div className="task-category">
-        <div className="category-header" onClick={() => setIsInProgressOpen(!isInProgressOpen)}>
+        <div
+          className="category-header"
+          onClick={() => setIsInProgressOpen(!isInProgressOpen)}
+        >
           <span>In Progress</span>
-          <span>• 3 tasks</span>
+          <span>• {tasks.length} tasks</span>
         </div>
         {isInProgressOpen && (
           <div>
@@ -23,36 +62,53 @@ return (
               <span className="header-due-date">Due Date</span>
             </div>
             <ul>
-              <li>
-                <div className="task-name">
-                  <input type="checkbox" />
-                  <span>One-on-One Meeting</span>
-                </div>
-                <span className="priority high">High</span>
-                <span className="due-date">Today</span>
-              </li>
-              <li>
-                <div className="task-name">
-                  <input type="checkbox" />
-                  <span>Send a summary email to stakeholders</span>
-                </div>
-                <span className="priority low">Low</span>
-                <span className="due-date">3 days left</span>
-              </li>
-              <li>
-                <div className="task-name">
-                  <input type="checkbox" />
-                  <span>Identify any blockers and plan solutions</span>
-                </div>
-                <span className="priority low">Low</span>
-                <span className="due-date">5 days left</span>
-              </li>
+              {tasks.map((task) => (
+                <li key={task.id}>
+                  <div className="task-name">
+                    {task.subtasks.length > 0 && (
+                      <button
+                        className="dropdown-arrow"
+                        onClick={() => toggleSubtasks(task.id)}
+                      >
+                        {task.isSubtasksOpen ? '▼' : '▶'}
+                      </button>
+                    )}
+                    <input type="checkbox" />
+                    <span>{task.name}</span>
+                  </div>
+                  <span className={`priority ${task.priority.toLowerCase()}`}>
+                    {task.priority}
+                  </span>
+                  <span className="due-date">{task.dueDate}</span>
+                  {task.isSubtasksOpen && task.subtasks.length > 0 && (
+                    <ul className="subtasks">
+                      {task.subtasks.map((subtask) => (
+                        <li key={subtask.id}>
+                          <div className="task-name">
+                            <input
+                              type="checkbox"
+                              checked={subtask.completed}
+                              readOnly
+                            />
+                            <span>{subtask.name}</span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         )}
       </div>
+
+      {/* "To Do" Section */}
       <div className="task-category">
-        <div className="category-header" onClick={() => setIsToDoOpen(!isToDoOpen)}>
+        <div
+          className="category-header"
+          onClick={() => setIsToDoOpen(!isToDoOpen)}
+        >
           <span>To Do</span>
           <span>• 1 task</span>
         </div>
@@ -66,6 +122,9 @@ return (
             <ul>
               <li>
                 <div className="task-name">
+                  <button className="dropdown-arrow" disabled>
+                    {/* No subtasks for this item */}
+                  </button>
                   <input type="checkbox" />
                   <span>Compile meeting minutes</span>
                 </div>

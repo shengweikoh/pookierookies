@@ -1,11 +1,13 @@
 import React from "react";
-import "./Home.css";
+// import "../pages/home/Home.css";
+import "./Sidebar.css";
 
 const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="logo">BookBuddy</div>
       <ul className="nav-list">
+        <li className="nav-item section-title">Home</li>
         <li className="nav-item section-title">Account</li>
         <li className="nav-item section-title">Calendar</li>
         <li className="nav-item section-title">Tools</li>
