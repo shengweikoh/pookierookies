@@ -14,21 +14,22 @@ def create_task(request):
             body = json.loads(request.body.decode('utf-8'))
 
             # Ensure profile ID is provided
-            profile_id = body.get("profileID")
+            profile_id = body.get("profileId")
             if not profile_id:
                 return JsonResponse({"error": "Profile ID is required"}, status=400)
 
             # Generate a unique ID for the task
             task_id = str(uuid.uuid4())
             task_data = {
-                "id": task_id,
+                "taskId": task_id,
                 "name": body.get("name"),
                 "description": body.get("description"),
-                "status": body.get("status", False),
+                "status": body.get("status", "Incomplete"),
+                "priority:": body.get("priority", "Low"),
                 "group": body.get("group"),
                 "creationDate": datetime.now().isoformat(),
                 "dueDate": body.get("dueDate"),
-                "userID": profile_id,
+                "userId": profile_id,
             }
 
             # Add task to the tasks subcollection of the specified profile
@@ -59,6 +60,23 @@ def get_task(request, profile_id, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
+def get_all_tasks(request, profile_id):
+    if request.method == "GET":
+        try:
+            # Retrieve all tasks from the tasks subcollection of the specified profile
+            tasks_ref = db.collection("profiles").document(profile_id).collection("tasks")
+            tasks = tasks_ref.stream()
+
+            # Convert the tasks to a list of dictionaries
+            tasks_list = [task.to_dict() for task in tasks]
+
+            return JsonResponse({"tasks": tasks_list}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
 def edit_task(request, profile_id, task_id):
     if request.method == "PUT":
         try:
@@ -72,6 +90,7 @@ def edit_task(request, profile_id, task_id):
                 "group": body.get("group"),
                 "dueDate": body.get("dueDate"),
                 "status": body.get("status"),
+                "status": body.get("priority"),
             }
 
             # Remove any fields that are None
