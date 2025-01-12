@@ -8,6 +8,9 @@ import ManagePeople from './pages/manage_members/Manage_Members.jsx'
 import AssignTask from './pages/assign_task/Assign_Task.jsx'
 import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
+// import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
+
+import PrivateRoute from "./routeProtection/privateRoute.js";
 
 import './App.css';
 // import Landing from './pages/LandingPage';
@@ -41,14 +44,50 @@ function App() {
 
         {/* Routes */}
         <Routes>
+          {/* public pages */}
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/tools/manage-people" element={<ManagePeople />} />
-          <Route path="/tools/assign-task" element={<AssignTask />} />
-          <Route path="/tools/schedule-meeting" element={<ScheduleMeeting />} />
-          <Route path="/tools/generate-summary" element={<GenerateSummary />} />
+
+          {/* protected routes */}
+          <Route path="/home" element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          } />
+          <Route path="/account" element={
+            <PrivateRoute>
+              <Account />
+            </PrivateRoute>
+          } />
+          <Route path="/calendar" element={
+            <PrivateRoute>
+              <Calendar />
+            </PrivateRoute>
+          } />
+          <Route path="/tools/manage-people" element={
+            <PrivateRoute>
+              <ManagePeople />
+            </PrivateRoute>
+          } />
+          <Route path="/tools/assign-task" element={
+            <PrivateRoute>
+              <AssignTask />
+            </PrivateRoute>
+          } />
+          <Route path="/tools/schedule-meeting" element={
+            <PrivateRoute>
+              <ScheduleMeeting />
+            </PrivateRoute>
+          } />
+          <Route path="/tools/generate-summary" element={
+            <PrivateRoute>
+              <GenerateSummary />
+            </PrivateRoute>
+          } />
+          {/* <Route path="/tools/schedule-meeting/unfinalised-meetings" element={
+            <PrivateRoute>
+              <UnfinalisedMeetings />
+            </PrivateRoute>
+          } /> */}
         </Routes>
       </div>
     </Router>
