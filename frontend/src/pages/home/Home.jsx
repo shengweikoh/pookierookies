@@ -15,7 +15,7 @@ const Home = () => {
       <Sidebar />
       <div className="main-content">
         <div className="welcome-section">
-          <h1>Task Dashboard</h1>
+          <h1>My Tasks</h1>
           <div className="date">{currentDate}</div>
         </div>
         <TaskList />

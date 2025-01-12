@@ -28,10 +28,68 @@
   color: #61dafb;
 }
 
+/* pages standard heading */
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  flex: 1;
+  /* Allow title to take up available space */
+  text-align: left;
+  /* Align title to the left */
+}
+
+/* pages standard search bar */
+.search-bar {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 200px;
+  flex: 1;
+  min-width: 120px;
+}
+
+/* standard dropdown filter */
+.dropdown {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 120px;
+}
+
+/* standard normal button */
+/* previous green button hex is #4caf50 */
+.normal-button {
+  padding: 8px 16px;
+  background-color: #5c7faa;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.normal-button:hover {
+  background-color: #223f6b;
+}
+
+.search-bar,
+.dropdown,
+.normal-button {
+  flex: 1;
+  min-width: 120px; /* Set a minimum width for controls */
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
