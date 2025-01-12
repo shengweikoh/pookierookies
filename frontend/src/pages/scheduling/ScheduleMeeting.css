@@ -1,0 +1,206 @@
+/* Page Layout */
+.schedule-meeting-container {
+    display: flex;
+    height: 100vh; /* Make sure it fills the viewport height */
+    flex-direction: row; /* Default side-by-side layout */
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  /* Header Section */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .header-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .button {
+    padding: 8px 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .button:hover {
+    background-color: #45a049;
+  }
+  
+  /* See More Button */
+  .see-more-button {
+    background-color: #f59e0b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-top: 30px; /* Add spacing between the last meeting and the button */
+  }
+  
+  .see-more-button:hover {
+    background-color: #d97706;
+  }
+  
+  /* Upcoming Meetings Section */
+  .upcoming-meetings {
+    margin-top: 20px;
+  }
+  
+  .meeting-name {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px; /* Space between the name and time */
+  }
+  
+  .meeting-item {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .meeting-date {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .meeting-time-location {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .meeting-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .meeting-title {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .meeting-location {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .edit-button {
+    padding: 5px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .edit-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    /* Adjust layout for tablets */
+    .header-buttons {
+      flex-wrap: wrap; /* Wrap buttons on smaller screens */
+      gap: 5px;
+    }
+  
+    .button {
+      font-size: 14px; /* Reduce button size */
+      padding: 6px 12px;
+    }
+  
+    .see-more-button {
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+  
+    .main-content {
+      padding: 15px; /* Reduce padding */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    /* Adjust layout for mobile devices */
+    .schedule-meeting-container {
+      flex-direction: column; /* Stack sidebar and main content */
+      height: auto; /* Let height adjust naturally */
+    }
+  
+    .main-content {
+      padding: 10px; /* Reduce padding further */
+    }
+  
+    .header {
+      flex-direction: column; /* Stack title and buttons */
+      align-items: flex-start;
+    }
+  
+    .header-title {
+      font-size: 20px; /* Adjust title size */
+      margin-bottom: 10px;
+    }
+  
+    .header-buttons {
+      width: 100%;
+      justify-content: space-between;
+    }
+  
+    .meeting-time-location {
+      flex-direction: column; /* Stack meeting details vertically */
+      align-items: flex-start;
+    }
+  
+    .edit-button {
+      margin-top: 10px; /* Add spacing */
+      font-size: 10px; /* Adjust button size */
+    }
+  
+    .see-more-button {
+      font-size: 12px;
+      width: 100%; /* Make button full-width */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    /* Extra adjustments for very small screens */
+    .header-title {
+      font-size: 18px;
+    }
+  
+    .button,
+    .see-more-button {
+      font-size: 10px;
+      padding: 5px 10px;
+    }
+  
+    .meeting-item {
+      padding: 10px; /* Reduce padding */
+    }
+  
+    .meeting-name,
+    .meeting-date {
+      font-size: 14px; /* Smaller font sizes */
+    }
+  }
