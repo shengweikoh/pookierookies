@@ -24,7 +24,8 @@ def create_task(request):
                 "taskId": task_id,
                 "name": body.get("name"),
                 "description": body.get("description"),
-                "status": body.get("status", False),
+                "status": body.get("status", "Incomplete"),
+                "priority:": body.get("priority", "Low"),
                 "group": body.get("group"),
                 "creationDate": datetime.now().isoformat(),
                 "dueDate": body.get("dueDate"),
@@ -89,6 +90,7 @@ def edit_task(request, profile_id, task_id):
                 "group": body.get("group"),
                 "dueDate": body.get("dueDate"),
                 "status": body.get("status"),
+                "status": body.get("priority"),
             }
 
             # Remove any fields that are None
