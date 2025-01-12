@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'authapp',
     'tasks',
+    'meetings',
+    'rest_framework',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -147,6 +149,15 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+}
 
 import firebase_admin
 from firebase_admin import credentials, firestore
