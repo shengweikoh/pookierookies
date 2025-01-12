@@ -26,6 +26,7 @@ SECRET_KEY = "django-insecure-#ev0!-o*$h=+pq%zvbolhh^8d$)a8)q)!iso$4s4sg)feg9y)u
 DEBUG = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://pookierookies-backend.duckdns.org']
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
