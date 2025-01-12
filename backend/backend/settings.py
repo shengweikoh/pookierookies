@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '13.251.65.0'
+    '13.251.65.0',
+    'pookierookies-backend.duckdns.org'
 ]
 
 
