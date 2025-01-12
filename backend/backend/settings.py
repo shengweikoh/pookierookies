@@ -32,7 +32,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '13.251.65.0',
-    'pookierookies-backend.duckdns.org'
+    'pookierookies-backend.duckdns.org',
+    '0.0.0.0',
 ]
 
 
