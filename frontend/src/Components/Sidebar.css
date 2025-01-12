@@ -67,33 +67,3 @@
     margin-right: 10px;
     color: #7e7e7e;
   }
-  
-  #tools:hover {
-    background-color: #f9f9fb;
-  }
-  
-  /* link styling */
-  #logo{
-    text-decoration: none;
-  }
-  
-  #logo:visited,
-  #logo:active {
-    text-decoration: none;
-    /* Ensure no underline on hover, active, or visited */
-    color: black;
-    /* Keep color black */
-  }
-  
-  #logo:hover {
-    text-decoration: none;
-    /* Ensure no underline on hover, active, or visited */
-    color: #223f6b; 
-  }
-  
-  .links,
-  .links:visited, 
-  .links:active {
-    text-decoration: none;
-    color: #333;
-  }
