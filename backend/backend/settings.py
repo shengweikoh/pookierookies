@@ -31,9 +31,8 @@ CSRF_TRUSTED_ORIGINS = ['https://pookierookies-backend.duckdns.org']
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '13.251.65.0',
     'pookierookies-backend.duckdns.org',
-    '0.0.0.0',
+    '13.251.65.0',
 ]
 
 
