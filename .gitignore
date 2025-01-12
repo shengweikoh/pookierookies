@@ -3,3 +3,4 @@ backend/backend/pookierookies-backend.pem
 backend/backend/PookieRookies-User_accessKeys.csv
 backend/firebase_key.json
 
+*.pyc
