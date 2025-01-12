@@ -149,9 +149,10 @@ CORS_ALLOW_METHODS = [
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate("backend/firebase_key.json")
+cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "../firebase_key.json"))
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
