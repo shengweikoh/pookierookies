@@ -9,8 +9,8 @@
   /* static pastel rainbow gradient */
   /* background: linear-gradient(to right, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5); */
   background: linear-gradient(120deg, #c6baf9, #e3c4c4, #feddc3, #dfe3c4, #c6eec5, #a8d3f5);
-  background-size: 300% 300%;
-  animation: gradientAnimation 15s ease infinite;
+  /* background-size: 300% 300%;
+  animation: gradientAnimation 15s ease infinite; */
 }
 
 /* Card container */
@@ -105,7 +105,7 @@
   }  
 
 
-@keyframes gradientAnimation {
+/* @keyframes gradientAnimation {
     0% {
       background-position: 0% 50%;
     }
@@ -115,4 +115,4 @@
     100% {
       background-position: 0% 50%;
     }
-  }
+  } */
