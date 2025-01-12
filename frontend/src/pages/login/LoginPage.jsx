@@ -30,7 +30,7 @@ const LoginPage = () => {
 
             // Send the token to the backend for verification
             const backendResponse = await axios.post(
-                `${process.env.REACT_APP_BACKEND_BASE_URL}/auth/verify-token/`,
+                `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-token/`,
                 { token: idToken },
                 {
                     headers: {
