@@ -132,6 +132,10 @@
       width: 100%; /* Full width for sidebar */
       padding: 10px; /* Reduce padding */
     }
+
+    .hamburger {
+        display: block;
+      }
   
     .logo {
       font-size: 20px; /* Adjust logo size */
