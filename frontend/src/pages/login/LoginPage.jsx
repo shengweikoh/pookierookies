@@ -24,6 +24,25 @@ const LoginPage = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
+            // Check if the email is authorized
+            const email = user.email;
+            const q = query(
+                collection(db, "authorisedEmails"),
+                where("email", "==", email)
+            );
+            const querySnapshot = await getDocs(q);
+
+            console.log("Query Object:", q);
+            console.log("Query Snapshot:", querySnapshot);
+            console.log("Email:", email);
+
+            if (querySnapshot.empty) {
+                // If email is not authorized, show an alert and sign the user out
+                setErrorMessage("You are not authorized to access this application.");
+                auth.signOut();
+                return;
+            }
+
             // Get the ID token for backend verification
             const idToken = await user.getIdToken();
             console.log("Token:", idToken);
@@ -41,26 +60,8 @@ const LoginPage = () => {
 
             console.log("Backend Response:", backendResponse.data);
 
-            // Check if the email is authorized
-            const email = user.email;
-            const q = query(
-                collection(db, "authorisedEmails"),
-                where("email", "==", email)
-            );
-            const querySnapshot = await getDocs(q);
+            navigate("/home");
 
-            console.log("Query Object:", q);
-            console.log("Query Snapshot:", querySnapshot);
-            console.log("Email:", email);
-
-            if (!querySnapshot.empty) {
-                // If email is authorized, navigate to the home page
-                navigate("/home");
-            } else {
-                // If email is not authorized, show error
-                setErrorMessage("You are not authorized to access this application.");
-                auth.signOut();
-            }
         } catch (error) {
             console.error("Error during sign-in:", error.response?.data || error.message);
             setErrorMessage("Sign-in failed. Please try again."); // Display error
