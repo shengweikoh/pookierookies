@@ -1,0 +1,105 @@
+/* Pop-Up Overlay */
+.send-details-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Pop-Up Content */
+  .send-details-popup-content {
+    background-color: white;
+    padding: 20px;
+    width: 400px;
+    max-width: 90%;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+  
+  .send-details-popup-content h2 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .send-details-popup-content p {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  /* Dropdown */
+  .dropdown {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  /* Search Bar */
+  .search-bar {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+  }
+  
+  /* Recipient List */
+  .recipient-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .recipient-list li {
+    margin: 5px 0;
+  }
+  
+  .recipient-list input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  
+  /* Buttons */
+  .popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .button {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #45a049;
+  }
+  
+  .cancel-button {
+    background-color: #f44336;
+  }
+  
+  .cancel-button:hover {
+    background-color: #d32f2f;
+  }

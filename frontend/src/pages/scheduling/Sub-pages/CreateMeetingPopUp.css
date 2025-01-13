@@ -1,129 +1,134 @@
-/* Pop-Up Overlay */
+/* Popup Overlay */
 .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  /* Pop-Up Content */
-  .popup-content {
-    background-color: white;
-    padding: 30px;
-    width: 400px;
-    max-width: 90%; /* Responsive for smaller screens */
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    text-align: center;
-  }
-  
-  .popup-content h2 {
-    margin-top: 0;
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .popup-content form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .popup-content label {
-    text-align: left;
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .popup-content input,
-  .popup-content textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    box-sizing: border-box;
-  }
-  
-  .popup-content textarea {
-    resize: none; /* Prevent resizing */
-  }
-  
-  .popup-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  
-  .button {
-    padding: 10px 15px;
-    font-size: 14px;
-    color: white;
-    background-color: #4caf50;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .button:hover {
-    background-color: #45a049;
-  }
-  
-  .cancel-button {
-    background-color: #f44336;
-  }
-  
-  .cancel-button:hover {
-    background-color: #d32f2f;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Popup Content */
+.popup-content {
+  background-color: white;
+  padding: 30px;
+  width: 400px;
+  max-width: 90%; /* Responsive for smaller screens */
+  max-height: 80%; /* Restrict height for scrolling */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  overflow-y: auto; /* Enable vertical scrolling for content overflow */
+}
+
+/* Title */
+.popup-content h2 {
+  margin-top: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px; /* Space between title and form */
+}
+
+/* Form Styling */
+.popup-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between form groups */
+}
+
+.popup-content label {
+  display: block;
+  text-align: left;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px; /* Add space below the label */
+}
+
+.popup-content input,
+.popup-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-top: 5px; /* Add space above the input field */
+}
+
+.popup-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  min-height: 60px; /* Minimum height */
+  max-height: none; /* Allow resizing beyond max-height */
+  resize: vertical; /* Enable vertical resizing only */
+}
+
+/* Buttons */
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.button {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: white;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.cancel-button {
+  background-color: #f44336;
+}
+
+.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Success Message */
+.success-message {
+  color: #4caf50;
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .main-content {
-      padding: 15px;
-    }
-  
-    .header h1 {
-      font-size: 20px;
-    }
-  
-    .header .button {
-      font-size: 12px;
-      padding: 8px 15px;
-    }
-  
-    .meeting-item {
-      padding: 10px;
-    }
-  
-    .meeting-item h3 {
-      font-size: 16px;
-    }
-  
-    .popup-content {
-      width: 95%; /* Adjust pop-up width */
-      padding: 20px;
-    }
-  
-    .popup-content h2 {
-      font-size: 18px;
-    }
-  
-    .popup-content input,
-    .popup-content textarea {
-      font-size: 12px;
-    }
-  
-    .button {
-      font-size: 12px;
-      padding: 8px 12px;
-    }
+  .popup-content {
+    width: 95%;
+    padding: 20px;
   }
+
+  .popup-content h2 {
+    font-size: 18px;
+  }
+
+  .popup-content input,
+  .popup-content textarea {
+    font-size: 12px;
+  }
+
+  .button {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

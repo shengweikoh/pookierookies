@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./EditPopUp.css";
+import "./UpdateMeetingPopUp.css";
 
 const EditMeetingPopup = ({ meeting, onSave, onClose, onDelete }) => {
   const [editedMeeting, setEditedMeeting] = useState(meeting);
@@ -86,6 +86,7 @@ const EditMeetingPopup = ({ meeting, onSave, onClose, onDelete }) => {
         <div className="popup-overlay">
           <div className="popup-content">
             <h2>Confirm Delete</h2>
+            <p>WARNING: THIS ACTION CANNOT BE UNDONE! </p>
             <p>Are you sure you want to delete this meeting?</p>
             <div className="popup-buttons">
               <button type="button" className="button delete-button" onClick={confirmDelete}>

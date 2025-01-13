@@ -8,7 +8,7 @@ import ManagePeople from './pages/manage_members/Manage_Members.jsx'
 import AssignTask from './pages/assign_task/Assign_Task.jsx'
 import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
-// import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
+import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
 
 import PrivateRoute from "./routeProtection/privateRoute.js";
 
@@ -83,11 +83,11 @@ function App() {
               <GenerateSummary />
             </PrivateRoute>
           } />
-          {/* <Route path="/tools/schedule-meeting/unfinalised-meetings" element={
+          <Route path="/tools/schedule-meeting/unfinalised-meetings" element={
             <PrivateRoute>
               <UnfinalisedMeetings />
             </PrivateRoute>
-          } /> */}
+          } />
         </Routes>
       </div>
     </Router>
