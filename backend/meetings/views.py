@@ -7,9 +7,13 @@ from .models import Meeting
 from .serializers import MeetingSerializer
 import json
 from firebase_admin import firestore
+from collections import Counter
+from authapp.gmail_utils import send_email
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 db = firestore.client()
-# Function to create a meeting
+# Function to create a meeting and poll link
 class CreateMeetingAPIView(APIView):
     def post(self, request):
         try:
@@ -17,7 +21,7 @@ class CreateMeetingAPIView(APIView):
             body = request.data
 
             # Ensure the necessary fields are provided
-            required_fields = ['name', 'agenda', 'attendees', 'date_range']
+            required_fields = ['name', 'agenda', 'attendees', 'proposed_dates', 'poll_deadline']
             for field in required_fields:
                 if field not in body:
                     return JsonResponse({"error": f"{field} is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -26,16 +30,21 @@ class CreateMeetingAPIView(APIView):
             meeting_data = {
                 "name": body.get("name"),
                 "agenda": body.get("agenda"),
-                "attendees": body.get("attendees"),
+                "attendees": [{"email": email, "status": "invited", "response": None} for email in body.get("attendees")],
+                "proposed_dates": body.get("proposed_dates"),
+                "poll_deadline": body.get("poll_deadline"),
+                "finalized_date": None,
+                "finalized": False,
                 "location": body.get("location", ""),
-                "date_range": body.get("date_range"),
                 "creation_date": datetime.now().isoformat()
             }
 
             # Create a new meeting in Firestore and get the document reference
-            doc_ref = db.collection("meetings").document()  # Generate a new document reference
-            meeting_data["meetingId"] = doc_ref.id  # Assign the generated ID to meeting_data
-            
+            doc_ref = db.collection("meetings").document()  
+            meeting_data["meetingId"] = doc_ref.id  
+            poll_link = f"https://pookie-rookies.web.app/poll/{doc_ref.id}" 
+            meeting_data["poll_link"] = poll_link
+
             # Set the document with the meeting data
             doc_ref.set(meeting_data)
 
@@ -45,7 +54,7 @@ class CreateMeetingAPIView(APIView):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-# Function to get a list of meetings
+# Function to get all the meetings
 class MeetingListAPIView(APIView):
     def get(self, request):
         try:
@@ -117,67 +126,141 @@ class DeleteMeetingAPIView(APIView):
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+# Function to send emails
+@method_decorator(csrf_exempt, name='dispatch')
+
+class SendEmailsAPIView(APIView):
+    def post(self, request):
+        print(f"Request received: {request.method} - {request.data}")
+        try:
+            body = request.data
+            logger.info(f"Request body: {body}")  # Log request body
+
+            meeting_id = body.get("meetingId")  
+            user_id = body.get("userId")
+
+            # Log extracted IDs
+            logger.info(f"Extracted meeting_id: {meeting_id}, user_id: {user_id}")
+
+            # The rest of your code...
+            user_ref = db.collection("Profile").document(user_id)
+            user_profile = user_ref.get()
+
+            if not user_profile.exists:
+                logger.error("User not found")
+                return JsonResponse({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            sender_email = user_profile.to_dict().get("email")
+            sender_name = user_profile.to_dict().get("name")
+
+            meeting_ref = db.collection("meetings").document(meeting_id)
+            meeting = meeting_ref.get()
+
+            if not meeting.exists:
+                logger.error("Meeting not found")
+                return JsonResponse({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Log success
+            logger.info(f"Found meeting data: {meeting.to_dict()}")
+
+            # The rest of your email-sending logic...
+            attendees = [attendee["email"] for attendee in meeting.to_dict()["attendees"]]
+            poll_link = f"https://pookie-rookies.web.app/poll/{meeting_id}"
+
+            # Send emails and log each one
+            for email in attendees:
+                logger.info(f"Sending email to: {email}")
+                send_email(
+                    sender=sender_email,
+                    to=email,
+                    subject=f"Meeting Poll Invitation from {sender_name}",
+                    body=f"{sender_name} has invited you to vote for a meeting date. "
+                         f"Please select a date here: {poll_link}"
+                )
+
+            logger.info("All emails sent successfully")
+            return JsonResponse({"message": "Emails sent successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error occurred: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         
+# Function to handle poll responses
+class SubmitPollResponseAPIView(APIView):
+    def post(self, request):
+        try:
+            body = request.data
+            meeting_id = body.get("meeting_id")
+            email = body.get("email")
+            selected_date = body.get("selected_date")
 
-# # Function to get meetings by date range (for scheduling purposes)
-# class MeetingByDateRangeAPIView(APIView):
-#     def get(self, request):
-#         try:
-#             start_date = request.query_params.get('start')
-#             end_date = request.query_params.get('end')
+            meeting_ref = db.collection("meetings").document(meeting_id)
+            meeting = meeting_ref.get()
 
-#             if not start_date or not end_date:
-#                 return JsonResponse({"error": "Start and end date are required"}, status=status.HTTP_400_BAD_REQUEST)
+            if not meeting.exists:
+                return JsonResponse({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             # Filter meetings within the specified date range
-#             meetings = Meeting.objects.filter(date_range__start__gte=start_date, date_range__end__lte=end_date)
-#             serializer = MeetingSerializer(meetings, many=True)
+            meeting_data = meeting.to_dict()
+            attendees = meeting_data["attendees"]
 
-#             return Response({"meetings": serializer.data})
+            for attendee in attendees:
+                if attendee["email"] == email:
+                    attendee["response"] = selected_date
+                    attendee["status"] = "responded"
+                    break
 
-#         except Exception as e:
-#             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            meeting_ref.update({"attendees": attendees})
+            return JsonResponse({"message": "Poll response submitted successfully"}, status=status.HTTP_200_OK)
 
-
-# # Function to automate scheduling based on attendee availability (example)
-# class AutoScheduleMeetingAPIView(APIView):
-#     def post(self, request):
-#         try:
-#             body = request.data
-#             required_fields = ['attendees', 'duration', 'date_range']
-            
-#             for field in required_fields:
-#                 if field not in body:
-#                     return JsonResponse({"error": f"{field} is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-#             # Logic to check attendee availability (simplified)
-#             attendees = body['attendees']
-#             # Assume a function check_availability that checks availability
-#             available_timeslots = check_availability(attendees, body['date_range'])
-
-#             if not available_timeslots:
-#                 return JsonResponse({"error": "No available timeslots found"}, status=status.HTTP_404_NOT_FOUND)
-
-#             # Schedule the meeting at the first available slot (example logic)
-#             scheduled_meeting = schedule_meeting(available_timeslots[0], body['attendees'], body['agenda'])
-
-#             return JsonResponse({"message": "Meeting scheduled successfully", "scheduled_meeting": scheduled_meeting}, status=status.HTTP_201_CREATED)
-
-#         except Exception as e:
-#             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# # Helper function for checking availability (dummy)
-# def check_availability(attendees, date_range):
-#     # Example function that should check each attendee's calendar for availability
-#     return ["2025-01-20T10:00:00", "2025-01-20T14:00:00"]  # Example timeslot
+# Function to finalize a meeting
+class FinalizeMeetingAPIView(APIView):
+    def post(self, request):
+        try:
+            body = request.data
+            meeting_id = body.get("meeting_id")
 
-# # Helper function to schedule a meeting
-# def schedule_meeting(timeslot, attendees, agenda):
-#     # Example function to schedule a meeting based on a given time
-#     return {
-#         "meetingId": str(uuid.uuid4()),
-#         "attendees": attendees,
-#         "agenda": agenda,
-#         "scheduled_time": timeslot
-#     }
+            meeting_ref = db.collection("meetings").document(meeting_id)
+            meeting = meeting_ref.get()
+
+            if not meeting.exists:
+                return JsonResponse({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            meeting_data = meeting.to_dict()
+            responses = [attendee["response"] for attendee in meeting_data["attendees"] if attendee["response"]]
+            if not responses:
+                return JsonResponse({"error": "No poll responses received"}, status=status.HTTP_400_BAD_REQUEST)
+
+            most_common_date = Counter(responses).most_common(1)[0][0]
+            meeting_ref.update({"finalized_date": most_common_date, "finalized": True})
+
+            return JsonResponse({"message": "Meeting finalized successfully", "finalized_date": most_common_date}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Function to view poll results
+class ViewPollResultsAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            meeting_ref = db.collection("meetings").document(pk)
+            meeting = meeting_ref.get()
+
+            if not meeting.exists:
+                return JsonResponse({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            meeting_data = meeting.to_dict()
+            responses = {attendee["email"]: attendee["response"] for attendee in meeting_data["attendees"]}
+            return JsonResponse({"responses": responses}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
