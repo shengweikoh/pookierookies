@@ -1,209 +1,247 @@
 /* Page Layout */
 .schedule-meeting-container {
-    display: flex;
-    height: 100vh; /* Make sure it fills the viewport height */
-    flex-direction: row; /* Default side-by-side layout */
-  }
-  
-  .main-content {
-    flex: 1;
-    padding: 20px;
-  }
-  
-  /* Header Section */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .header-title {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
+  display: flex;
+  height: 100vh; /* Full viewport height */
+  flex-direction: row; /* Side-by-side layout */
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+/* See More and See Less Buttons */
+.see-more-button,
+.see-less-button {
+  background-color: #f59e0b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  margin-top: 30px;
+}
+
+.see-more-button:hover,
+.see-less-button:hover {
+  background-color: #d97706;
+}
+
+/* Upcoming Meetings Section */
+.upcoming-meetings {
+  margin-top: 20px;
+}
+
+.meeting-item {
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.meeting-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Add spacing between details */
+}
+
+.meeting-date {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.meeting-name {
+  font-size: 16px;
+  color: #333;
+}
+
+.meeting-title,
+.meeting-location {
+  font-size: 14px;
+  color: #555;
+}
+
+
+/* Meeting Section */
+.meeting-time-location {
+  display: flex;
+  justify-content: space-between; /* Space between meeting details and buttons */
+  align-items: center; /* Center everything vertically */
+}
+
+/* Button Group for View and Edit Buttons */
+.button-group {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  align-items: flex-end; /* Align buttons to the right */
+  gap: 10px; /* Add space between buttons */
+  margin-left: auto; /* Push the button group to the far right */
+  justify-content: center; /* Vertically center buttons */
+}
+
+.view-details-button,
+.edit-button {
+  padding: 5px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100px; /* Consistent button width */
+  text-align: center;
+}
+
+.view-details-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.view-details-button:hover {
+  background-color: #218838;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
   .header-buttons {
-    display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 5px;
   }
-  
+
   .button {
-    padding: 8px 16px;
-    background-color: #4caf50;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 14px;
+    padding: 6px 12px;
   }
-  
-  .button:hover {
-    background-color: #45a049;
-  }
-  
-  /* See More Button */
+
   .see-more-button,
   .see-less-button {
-    background-color: #f59e0b;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-    margin-top: 30px; /* Add spacing between the last meeting and the button */
-  }
-  
-  .see-more-button:hover,
-  .see-less-button:hover {
-    background-color: #d97706;
-  }
-  
-  /* Upcoming Meetings Section */
-  .upcoming-meetings {
-    margin-top: 20px;
-  }
-  
-  .meeting-name {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 5px; /* Space between the name and time */
-  }
-  
-  .meeting-item {
-    padding: 15px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .meeting-date {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .meeting-time-location {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .meeting-details {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .meeting-title {
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .meeting-location {
-    font-size: 14px;
-    color: #555;
-  }
-  
-  .edit-button {
-    padding: 5px 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
     font-size: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    padding: 6px 12px;
   }
-  
-  .edit-button:hover {
-    background-color: #0056b3;
+
+  .main-content {
+    padding: 15px;
   }
-  
-  /* Responsive Design */
-  @media (max-width: 1024px) {
-    /* Adjust layout for tablets */
-    .header-buttons {
-      flex-wrap: wrap; /* Wrap buttons on smaller screens */
-      gap: 5px;
-    }
-  
-    .button {
-      font-size: 14px; /* Reduce button size */
-      padding: 6px 12px;
-    }
-  
-    .see-more-button {
-      font-size: 12px;
-      padding: 6px 12px;
-    }
-  
-    .main-content {
-      padding: 15px; /* Reduce padding */
-    }
+}
+
+@media (max-width: 768px) {
+  .schedule-meeting-container {
+    flex-direction: column;
+    height: auto;
   }
-  
-  @media (max-width: 768px) {
-    /* Adjust layout for mobile devices */
-    .schedule-meeting-container {
-      flex-direction: column; /* Stack sidebar and main content */
-      height: auto; /* Let height adjust naturally */
-    }
-  
-    .main-content {
-      padding: 10px; /* Reduce padding further */
-    }
-  
-    .header {
-      flex-direction: column; /* Stack title and buttons */
-      align-items: flex-start;
-    }
-  
-    .header-title {
-      font-size: 20px; /* Adjust title size */
-      margin-bottom: 10px;
-    }
-  
-    .header-buttons {
-      width: 100%;
-      justify-content: space-between;
-    }
-  
-    .meeting-time-location {
-      flex-direction: column; /* Stack meeting details vertically */
-      align-items: flex-start;
-    }
-  
-    .edit-button {
-      margin-top: 10px; /* Add spacing */
-      font-size: 10px; /* Adjust button size */
-    }
-  
-    .see-more-button {
-      font-size: 12px;
-      width: 100%; /* Make button full-width */
-    }
+
+  .main-content {
+    padding: 10px;
   }
-  
-  @media (max-width: 480px) {
-    /* Extra adjustments for very small screens */
-    .header-title {
-      font-size: 18px;
-    }
-  
-    .button,
-    .see-more-button {
-      font-size: 10px;
-      padding: 5px 10px;
-    }
-  
-    .meeting-item {
-      padding: 10px; /* Reduce padding */
-    }
-  
-    .meeting-name,
-    .meeting-date {
-      font-size: 14px; /* Smaller font sizes */
-    }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
   }
+
+  .header-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .meeting-item {
+    padding: 10px;
+  }
+
+  .meeting-details {
+    gap: 8px;
+  }
+
+  .button-group {
+    gap: 8px;
+  }
+
+  .view-details-button,
+  .edit-button {
+    font-size: 10px;
+    width: 90px;
+    padding: 4px 8px;
+  }
+
+  .see-more-button,
+  .see-less-button {
+    font-size: 12px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 18px;
+  }
+
+  .button,
+  .see-more-button,
+  .see-less-button {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+
+  .meeting-item {
+    padding: 8px;
+  }
+
+  .meeting-name,
+  .meeting-date {
+    font-size: 14px;
+  }
+
+  .view-details-button,
+  .edit-button {
+    width: 80px;
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
