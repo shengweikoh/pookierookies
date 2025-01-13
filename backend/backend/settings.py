@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-#ev0!-o*$h=+pq%zvbolhh^8d$)a8)q)!iso$4s4sg)feg9y)u
 DEBUG = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['https://pookierookies-backend.duckdns.org']
+CSRF_TRUSTED_ORIGINS = ['https://pookierookies-backend.duckdns.org', 'http://127.0.0.1:8000']
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -155,6 +155,14 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "accept",
+    "x-requested-with",
+]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
