@@ -1,114 +1,226 @@
 /* Page Layout */
 .unfinalized-meetings-container {
-    display: flex;
-    height: 100vh; /* Full viewport height */
-    flex-direction: row; /* Default side-by-side layout */
+  display: flex;
+  height: 100vh; /* Full viewport height */
+  flex-direction: row; /* Sidebar and main content side-by-side by default */
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f9f9fb;
+  overflow-y: auto;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header .button {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: white;
+  background-color: #4caf50;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.header .button:hover {
+  background-color: #45a049;
+}
+
+/* Meetings Section */
+.meeting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: white;
+  margin-bottom: 15px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.meeting-details {
+  flex: 1; /* Allow details to take up most of the space */
+  margin-right: 15px; /* Space between details and buttons */
+}
+
+.meeting-item h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.meeting-item p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Buttons */
+.meeting-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.send-details-button,
+.update-button,
+.delete-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Button Colors */
+.send-details-button {
+  background-color: #007bff;
+}
+
+.send-details-button:hover {
+  background-color: #0056b3;
+}
+
+.update-button {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.update-button:hover {
+  background-color: #e0a800;
+}
+
+.delete-button {
+  background-color: #f44336;
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .unfinalized-meetings-container {
+    flex-direction: column; /* Stack sidebar above main content */
+    height: auto; /* Let height adjust naturally */
   }
-  
+
   .main-content {
-    flex: 1;
-    padding: 20px;
-    background-color: #f9f9fb;
-    overflow-y: auto;
+    padding: 15px; /* Reduce padding */
   }
-  
+
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    flex-direction: column; /* Stack title and buttons vertically */
+    align-items: flex-start;
   }
-  
+
   .header h1 {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 20px; /* Adjust title size */
+    margin-bottom: 10px;
   }
-  
+
   .header .button {
-    padding: 10px 20px;
-    font-size: 14px;
-    color: white;
-    background-color: #4caf50;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    width: 100%; /* Make buttons full-width */
+    text-align: center;
   }
-  
-  .header .button:hover {
-    background-color: #45a049;
-  }
-  
-  /* Meetings Section */
+
   .meeting-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /* Vertically align the button */
-    background-color: white;
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-direction: column; /* Stack meeting details and buttons vertically */
+    align-items: flex-start;
+    padding: 10px;
   }
-  
+
   .meeting-details {
-    flex: 1; /* Allow details to take up most of the space */
-    margin-right: 15px; /* Space between details and the button */
+    margin-right: 0;
+    margin-bottom: 15px; /* Space between details and buttons */
   }
-  
-  .meeting-item h3 {
+
+  .meeting-buttons {
+    align-items: flex-start; /* Align buttons to the left */
+  }
+
+  .send-details-button,
+  .update-button,
+  .delete-button {
+    width: 100%; /* Make buttons full-width */
+  }
+}
+
+/* Delete Pop-Up Overlay */
+.delete-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Delete Pop-Up Content */
+.delete-popup-content {
+  background-color: white;
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.delete-popup-content h3 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.delete-popup-content p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .header h1 {
     font-size: 18px;
-    font-weight: bold;
-    margin-top: 0; /* Remove unnecessary space above the name */
-    margin-bottom: 10px; /* Space below the meeting name */
   }
-  
+
+  .header .button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .meeting-item {
+    padding: 10px;
+  }
+
+  .meeting-item h3 {
+    font-size: 16px;
+  }
+
   .meeting-item p {
-    margin: 5px 0; /* Add more breathing space between paragraphs */
-    font-size: 14px;
-    color: #555;
+    font-size: 12px; /* Smaller font sizes */
   }
-  
-  .update-button {
-    padding: 8px 16px;
-    font-size: 14px;
-    color: white;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    align-self: center; /* Center the button vertically */
-  }
-  
-  .update-button:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .header h1 {
-      font-size: 20px;
-    }
-  
-    .header .button {
-      font-size: 12px;
-      padding: 8px 15px;
-    }
-  
-    .meeting-item {
-      flex-direction: column; /* Stack details and button vertically */
-      align-items: flex-start; /* Align content to the left */
-      padding: 10px;
-    }
-  
-    .meeting-details {
-      margin-right: 0; /* Remove space between details and button */
-      margin-bottom: 15px; /* Add spacing between details and button when stacked */
-    }
-  
-    .update-button {
-      align-self: flex-start; /* Align button to the left */
-    }
-  }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CreateMeetingPopUp.css";
 
 const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
@@ -7,6 +7,22 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [attendees, setAttendees] = useState("");
   const [location, setLocation] = useState("");
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [successMessage, setSuccessMessage] = useState(false); // Success message state
+
+  useEffect(() => {
+    // Add event listener for Escape key
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose(); // Close the pop-up
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,16 +30,22 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
       name,
       agenda,
       attendees: attendees.split(",").map((email) => email.trim()),
-      location: location || "TBC",
+      location, // Location can remain blank
       dateRange,
       finalized: false,
     });
+    setSuccessMessage(true); // Show success message
+    setTimeout(() => setSuccessMessage(false), 3000); // Hide message after 3 seconds
+    onClose(); // Close the pop-up
   };
 
   return (
     <div className="popup-overlay">
       <div className="popup-content">
         <h2>Create New Meeting</h2>
+        {successMessage && (
+          <p className="success-message">Meeting created successfully!</p>
+        )}
         <form onSubmit={handleSubmit}>
           <label>
             Meeting Name:
@@ -39,25 +61,34 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
             <textarea
               value={agenda}
               onChange={(e) => setAgenda(e.target.value)}
+              rows="3"
+              placeholder="Enter the meeting agenda"
+              style={{
+                overflowY: "auto", // Enable vertical scrolling
+              }}
               required
             />
           </label>
           <label>
             Attendees (comma-separated emails):
-            <input
-              type="text"
+            <textarea
               value={attendees}
               onChange={(e) => setAttendees(e.target.value)}
+              rows="3"
+              placeholder="Enter attendee emails, separated by commas"
+              style={{
+                overflowY: "auto", // Enable vertical scrolling
+              }}
               required
             />
           </label>
           <label>
-            Location:
+            Location (optional):
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="TBC if undecided"
+              placeholder="Optional"
             />
           </label>
           <label>
@@ -79,10 +110,12 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
               required
             />
           </label>
-          <button type="submit" className="button">Add Meeting</button>
-          <button type="button" className="button cancel-button" onClick={onClose}>
-            Cancel
-          </button>
+          <div className="popup-buttons">
+            <button type="submit" className="button">Add Meeting</button>
+            <button type="button" className="button cancel-button" onClick={onClose}>
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
