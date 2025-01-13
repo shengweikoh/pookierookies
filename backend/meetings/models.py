@@ -1,8 +1,7 @@
 from django.db import models
-import uuid
 
 class Meeting(models.Model):
-    meetingId = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # Ensure the meetingId is a UUID
+    meetingId = models.CharField(max_length=255, unique=True)  # Store Firestore document ID
     name = models.CharField(max_length=100)
     agenda = models.TextField()
     attendees = models.JSONField()  # List of emails or user IDs
