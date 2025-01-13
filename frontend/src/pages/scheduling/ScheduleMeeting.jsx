@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import "./ScheduleMeeting.css";
 import EditPopUp from "./Sub-pages/UpdateMeetingPopUp";
+import SendReminderPopUp from "./Sub-pages/SendReminderPopUp";
+import ViewDetailsPopUp from "./Sub-pages/ViewDetailsPopUp";
 
 const ScheduleMeeting = () => {
   const [meetings, setMeetings] = useState([
@@ -12,6 +14,8 @@ const ScheduleMeeting = () => {
       date: "Monday, Jan 15, 2025",
       time: "10:00 AM - 11:00 AM",
       location: "Room 101",
+      attendees: ["john@example.com", "jane@example.com"],
+      agenda: "Discuss company goals and progress.",
     },
     {
       id: 2,
@@ -19,6 +23,8 @@ const ScheduleMeeting = () => {
       date: "Tuesday, Jan 16, 2025",
       time: "2:00 PM - 3:00 PM",
       location: "Zoom",
+      attendees: ["john@example.com", "jane@example.com"],
+      agenda: "Discuss company goals and progress.",
     },
     {
       id: 3,
@@ -26,6 +32,8 @@ const ScheduleMeeting = () => {
       date: "Wednesday, Jan 17, 2025",
       time: "3:30 PM - 4:30 PM",
       location: "Room 202",
+      attendees: ["john@example.com", "jane@example.com"],
+      agenda: "Discuss company goals and progress.",
     },
     {
       id: 4,
@@ -33,6 +41,8 @@ const ScheduleMeeting = () => {
       date: "Thursday, Jan 18, 2025",
       time: "1:00 PM - 2:00 PM",
       location: "Room 303",
+      attendees: ["john@example.com", "jane@example.com"],
+      agenda: "Discuss company goals and progress.",
     },
     {
       id: 5,
@@ -40,16 +50,25 @@ const ScheduleMeeting = () => {
       date: "Friday, Jan 19, 2025",
       time: "10:00 AM - 12:00 PM",
       location: "Zoom",
+      attendees: ["john@example.com", "jane@example.com"],
+      agenda: "Discuss company goals and progress.",
     },
   ]);
 
   const [visibleCount, setVisibleCount] = useState(3); // Number of meetings to display initially
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
+  const [isViewDetailsPopupOpen, setIsViewDetailsPopupOpen] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
 
   const handleEditClick = (meeting) => {
     setCurrentMeeting(meeting);
     setIsPopupOpen(true);
+  };
+
+  const handleViewDetailsClick = (meeting) => {
+    setCurrentMeeting(meeting);
+    setIsViewDetailsPopupOpen(true);
   };
 
   const handleSaveChanges = (updatedMeeting) => {
@@ -73,6 +92,14 @@ const ScheduleMeeting = () => {
     setVisibleCount(3); // Reset the visible meetings count to 3
   };
 
+  const openReminderPopup = () => {
+    setIsReminderPopupOpen(true);
+  };
+
+  const closeReminderPopup = () => {
+    setIsReminderPopupOpen(false);
+  };
+
   return (
     <div className="schedule-meeting-container">
       <Sidebar />
@@ -85,7 +112,9 @@ const ScheduleMeeting = () => {
                 Schedule Meeting
               </Link>
             </button>
-            <button className="button">Send Reminder</button>
+            <button className="button" onClick={openReminderPopup}>
+              Send Reminder
+            </button>
           </div>
         </div>
         <div className="upcoming-meetings">
@@ -101,12 +130,20 @@ const ScheduleMeeting = () => {
                     <p className="meeting-title">{meeting.time}</p>
                     <p className="meeting-location">Space: {meeting.location}</p>
                   </div>
-                  <button
-                    className="edit-button"
-                    onClick={() => handleEditClick(meeting)}
-                  >
-                    Edit
-                  </button>
+                  <div className="button-group">
+                    <button
+                      className="edit-button"
+                      onClick={() => handleEditClick(meeting)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="view-details-button"
+                      onClick={() => handleViewDetailsClick(meeting)}
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -131,6 +168,19 @@ const ScheduleMeeting = () => {
             meeting={currentMeeting}
             onSave={handleSaveChanges}
             onClose={handleCancelEdit}
+          />
+        )}
+
+        {/* Show the Send Reminder Pop-Up */}
+        {isReminderPopupOpen && (
+          <SendReminderPopUp meetings={meetings} onClose={closeReminderPopup} />
+        )}
+
+        {/* View Details Pop-Up */}
+        {isViewDetailsPopupOpen && (
+          <ViewDetailsPopUp
+            meeting={currentMeeting}
+            onClose={() => setIsViewDetailsPopupOpen(false)}
           />
         )}
       </div>
