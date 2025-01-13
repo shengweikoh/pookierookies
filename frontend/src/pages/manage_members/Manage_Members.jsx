@@ -1,32 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
+import AddMemberPopUp from "./PopUps/AddMember";
 import "./Manage_Members.css";
 
 const ManageMembers = () => {
+  const [members, setMembers] = useState([
+    { id: 1, name: "John Doe", group: "Group 1", role: "Admin" },
+    { id: 2, name: "Jane Smith", group: "Group 2", role: "Member" },
+    { id: 3, name: "Alice Johnson", group: "Group 1", role: "Member" },
+    { id: 4, name: "Bob Brown", group: "Group 2", role: "Admin" },
+  ]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [isAddPopUpOpen, setIsAddPopUpOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Filter members based on search query, group, and role
+  const filteredMembers = members.filter((member) => {
+    const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesGroup = selectedGroup ? member.group === selectedGroup : true;
+    const matchesRole = selectedRole ? member.role === selectedRole : true;
+    return matchesSearch && matchesGroup && matchesRole;
+  });
+
+  const handleAddMember = (newMember) => {
+    setMembers((prev) => [...prev, { id: prev.length + 1, ...newMember }]);
+    setIsAddPopUpOpen(false);
+  };
+
+  const handleRowClick = (member) => {
+    navigate(`/tools/manage-people/${member.id}`, { state: { member } });
+  };
+
   return (
     <div className="manage-members-container">
       <Sidebar />
       <div className="main-content">
         <div className="header-container">
           <h1 className="header-title">Members</h1>
-          <div className="header-actions">
-            <input
-              type="text"
-              className="search-bar"
-              placeholder="Search Members"
-            />
-            <select className="dropdown">
-              <option value="">Groups</option>
-              <option value="Group1">Group 1</option>
-              <option value="Group2">Group 2</option>
-            </select>
-            <select className="dropdown">
-              <option value="">Roles</option>
-              <option value="Admin">Admin</option>
-              <option value="Member">Member</option>
-            </select>
-            <button className="normal-button">Manage Members</button>
-          </div>
+          <button className="normal-button" onClick={() => setIsAddPopUpOpen(true)}>
+            Add Member
+          </button>
+        </div>
+        {/* Filters Section */}
+        <div className="filters-container">
+          <input
+            type="text"
+            className="search-bar"
+            placeholder="Search Members"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <select
+            className="dropdown"
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+          >
+            <option value="">Groups</option>
+            <option value="Group 1">Group 1</option>
+            <option value="Group 2">Group 2</option>
+          </select>
+          <select
+            className="dropdown"
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          >
+            <option value="">Roles</option>
+            <option value="Admin">Admin</option>
+            <option value="Member">Member</option>
+          </select>
         </div>
         {/* Table */}
         <div className="table">
@@ -35,27 +81,38 @@ const ManageMembers = () => {
             <div className="table-column group-column">Group</div>
             <div className="table-column role-column">Role</div>
           </div>
-          <div className="table-row">
-            <div className="table-cell name-column">
-              <div className="name-content">
-                <div className="profile-photo"></div>
-                <span>John Doe</span>
+          {filteredMembers.map((member) => (
+            <div
+              key={member.id}
+              className="table-row"
+              onClick={() => handleRowClick(member)}
+            >
+              <div className="table-cell name-column">
+                <div className="name-content">
+                  <div className="profile-photo"></div>
+                  <span>{member.name}</span>
+                </div>
+              </div>
+              <div className="table-cell group-column">{member.group}</div>
+              <div className="table-cell role-column">{member.role}</div>
+            </div>
+          ))}
+          {filteredMembers.length === 0 && (
+            <div className="table-row">
+              <div className="table-cell" colSpan="3">
+                No members found.
               </div>
             </div>
-            <div className="table-cell group-column">Group 1</div>
-            <div className="table-cell role-column">Admin</div>
-          </div>
-          <div className="table-row">
-            <div className="table-cell name-column">
-              <div className="name-content">
-                <div className="profile-photo"></div>
-                <span>Jane Smith</span>
-              </div>
-            </div>
-            <div className="table-cell group-column">Group 2</div>
-            <div className="table-cell role-column">Member</div>
-          </div>
+          )}
         </div>
+
+        {/* Add Member Pop-Up */}
+        {isAddPopUpOpen && (
+          <AddMemberPopUp
+            onClose={() => setIsAddPopUpOpen(false)}
+            onSubmit={handleAddMember}
+          />
+        )}
       </div>
     </div>
   );

@@ -54,8 +54,15 @@ const EmailSummaryPage = () => {
   };
 
   const handleSelectEmail = (email) => {
-    setSelectedEmail(email);
-    setSummary(""); // Reset summary when selecting a new email
+    if (selectedEmail?.id === email.id) {
+      // Unselect the email if it is already selected
+      setSelectedEmail(null);
+      setSummary(""); // Reset summary when deselecting an email
+    } else {
+      // Select the email
+      setSelectedEmail(email);
+      setSummary(""); // Reset summary when selecting a new email
+    }
   };
 
   const handleGenerateSummary = () => {
