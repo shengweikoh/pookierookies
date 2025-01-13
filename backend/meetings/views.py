@@ -146,7 +146,7 @@ class SendEmailsAPIView(APIView):
             logger.info(f"Extracted meeting_id: {meeting_id}, user_id: {user_id}")
 
             # The rest of your code...
-            user_ref = db.collection("Profile").document(user_id)
+            user_ref = db.collection("profiles").document(user_id)
             user_profile = user_ref.get()
 
             if not user_profile.exists:
