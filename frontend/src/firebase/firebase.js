@@ -13,7 +13,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const auth = getAuth(app);
+// Handle auth state changes and store token
+auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      const token = await user.getIdToken();
+      localStorage.setItem("authToken", token);
+    } else {
+      localStorage.removeItem("authToken");
+    }
+  });
+export {auth};
 
 // Export providers
 export const provider = new GoogleAuthProvider();

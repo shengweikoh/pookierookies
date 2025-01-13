@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Login from './pages/login/LoginPage'
 import Home from './pages/home/Home'
 import Account from './pages/account/Account.jsx'
@@ -9,14 +10,29 @@ import AssignTask from './pages/assign_task/Assign_Task.jsx'
 import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
 import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
+import MemberDetails from "./pages/manage_members/ViewMember.jsx";
 
 import PrivateRoute from "./routeProtection/privateRoute.js";
+import { auth } from "./firebase/firebase";
 
 import './App.css';
 // import Landing from './pages/LandingPage';
 // import logo from './logo.svg';
 
 function App() {
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        localStorage.setItem("authToken", token);
+      } else {
+        localStorage.removeItem("authToken");
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup the listener
+  }, []);
+
   return (
     // <div className="App">
     //   <header className="App-header">
@@ -68,6 +84,11 @@ function App() {
               <ManagePeople />
             </PrivateRoute>
           } />
+          <Route path="/tools/manage-people/:id" element={
+            <PrivateRoute>
+              <MemberDetails />
+            </PrivateRoute>
+          } />
           <Route path="/tools/assign-task" element={
             <PrivateRoute>
               <AssignTask />
@@ -88,6 +109,7 @@ function App() {
               <UnfinalisedMeetings />
             </PrivateRoute>
           } />
+          
         </Routes>
       </div>
     </Router>
