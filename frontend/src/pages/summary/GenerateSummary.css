@@ -1,0 +1,201 @@
+/* Container Layout */
+.email-summary-container {
+    display: flex;
+    height: 100vh; /* Full viewport height */
+    flex-direction: row; /* Sidebar on the left */
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9fb;
+    overflow-y: auto;
+  }
+  
+  /* Sidebar Responsiveness */
+  @media (max-width: 768px) {
+    .email-summary-container {
+      flex-direction: column; /* Stack sidebar and main content */
+      height: auto; /* Allow height to adjust naturally */
+    }
+  }
+  
+  /* Header Section */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    gap: 15px; /* Consistent spacing */
+  }
+  
+  .header-title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    flex: 1; /* Allow search bar to grow */
+  }
+  
+  .search-bar input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .search-bar button {
+    padding: 10px 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .search-bar button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Content Section */
+  .content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+  }
+  
+  /* Email List */
+  .email-list {
+    flex: 1;
+    max-width: 30%;
+    border-right: 1px solid #ddd;
+    padding-right: 20px;
+  }
+  
+  .email-item {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .email-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .email-item.selected {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+  }
+  
+  /* Email Details */
+  .email-details {
+    flex: 2;
+    margin-right: 20px; /* Space between email details and divider */
+  }
+  
+  .summary-section {
+    flex: 2;
+    padding: 20px;
+  }
+  
+  .email-details p {
+    margin: 20px 0;
+  }
+  
+  /* Buttons */
+  button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .search-bar {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .email-list {
+      max-width: 100%;
+      border-right: none;
+      padding-right: 0;
+    }
+  
+    .content {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .header-title {
+      font-size: 20px;
+    }
+  
+    .search-bar input {
+      font-size: 14px;
+    }
+  
+    .search-bar button {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+  
+    button {
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+  
+    .email-item {
+      padding: 8px;
+    }
+  
+    .meeting-time-location {
+      flex-direction: column; /* Stack meeting details vertically */
+      align-items: flex-start;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header-title {
+      font-size: 18px;
+    }
+  
+    .button,
+    .see-more-button {
+      font-size: 10px;
+      padding: 5px 10px;
+    }
+  
+    .email-item {
+      padding: 10px; /* Reduce padding */
+    }
+  
+    .email-name,
+    .email-date {
+      font-size: 14px; /* Smaller font sizes */
+    }
+  
+    .email-summary-container {
+      flex-direction: column; /* Sidebar stacks on top */
+    }
+  }

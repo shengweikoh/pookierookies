@@ -1,0 +1,54 @@
+.calendar-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9fb;
+    overflow-y: auto;
+  }
+  
+  .header-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .event-details {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .event-details h2 {
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .event-details p {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+  
+  .close-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .close-button:hover {
+    background-color: #d32f2f;
+  }
