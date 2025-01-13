@@ -43,7 +43,7 @@ jobs:
       # Step 6: Build Docker image
       - name: Build Docker image
         working-directory: ./backend
-        run: docker build --no-cache -t django-backend .
+        run: docker build -t django-backend .
 
       # Step 7: Push Docker image to Docker Hub
       - name: Login to Docker Hub
@@ -71,6 +71,7 @@ jobs:
               "docker pull ${{ secrets.DOCKER_USERNAME }}/django-backend:latest",
               "docker stop django-backend || true",
               "docker rm django-backend || true",
+              "docker image prune",
               "find . -name \"*.pyc\" -exec rm -f {} \\;",
               "find . -name \"__pycache__\" -exec rm -rf {} +",
               "python -m compileall .",
