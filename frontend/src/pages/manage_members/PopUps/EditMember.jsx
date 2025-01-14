@@ -2,13 +2,33 @@ import React, { useState } from "react";
 import "./MemberPopUp.css";
 
 const EditMemberPopUp = ({ member, onClose, onSubmit }) => {
-  const [name, setName] = useState(member.name);
-  const [group, setGroup] = useState(member.group);
-  const [role, setRole] = useState(member.role);
+  const [name, setName] = useState(member.name || "");
+  const [email, setEmail] = useState(member.email || "");
+  const [group, setGroup] = useState(member.group || "");
+  const [role, setRole] = useState(member.role || "");
+  const [profilePhoto, setProfilePhoto] = useState(member.profilePhoto || null);
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhoto(reader.result); // Store the photo preview as a Base64 string
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ id: member.id, name, group, role });
+    onSubmit({
+      id: member.id,
+      name,
+      email,
+      group,
+      role,
+      profilePhoto,
+    });
   };
 
   return (
@@ -26,12 +46,20 @@ const EditMemberPopUp = ({ member, onClose, onSubmit }) => {
             />
           </label>
           <label>
+            Email:
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label>
             Group:
             <input
               type="text"
               value={group}
               onChange={(e) => setGroup(e.target.value)}
-              required
             />
           </label>
           <label>
@@ -40,9 +68,21 @@ const EditMemberPopUp = ({ member, onClose, onSubmit }) => {
               type="text"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              required
             />
           </label>
+          <label>
+            Profile Photo:
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+            />
+          </label>
+          {profilePhoto && (
+            <div className="photo-preview">
+              <img src={profilePhoto} alt="Profile Preview" />
+            </div>
+          )}
           <div className="popup-buttons">
             <button type="submit" className="button">Save</button>
             <button type="button" className="button cancel-button" onClick={onClose}>

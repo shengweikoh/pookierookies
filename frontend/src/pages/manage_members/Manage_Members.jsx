@@ -6,10 +6,34 @@ import "./Manage_Members.css";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([
-    { id: 1, name: "John Doe", group: "Group 1", role: "Admin" },
-    { id: 2, name: "Jane Smith", group: "Group 2", role: "Member" },
-    { id: 3, name: "Alice Johnson", group: "Group 1", role: "Member" },
-    { id: 4, name: "Bob Brown", group: "Group 2", role: "Admin" },
+    {
+      id: 1,
+      name: "John Doe",
+      group: "Group 1",
+      role: "Admin",
+      profilePhoto: null, // Can be updated with actual URLs
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      group: "Group 2",
+      role: "Member",
+      profilePhoto: null,
+    },
+    {
+      id: 3,
+      name: "Alice Johnson",
+      group: "Group 1",
+      role: "Member",
+      profilePhoto: null,
+    },
+    {
+      id: 4,
+      name: "Bob Brown",
+      group: "Group 2",
+      role: "Admin",
+      profilePhoto: null,
+    },
   ]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,7 +43,6 @@ const ManageMembers = () => {
 
   const navigate = useNavigate();
 
-  // Filter members based on search query, group, and role
   const filteredMembers = members.filter((member) => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGroup = selectedGroup ? member.group === selectedGroup : true;
@@ -27,10 +50,10 @@ const ManageMembers = () => {
     return matchesSearch && matchesGroup && matchesRole;
   });
 
-  const handleAddMember = (newMember) => {
-    setMembers((prev) => [...prev, { id: prev.length + 1, ...newMember }]);
-    setIsAddPopUpOpen(false);
-  };
+const handleAddMember = (newMembers) => {
+  setMembers((prev) => [...prev, ...newMembers]); // Append multiple members for Quick Add
+  setIsAddPopUpOpen(false);
+};
 
   const handleRowClick = (member) => {
     navigate(`/tools/manage-people/${member.id}`, { state: { member } });
@@ -46,7 +69,6 @@ const ManageMembers = () => {
             Add Member
           </button>
         </div>
-        {/* Filters Section */}
         <div className="filters-container">
           <input
             type="text"
@@ -74,7 +96,6 @@ const ManageMembers = () => {
             <option value="Member">Member</option>
           </select>
         </div>
-        {/* Table */}
         <div className="table">
           <div className="table-header">
             <div className="table-column name-column">Name</div>
@@ -89,7 +110,12 @@ const ManageMembers = () => {
             >
               <div className="table-cell name-column">
                 <div className="name-content">
-                  <div className="profile-photo"></div>
+                  <div
+                    className="profile-photo"
+                    style={{
+                      backgroundImage: `url(${member.profilePhoto || "/default-photo.png"})`,
+                    }}
+                  ></div>
                   <span>{member.name}</span>
                 </div>
               </div>
@@ -106,7 +132,6 @@ const ManageMembers = () => {
           )}
         </div>
 
-        {/* Add Member Pop-Up */}
         {isAddPopUpOpen && (
           <AddMemberPopUp
             onClose={() => setIsAddPopUpOpen(false)}
