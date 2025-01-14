@@ -72,7 +72,7 @@ jobs:
               "docker pull ${{ secrets.DOCKER_USERNAME }}/django-backend:latest",
               "docker stop django-backend || true",
               "docker rm django-backend || true",
-              "docker image prune",
+              "docker image prune -a -f",
               "find . -name \"*.pyc\" -exec rm -f {} \\;",
               "find . -name \"__pycache__\" -exec rm -rf {} +",
               "python -m compileall .",
