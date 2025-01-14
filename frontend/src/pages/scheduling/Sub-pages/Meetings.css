@@ -1,0 +1,114 @@
+/* Container for meetings */
+.meetings-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* Main content area */
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9fb;
+    overflow-y: auto;
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .header h1 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .header .button {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .header .button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Meeting item */
+  .meeting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-color: white;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Meeting details */
+  .meeting-details {
+    flex: 3;
+  }
+  
+  .meeting-details h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .meeting-details p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  /* Meeting buttons */
+  .meeting-buttons {
+    display: flex;
+    flex-direction: row; /* Buttons are side by side */
+    gap: 10px; /* Spacing between buttons */
+  }
+  
+  /* Button styles */
+  .meeting-buttons button {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .send-details-button {
+    background-color: #007bff;
+  }
+  
+  .send-details-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .update-button {
+    background-color: #ffae00;
+    color: #333;
+  }
+  
+  .update-button:hover {
+    background-color: #e0a800;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+  }
+  
+  .delete-button:hover {
+    background-color: #d32f2f;
+  }

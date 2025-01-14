@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Sidebar from "../../Components/Sidebar";
-import EditMemberPopUp from "./PopUps/EditMember";
-import DeleteConfirmPopUp from "./PopUps/DeleteMember";
+import Sidebar from "../../../Components/Sidebar";
+import EditMemberPopUp from "../PopUps/EditMember";
+import DeleteConfirmPopUp from "../PopUps/DeleteMember";
 import "./ViewMember.css";
 
 const MemberDetails = () => {

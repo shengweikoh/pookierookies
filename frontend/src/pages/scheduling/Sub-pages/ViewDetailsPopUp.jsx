@@ -1,5 +1,8 @@
 import React from "react";
-import "./ViewDetailsPopUp.css";
+import "./GlobalMeeting.css";
+import "./Meetings.css";
+import "./PopUps.css";
+import "./Responsive.css";
 
 const ViewDetailsPopUp = ({ meeting, onClose }) => {
   return (
