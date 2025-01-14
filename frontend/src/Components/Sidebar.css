@@ -9,6 +9,9 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     z-index: 1000; /* Ensures it stays on top of other content */
     transition: width 0.3s, padding 0.3s; /* Smooth transition for collapsing */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   
   .sidebar.collapsed {
@@ -31,6 +34,14 @@
     font-size: 25px;
     cursor: pointer;
     color: #333;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .toggle-button:active, .toggle-button:hover {
+    background: none;
+    border: 1px solid;
   }
   
   .section {
@@ -48,6 +59,7 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
+    flex-grow: 1;
   }
   
   .nav-item {
@@ -124,6 +136,31 @@
   .links:active {
     text-decoration: none;
     color: #333;
+  }
+
+  /* logout button */
+  .logout-section {
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+  
+  .logout-button {
+    background-color: transparent;
+    border: none;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .logout-button:hover {
+    color: white;
+    background-color: #d8332a;
+  }
+  
+  .logout-icon {
+    margin-right: 8px;
   }
 
   /* Responsive adjustments for sidebar */
