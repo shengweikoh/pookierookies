@@ -20,10 +20,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      # Step 3: Decode and create firebase_key.json
-      - name: Decode firebase_key.json
+      # Step 3: Decode and create firebase_key.json and credentials.json
+      - name: Decode firebase_key.json and credentials.json
         run: |
           echo "${{ secrets.FIREBASE_KEY_BASE64 }}" | base64 -d > ./backend/firebase_key.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS_KEY }}" | base64 -d > ./backend/credentials.json
 
       # Step 4: Install dependencies
       - name: Install dependencies
