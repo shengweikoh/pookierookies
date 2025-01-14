@@ -3,7 +3,18 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
   }
+
+  .filters-container {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
   
+  .header-buttons {
+    display: flex;
+    gap: 10px;
+  }
   .tasks-dashboard {
     display: flex;
     height: 100vh; /* Full viewport height */
@@ -53,9 +64,10 @@ body {
     background-color: #218838;
   }
   
-  .red-button {
+.red-button {
     padding: 8px 16px;
-    background-color: rgb(245, 66, 66);
+    /* background-color: rgb(245, 66, 66); */
+    background-color: #d8332a;
     color: white;
     border: none;
     border-radius: 5px;
