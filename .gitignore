@@ -7,4 +7,3 @@ venv/
 # Ignore compiled Python files
 *.pyc
 __pycache__/
-backend/token.json

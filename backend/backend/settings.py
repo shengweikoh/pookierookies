@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'authapp',
     'tasks',
     'meetings',
+    'emailSummarizer',
     'rest_framework',
     "django.contrib.admin",
     "django.contrib.auth",
