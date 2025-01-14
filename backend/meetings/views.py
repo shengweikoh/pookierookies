@@ -129,10 +129,10 @@ class DeleteMeetingAPIView(APIView):
 import logging
 
 logger = logging.getLogger(__name__)
-# Function to send emails
+# Function to send emails for polls
 @method_decorator(csrf_exempt, name='dispatch')
 
-class SendEmailsAPIView(APIView):
+class SendEmailPollsAPIView(APIView):
     def post(self, request):
         print(f"Request received: {request.method} - {request.data}")
         try:
@@ -167,6 +167,7 @@ class SendEmailsAPIView(APIView):
             logger.info(f"Found meeting data: {meeting.to_dict()}")
 
             # The rest of your email-sending logic...
+            meeting_name = meeting.to_dict()["name"]
             attendees = [attendee["email"] for attendee in meeting.to_dict()["attendees"]]
             poll_link = f"https://pookie-rookies.web.app/poll/{meeting_id}"
 
@@ -176,8 +177,8 @@ class SendEmailsAPIView(APIView):
                 send_email(
                     sender=sender_email,
                     to=email,
-                    subject=f"Meeting Poll Invitation from {sender_name}",
-                    body=f"{sender_name} has invited you to vote for a meeting date. "
+                    subject=f"Meeting Poll Invitation from {sender_name} for {meeting_name}",
+                    body=f"{sender_name} has invited you to vote for a meeting date for {meeting_name}. "
                          f"Please select a date here: {poll_link}"
                 )
 
