@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Sidebar from "../../Components/Sidebar";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -8,6 +8,7 @@ import "./Calendar.css";
 
 const CalendarPage = () => {
   const [selectedEvent, setSelectedEvent] = useState(null); // For viewing details
+  const calendarRef = useRef(null); // Reference to FullCalendar
   const events = [
     {
       id: 1,
@@ -39,18 +40,49 @@ const CalendarPage = () => {
     setSelectedEvent(null);
   };
 
+  const handleMonthChange = (e) => {
+    const [year, month] = e.target.value.split("-");
+    const newDate = new Date(year, month - 1, 1);
+
+    if (calendarRef.current) {
+      calendarRef.current.getApi().gotoDate(newDate); // Navigate FullCalendar to the selected date
+    }
+  };
+
+//   const handleTodayClick = () => {
+//     const today = new Date();
+//     if (calendarRef.current) {
+//       calendarRef.current.getApi().gotoDate(today); // Navigate to the current date
+//     }
+//   };
+
   return (
     <div className="calendar-container">
       <Sidebar />
       <div className="main-content">
-        <h1 className="header-title">Calendar</h1>
+        <div className="calendar-header">
+          <h1 className="header-title">Calendar</h1>
+          <div className="calendar-controls">
+            <input
+              type="month"
+              onChange={handleMonthChange}
+              className="month-picker"
+            />
+          </div>
+        </div>
+
         <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          eventClick={handleEventClick}
-          height="auto"
-        />
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={events}
+            eventClick={handleEventClick}
+            headerToolbar={{
+                start: "prev,next today", // Buttons on the left
+                center: "title", // Title in the center
+                end: "dayGridMonth,timeGridWeek,timeGridDay", // View switcher buttons on the right
+            }}
+            height="auto"
+            />
 
         {/* Event Details Pop-Up */}
         {selectedEvent && (
@@ -60,7 +92,7 @@ const CalendarPage = () => {
               <strong>Type:</strong> {selectedEvent.extendedProps.type}
             </p>
             <p>
-              <strong>Description:</strong> {selectedEvent.extendedProps.description}
+              <strong>Agenda:</strong> {selectedEvent.extendedProps.description}
             </p>
             <p>
               <strong>Start:</strong> {new Date(selectedEvent.start).toLocaleString()}

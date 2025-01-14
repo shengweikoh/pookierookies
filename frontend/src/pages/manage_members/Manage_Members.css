@@ -104,11 +104,13 @@
   
   .group-column {
     flex: 1;
+    padding-right: 25px;
     text-align: center; /* Center-align header and content */
   }
   
   .role-column {
     flex: 1;
+    padding-right: 25px;
     text-align: center;
   }
   

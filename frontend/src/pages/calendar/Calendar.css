@@ -1,3 +1,4 @@
+/* Calendar Container */
 .calendar-container {
     display: flex;
     height: 100vh;
@@ -6,49 +7,78 @@
   .main-content {
     flex: 1;
     padding: 20px;
-    background-color: #f9f9fb;
+    background-color: #fff;
     overflow-y: auto;
   }
   
+  /* Header */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  /* Title */
   .header-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 20px;
   }
   
-  .event-details {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+  /* Controls */
+  .calendar-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   
-  .event-details h2 {
-    margin-top: 0;
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  .event-details p {
-    margin: 10px 0;
+  .month-picker {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     font-size: 14px;
   }
   
+  .today-button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .today-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Event Details Pop-Up */
+  .event-details {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -20%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
   .close-button {
+    margin-top: 10px;
+    padding: 8px 16px;
     background-color: #f44336;
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 10px 15px;
     cursor: pointer;
-    font-size: 14px;
+    transition: background-color 0.3s;
   }
   
   .close-button:hover {
     background-color: #d32f2f;
   }
+
+  
