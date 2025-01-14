@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "../../Components/Sidebar"; // Reusable Sidebar component
 import AssignNewTaskPopUp from "./AssignNewTaskPopUp";
+import SendReminderPopUp from "./SendReminderPopUp";
 import "./Assign_Task.css"; // Custom styles for this component
 
 const TasksDashboard = () => {
@@ -43,6 +44,8 @@ const TasksDashboard = () => {
   const [selectedPerson, setSelectedPerson] = useState("");
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState([]);
 
   // Filter tasks whenever filters or search query change
   useEffect(() => {
@@ -59,6 +62,39 @@ const TasksDashboard = () => {
     });
     setFilteredTasks(filtered);
   }, [searchQuery, selectedGroup, selectedPerson, tasks]);
+
+  const handleTaskSelection = (id) => {
+    setSelectedTasks((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((taskId) => taskId !== id)
+        : [...prevSelected, id]
+    );
+  };
+
+  const handleSendReminders = () => {
+    if (selectedTasks.length > 0) {
+      setIsReminderPopupOpen(true);
+    } else {
+      alert("Please select at least one task to send reminders.");
+    }
+  };
+
+  const handleDeleteSelectedTasks = () => {
+    // when linking to backend, need to import axios
+    // for (const taskId of selectedTasks) {
+    //   try {
+    //     const response = await axios.delete(`https://your-backend-api.com/tasks/${taskId}`);
+    //     console.log(`Successfully deleted task with ID ${taskId}:`, response.data);
+    //   } catch (error) {
+    //     console.error(`Error deleting task with ID ${taskId}:`, error.response?.data || error.message);
+    //   }
+    // }
+
+    const remainingTasks = tasks.filter((task) => !selectedTasks.includes(task.id));
+    setFilteredTasks(remainingTasks);
+    setSelectedTasks([]);
+    console.log("Deleted tasks with IDs:", selectedTasks);
+  };
 
   const handleAssignTask = (newTask) => {
     const updatedTasks = [
@@ -85,15 +121,19 @@ const TasksDashboard = () => {
           <div className="header-buttons">
             <button
               className="normal-button"
+              onClick={handleSendReminders}
+            >
+              Send Reminders
+            </button>
+            <button
+              className="normal-button"
               onClick={() => setIsPopupOpen(true)}
             >
-              Assign New Task
+              Add New Task
             </button>
             <button
               className="red-button"
-              onClick={() =>
-                console.log("Selected task IDs (for deletion):", filteredTasks)
-              }
+              onClick={handleDeleteSelectedTasks}
             >
               Delete Tasks
             </button>
@@ -142,6 +182,20 @@ const TasksDashboard = () => {
         <table className="tasks-table">
           <thead>
             <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  onChange={(e) =>
+                    setSelectedTasks(
+                      e.target.checked ? filteredTasks.map((task) => task.id) : []
+                    )
+                  }
+                  checked={
+                    selectedTasks.length === filteredTasks.length &&
+                    filteredTasks.length > 0
+                  }
+                />
+              </th>
               <th>S/N</th>
               <th>Task</th>
               <th>Group</th>
@@ -152,6 +206,13 @@ const TasksDashboard = () => {
           <tbody>
             {filteredTasks.map((task, index) => (
               <tr key={task.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedTasks.includes(task.id)}
+                    onChange={() => handleTaskSelection(task.id)}
+                  />
+                </td>
                 <td>{index + 1}</td>
                 <td>{task.task}</td>
                 <td>{task.group || "-"}</td>
@@ -181,6 +242,13 @@ const TasksDashboard = () => {
         <AssignNewTaskPopUp
           onClose={() => setIsPopupOpen(false)}
           onSubmit={handleAssignTask}
+        />
+      )}
+
+      {isReminderPopupOpen && (
+        <SendReminderPopUp
+          onClose={() => setIsReminderPopupOpen(false)}
+          selectedTasks={selectedTasks}
         />
       )}
     </div>
