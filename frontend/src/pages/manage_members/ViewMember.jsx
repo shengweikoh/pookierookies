@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import EditMemberPopUp from "./PopUps/EditMember";
 import DeleteConfirmPopUp from "./PopUps/DeleteMember";
@@ -7,7 +7,8 @@ import "./ViewMember.css";
 
 const MemberDetails = () => {
   const location = useLocation();
-  const member = location.state?.member;
+  const navigate = useNavigate();
+  const [member, setMember] = useState(location.state?.member);
 
   const [isEditPopUpOpen, setIsEditPopUpOpen] = useState(false);
   const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
@@ -17,15 +18,67 @@ const MemberDetails = () => {
     { id: 2, task: "Submit report", dueDate: "2025-01-17" },
   ];
 
+  const mockMeetings = [
+    { id: 1, meeting: "Team Brainstorm", date: "2025-01-18", time: "10:00 AM" },
+    { id: 2, meeting: "UX Testing", date: "2025-01-20", time: "2:00 PM" },
+  ];
+
   if (!member) {
-    return <div>No member data found. Please go back and select a member.</div>;
+    return (
+      <div className="member-details-container">
+        <Sidebar />
+        <div className="main-content">
+          <h1>No member data found</h1>
+          <button onClick={() => navigate("/tools/manage-people")}>
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="member-details-container">
       <Sidebar />
       <div className="main-content">
-        <h1>{member.name}'s Details</h1>
+        <div className="header">
+          <div className="header-left">
+            <h1>{member.name}</h1>
+            <div className="profile-photo2">
+              {member.profilePhoto && (
+                <img
+                  src={member.profilePhoto}
+                  alt={`${member.name}'s profile`}
+                />
+              )}
+            </div>
+          </div>
+          <div className="header-right">
+            <button
+              className="normal-button"
+              onClick={() => setIsEditPopUpOpen(true)}
+            >
+              Edit Member
+            </button>
+            <button
+              className="danger-button"
+              onClick={() => setIsDeletePopUpOpen(true)}
+            >
+              Delete Member
+            </button>
+          </div>
+        </div>
+        <div className="member-info">
+          <p>
+            <strong>Email:</strong> {member.email || "N/A"}
+          </p>
+          <p>
+            <strong>Group:</strong> {member.group || "N/A"}
+          </p>
+          <p>
+            <strong>Role:</strong> {member.role || "N/A"}
+          </p>
+        </div>
         <h2>Upcoming Tasks</h2>
         <ul>
           {mockTasks.map((task) => (
@@ -34,20 +87,15 @@ const MemberDetails = () => {
             </li>
           ))}
         </ul>
-        <div className="actions">
-          <button
-            className="normal-button"
-            onClick={() => setIsEditPopUpOpen(true)}
-          >
-            Edit Member
-          </button>
-          <button
-            className="danger-button"
-            onClick={() => setIsDeletePopUpOpen(true)}
-          >
-            Delete Member
-          </button>
-        </div>
+
+        <h2>Upcoming Meetings</h2>
+        <ul>
+          {mockMeetings.map((meeting) => (
+            <li key={meeting.id}>
+              {meeting.meeting} - {meeting.date} at {meeting.time}
+            </li>
+          ))}
+        </ul>
 
         {/* Edit Member Pop-Up */}
         {isEditPopUpOpen && (
@@ -55,6 +103,7 @@ const MemberDetails = () => {
             member={member}
             onClose={() => setIsEditPopUpOpen(false)}
             onSubmit={(updatedMember) => {
+              setMember(updatedMember); // Update member details
               console.log("Updated Member:", updatedMember);
               setIsEditPopUpOpen(false);
             }}
@@ -66,7 +115,10 @@ const MemberDetails = () => {
           <DeleteConfirmPopUp
             member={member}
             onClose={() => setIsDeletePopUpOpen(false)}
-            onConfirm={() => console.log("Member Deleted")}
+            onConfirm={() => {
+              console.log("Member Deleted");
+              navigate("/tools/manage-people"); // Redirect to Manage Members after deletion
+            }}
           />
         )}
       </div>

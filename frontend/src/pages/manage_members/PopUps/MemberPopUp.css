@@ -63,3 +63,25 @@
     background-color: #4caf50;
     color: white;
   }
+
+  .quick-add-button {
+    background-color: #007bff;
+    color: white;
+    margin-top: 10px;
+  }
+  
+  .quick-add-button:hover {
+    background-color: #0056b3;
+  }
+
+  .photo-preview {
+    margin-top: 15px;
+    text-align: center;
+  }
+  
+  .photo-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+  }
