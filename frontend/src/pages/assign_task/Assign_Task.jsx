@@ -1,39 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Sidebar from "../../Components/Sidebar"; // Reusable Sidebar component
 import AssignNewTaskPopUp from "./AssignNewTaskPopUp";
 import "./Assign_Task.css"; // Custom styles for this component
 
 const TasksDashboard = () => {
-  const tasks = [
-    {
-      id: 1,
-      task: "Plan budget for Bookfest",
-      group: "Finance Dept",
-      personAssigned: "John Doe",
-      status: "Incomplete",
-    },
-    {
-      id: 2,
-      task: "Make poster",
-      group: "Publicity for Bookfest",
-      personAssigned: "Mary Smith",
-      status: "Complete",
-    },
-    {
-      id: 3,
-      task: "Send summary email to stakeholders",
-      group: "",
-      personAssigned: "Jane Cooper",
-      status: "Complete",
-    },
-    {
-      id: 4,
-      task: "Identify blockers and plan solutions",
-      group: "",
-      personAssigned: "Sam Tan",
-      status: "In Progress",
-    },
-  ];
+  const tasks = useMemo(
+    () => [
+      {
+        id: 1,
+        task: "Plan budget for Bookfest",
+        group: "Finance Dept",
+        personAssigned: "John Doe",
+        status: "Incomplete",
+      },
+      {
+        id: 2,
+        task: "Make poster",
+        group: "Publicity for Bookfest",
+        personAssigned: "Mary Smith",
+        status: "Complete",
+      },
+      {
+        id: 3,
+        task: "Send summary email to stakeholders",
+        group: "",
+        personAssigned: "Jane Cooper",
+        status: "Complete",
+      },
+      {
+        id: 4,
+        task: "Identify blockers and plan solutions",
+        group: "",
+        personAssigned: "Sam Tan",
+        status: "In Progress",
+      },
+    ],
+    []
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
@@ -41,8 +44,8 @@ const TasksDashboard = () => {
   const [filteredTasks, setFilteredTasks] = useState(tasks);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  // Filter tasks based on search query, group, and person
-  const filterTasks = () => {
+  // Filter tasks whenever filters or search query change
+  useEffect(() => {
     const filtered = tasks.filter((task) => {
       const matchesSearch =
         searchQuery === "" ||
@@ -55,25 +58,8 @@ const TasksDashboard = () => {
       return matchesSearch && matchesGroup && matchesPerson;
     });
     setFilteredTasks(filtered);
-  };
+  }, [searchQuery, selectedGroup, selectedPerson, tasks]);
 
-  // Update filters
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    filterTasks();
-  };
-
-  const handleGroupChange = (e) => {
-    setSelectedGroup(e.target.value);
-    filterTasks();
-  };
-
-  const handlePersonChange = (e) => {
-    setSelectedPerson(e.target.value);
-    filterTasks();
-  };
-
-  // Assign Task
   const handleAssignTask = (newTask) => {
     const updatedTasks = [
       ...tasks,
@@ -121,28 +107,35 @@ const TasksDashboard = () => {
             className="search-bar"
             placeholder="Search by task"
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <select
             className="dropdown"
             value={selectedGroup}
-            onChange={handleGroupChange}
+            onChange={(e) => setSelectedGroup(e.target.value)}
           >
             <option value="">Group</option>
-            <option value="Finance Dept">Finance Dept</option>
-            <option value="Publicity for Bookfest">Publicity for Bookfest</option>
+            {Array.from(new Set(tasks.map((task) => task.group)))
+              .filter((group) => group)
+              .map((group, index) => (
+                <option key={index} value={group}>
+                  {group}
+                </option>
+              ))}
           </select>
           <select
             className="dropdown"
             value={selectedPerson}
-            onChange={handlePersonChange}
+            onChange={(e) => setSelectedPerson(e.target.value)}
           >
             <option value="">Person</option>
-            {tasks.map((task, index) => (
-              <option key={index} value={task.personAssigned}>
-                {task.personAssigned}
-              </option>
-            ))}
+            {Array.from(new Set(tasks.map((task) => task.personAssigned)))
+              .filter((person) => person)
+              .map((person, index) => (
+                <option key={index} value={person}>
+                  {person}
+                </option>
+              ))}
           </select>
         </div>
 
