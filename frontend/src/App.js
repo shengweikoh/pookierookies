@@ -10,8 +10,9 @@ import AssignTask from './pages/assign_task/Assign_Task.jsx'
 import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
 import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
-import MemberDetails from "./pages/manage_members/ViewMember.jsx";
+import MemberDetails from "./pages/manage_members/Sub-Pages/ViewMember.jsx";
 import Reminders from "./pages/reminders/Reminders.jsx";
+import MeetingPoll from "./pages/poll/MeetingPoll.jsx";
 
 import AutoLogout from './Components/AutoLogout.js';
 
@@ -62,6 +63,7 @@ function App() {
           <Routes>
             {/* public pages */}
             <Route path="/" element={<Login />} />
+            <Route path="/poll/:id" element={<MeetingPoll />} />
 
             {/* protected routes */}
             <Route path="/home" element={

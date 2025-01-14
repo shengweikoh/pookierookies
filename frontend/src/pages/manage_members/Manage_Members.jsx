@@ -14,7 +14,7 @@ const ManageMembers = () => {
       profilePhoto: null, // Can be updated with actual URLs
     },
     {
-      id: 2,
+      id: 2, 
       name: "Jane Smith",
       group: "Group 2",
       role: "Member",
@@ -64,16 +64,16 @@ const handleAddMember = (newMembers) => {
       <Sidebar />
       <div className="main-content">
         <div className="header-container">
-          <h1 className="header-title">Members</h1>
-          <button className="normal-button" onClick={() => setIsAddPopUpOpen(true)}>
-            Add Member
+          <h1 className="header-title">Contacts</h1>
+          <button className="normal-button1" onClick={() => setIsAddPopUpOpen(true)}>
+            Add Contact
           </button>
         </div>
         <div className="filters-container">
           <input
             type="text"
             className="search-bar"
-            placeholder="Search Members"
+            placeholder="Search Contact"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

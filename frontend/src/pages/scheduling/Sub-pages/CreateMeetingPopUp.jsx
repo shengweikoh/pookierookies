@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import "./CreateMeetingPopUp.css";
+import "./GlobalMeeting.css";
+import "./Meetings.css";
+import "./PopUps.css";
+import "./Responsive.css";
 
 const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import "./SendDetailsPopUp.css";
+import "./GlobalMeeting.css";
+import "./Meetings.css";
+import "./PopUps.css";
+import "./Responsive.css";
 
 const SendDetailsPopUp = ({ attendees, onClose, onSend }) => {
   const [mode, setMode] = useState("all"); // "all" or "manual"
@@ -49,10 +52,10 @@ const SendDetailsPopUp = ({ attendees, onClose, onSend }) => {
   );
 
   return (
-    <div className="send-details-popup-overlay">
-      <div className="send-details-popup-content">
-        <h2>Send Meeting Details</h2>
-        <p>Choose recipients:</p>
+    <div className="popup-overlay">
+      <div className="popup-content">
+        <h2 className="popup-title">Send Meeting Details</h2>
+        <p className="popup-description">Choose recipients:</p>
         <select
           value={mode}
           onChange={(e) => setMode(e.target.value)}
@@ -72,12 +75,13 @@ const SendDetailsPopUp = ({ attendees, onClose, onSend }) => {
             />
             <ul className="recipient-list">
               {filteredRecipients.map((recipient) => (
-                <li key={recipient.email}>
-                  <label>
+                <li key={recipient.email} className="recipient-item">
+                  <label className="recipient-label">
                     <input
                       type="checkbox"
                       checked={recipient.selected}
                       onChange={() => toggleRecipient(recipient.email)}
+                      className="recipient-checkbox"
                     />
                     {recipient.email}
                   </label>

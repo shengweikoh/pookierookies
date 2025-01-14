@@ -24,4 +24,5 @@ urlpatterns = [
     path('tasks/', include('tasks.urls')),
     path('meetings/', include('meetings.urls')),
     path('emails/', include('emailSummarizer.urls')),
+    path('members/', include('members.urls')),
 ]

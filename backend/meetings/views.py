@@ -32,7 +32,7 @@ class CreateMeetingAPIView(APIView):
                 "agenda": body.get("agenda"),
                 "attendees": [{"email": email, "status": "invited", "response": None} for email in body.get("attendees")],
                 "proposed_dates": body.get("proposed_dates"),
-                "poll_deadline": body.get("poll_deadline"),
+
                 "finalized_date": None,
                 "finalized": False,
                 "location": body.get("location", ""),
