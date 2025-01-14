@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import "./UpdateMeetingPopUp.css";
+import "./GlobalMeeting.css";
+import "./Meetings.css";
+import "./PopUps.css";
+import "./Responsive.css";
 
 const EditMeetingPopup = ({ meeting, onSave, onClose, onDelete }) => {
   const [editedMeeting, setEditedMeeting] = useState(meeting);

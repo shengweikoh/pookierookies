@@ -1,0 +1,17 @@
+/* Specific Pop-Up Adjustments */
+.popup-content.wide {
+    width: 500px;
+  }
+  
+  .popup-content .dropdown {
+    margin-bottom: 20px;
+  }
+  
+  /* Success Message */
+  .success-message {
+    color: #4caf50;
+    font-size: 14px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
+  }

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import "./SendReminderPopUp.css";
+import "./GlobalMeeting.css";
+import "./Meetings.css";
+import "./PopUps.css";
+import "./Responsive.css";
 
 const SendReminderPopUp = ({ meetings, onClose }) => {
   const [selectedMeeting, setSelectedMeeting] = useState("");

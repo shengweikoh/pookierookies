@@ -114,7 +114,7 @@ const TasksDashboard = () => {
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
           >
-            <option value="">Group</option>
+            <option value="">All Groups</option>
             {Array.from(new Set(tasks.map((task) => task.group)))
               .filter((group) => group)
               .map((group, index) => (
@@ -128,7 +128,7 @@ const TasksDashboard = () => {
             value={selectedPerson}
             onChange={(e) => setSelectedPerson(e.target.value)}
           >
-            <option value="">Person</option>
+            <option value="">All Persons</option>
             {Array.from(new Set(tasks.map((task) => task.personAssigned)))
               .filter((person) => person)
               .map((person, index) => (

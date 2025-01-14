@@ -55,7 +55,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
   return (
     <div className="popup-overlay">
       <div className="popup-content">
-        <h2>{isQuickAdd ? "Quick Add Members" : "Add Member"}</h2>
+        <h2>{isQuickAdd ? "Quick Add Contacts" : "Add Contact"}</h2>
         <form onSubmit={handleSubmit}>
           {/* Common Group and Role Inputs */}
           <label>
@@ -104,7 +104,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
               <label>
                 Input Names and Emails in this format:
                 <textarea
-                  placeholder="Ryan, ryanandskygt@gmail.com; Joe, joe@gmail.com;"
+                  placeholder="John, John@gmail.com; Joe, Joe@gmail.com;"
                   value={bulkInput}
                   onChange={(e) => setBulkInput(e.target.value)}
                   rows={5}
@@ -117,7 +117,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
           {/* Buttons */}
           <div className="popup-buttons">
             <button type="submit" className="button">
-              {isQuickAdd ? "Quick Add" : "Add Member"}
+              {isQuickAdd ? "Quick Add" : "Add Contact"}
             </button>
             <button
               type="button"
