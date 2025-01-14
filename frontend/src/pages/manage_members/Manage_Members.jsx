@@ -14,7 +14,7 @@ const ManageMembers = () => {
       profilePhoto: null, // Can be updated with actual URLs
     },
     {
-      id: 2,
+      id: 2, 
       name: "Jane Smith",
       group: "Group 2",
       role: "Member",
