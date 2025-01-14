@@ -43,6 +43,7 @@ const MemberDetails = () => {
       <div className="main-content">
         <div className="header">
           <div className="header-left">
+            <h1>{member.name}</h1>
             <div className="profile-photo2">
               {member.profilePhoto && (
                 <img
@@ -51,7 +52,6 @@ const MemberDetails = () => {
                 />
               )}
             </div>
-            <h1>{member.name}</h1>
           </div>
           <div className="header-right">
             <button
