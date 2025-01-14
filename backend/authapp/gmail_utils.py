@@ -18,7 +18,7 @@ def get_gmail_service():
     except FileNotFoundError:
         # Initiate OAuth 2.0 flow if no valid token exists
         flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=9090)
         # Save the credentials for the next run
         with open(token_file, 'w') as token:
             token.write(creds.to_json())
