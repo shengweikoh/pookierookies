@@ -11,7 +11,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class RetrieveEmailsAPIView(APIView):
+class RetrieveAllEmailsAPIView(APIView):
     def post(self, request):
         try:
             # Extract user_id (email) and page_token from the request body
@@ -37,4 +37,26 @@ class RetrieveEmailsAPIView(APIView):
 
         except Exception as e:
             logger.error(f"Error occurred while retrieving emails: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class RetrieveOneEmailAPIView(APIView):
+    def get(self, request):
+        try:
+            # Extract user_id and email_id from the request body
+            body = request.data
+            user_id = body.get("user_id")
+            email_id = body.get("email_id")
+            if not user_id:
+                return JsonResponse({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if not email_id:
+                return JsonResponse({"error": "email_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Use get_email_details to fetch the email details
+            email_details = get_email_details(user_id, email_id)
+
+            # Return the email details
+            return JsonResponse({"email": email_details}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error occurred while retrieving the email: {str(e)}")
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
