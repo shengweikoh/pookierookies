@@ -5,7 +5,7 @@ from .views import (
     MeetingDetailAPIView,
     EditMeetingAPIView,
     DeleteMeetingAPIView,
-    SendEmailsAPIView,
+    SendEmailPollsAPIView,
     SubmitPollResponseAPIView,
     FinalizeMeetingAPIView,
     ViewPollResultsAPIView,
@@ -14,7 +14,7 @@ from .views import (
 urlpatterns = [
     path('create/', CreateMeetingAPIView.as_view(), name='create_meeting'),
     path('list/', MeetingListAPIView.as_view(), name='list_meetings'),
-    path('send-emails/', SendEmailsAPIView.as_view(), name='send_emails'),
+    path('send-emails/', SendEmailPollsAPIView.as_view(), name='send_emails'),
     path('submit-response/', SubmitPollResponseAPIView.as_view(), name='submit_response'),
     path('finalize/', FinalizeMeetingAPIView.as_view(), name='finalize_meeting'),
     path('<str:pk>/', MeetingDetailAPIView.as_view(), name='get_meeting'),
