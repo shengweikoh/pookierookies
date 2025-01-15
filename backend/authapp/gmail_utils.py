@@ -7,6 +7,7 @@ from google.auth.transport.requests import Request
 from firebase_admin import credentials as admin_credentials, firestore
 from datetime import datetime, timezone
 import warnings
+from django.conf import settings
 
 # Suppress specific warning about file_cache
 warnings.filterwarnings("ignore", message="file_cache is only supported with oauth2client<4.0.0")
@@ -44,8 +45,8 @@ def get_gmail_service(user_id):
             token=token_data['access_token'],
             refresh_token=token_data['refresh_token'],
             token_uri="https://oauth2.googleapis.com/token",
-            client_id="your_client_id",
-            client_secret="your_client_secret"
+            client_id=settings.GOOGLE_CLIENT_ID,
+            client_secret=settings.GOOGLE_CLIENT_SECRET
         )
 
         # Refresh the access token if it has expired or the scopes are invalid

@@ -178,12 +178,36 @@ REST_FRAMEWORK = {
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
+import json
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "../firebase_key.json"))
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
+
+
+# Path to the credentials.json file
+CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials.json')
+
+# Load the credentials.json file
+with open(CREDENTIALS_PATH) as credentials_file:
+    credentials_data = json.load(credentials_file)
+
+# Assign Google API client credentials
+GOOGLE_CLIENT_ID = credentials_data.get("web", {}).get("client_id")
+GOOGLE_CLIENT_SECRET = credentials_data.get("web", {}).get("client_secret")
+
+
+# Path to the gemini_key.json file
+GEMINI_API_PATH = os.path.join(BASE_DIR, 'gemini_key.json')
+
+# Load the gemini_key.json file
+with open(GEMINI_API_PATH) as gemini_api_file:
+    gemini_key = json.load(gemini_api_file)
+
+# Assign the OpenAI API key
+GEMINI_API_KEY = gemini_key.get("gemini_api_key")
 
 
 LOGGING = {
