@@ -1,27 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../../../Components/Sidebar";
 import EditMemberPopUp from "../PopUps/EditMember";
 import DeleteConfirmPopUp from "../PopUps/DeleteMember";
+import { getLoggedInUserId } from "../../../Components/utils";
+import axios from "axios";
 import "./ViewMember.css";
 
 const MemberDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [member, setMember] = useState(location.state?.member);
-
+  const [member, setMember] = useState(location.state?.member || null);
   const [isEditPopUpOpen, setIsEditPopUpOpen] = useState(false);
   const [isDeletePopUpOpen, setIsDeletePopUpOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(!member);
 
-  const mockTasks = [
-    { id: 1, task: "Prepare presentation", dueDate: "2025-01-15" },
-    { id: 2, task: "Submit report", dueDate: "2025-01-17" },
-  ];
+  const profileId = getLoggedInUserId();
 
-  const mockMeetings = [
-    { id: 1, meeting: "Team Brainstorm", date: "2025-01-18", time: "10:00 AM" },
-    { id: 2, meeting: "UX Testing", date: "2025-01-20", time: "2:00 PM" },
-  ];
+  useEffect(() => {
+    if (!member?.id || !profileId) return;
+
+    const fetchMemberDetails = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_BASE_URL}members/get/${profileId}/${member.id}`
+        );
+        if (response.data) {
+          setMember(response.data);
+        } else {
+          console.error("Unexpected response format:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching member details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMemberDetails();
+  }, [member?.id, profileId]);
+
+  const handleUpdateMember = async (updatedMember) => {
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}members/edit/${profileId}/${updatedMember.id}/`,
+        updatedMember
+      );
+      if (response.status === 200) {
+        setMember(response.data);
+        console.log("Member updated:", response.data);
+      } else {
+        console.error("Failed to update member:", response);
+      }
+    } catch (error) {
+      console.error("Error updating member:", error);
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    try {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId}/${member.id}/`
+      );
+      if (response.status === 200) {
+        console.log("Member deleted successfully");
+        navigate("/tools/manage-people"); // Redirect after successful deletion
+      } else {
+        console.error("Failed to delete member:", response);
+      }
+    } catch (error) {
+      console.error("Error deleting member:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="member-details-container">
+        <Sidebar />
+        <div className="main-content">
+          <h1>Loading member details...</h1>
+        </div>
+      </div>
+    );
+  }
 
   if (!member) {
     return (
@@ -71,22 +133,16 @@ const MemberDetails = () => {
             <strong>Role:</strong> {member.role || "N/A"}
           </p>
         </div>
+
+        {/* Mocked tasks and meetings */}
         <h2>Upcoming Tasks</h2>
         <ul>
-          {mockTasks.map((task) => (
-            <li key={task.id}>
-              {task.task} - Due: {task.dueDate}
-            </li>
-          ))}
+          <li>Tasks backend integration pending</li>
         </ul>
 
         <h2>Upcoming Meetings</h2>
         <ul>
-          {mockMeetings.map((meeting) => (
-            <li key={meeting.id}>
-              {meeting.meeting} - {meeting.date} at {meeting.time}
-            </li>
-          ))}
+          <li>Meetings backend integration pending</li>
         </ul>
 
         {/* Edit Member Pop-Up */}
@@ -95,8 +151,7 @@ const MemberDetails = () => {
             member={member}
             onClose={() => setIsEditPopUpOpen(false)}
             onSubmit={(updatedMember) => {
-              setMember(updatedMember); // Update member details
-              console.log("Updated Member:", updatedMember);
+              handleUpdateMember(updatedMember);
               setIsEditPopUpOpen(false);
             }}
           />
@@ -108,7 +163,8 @@ const MemberDetails = () => {
             member={member}
             onClose={() => setIsDeletePopUpOpen(false)}
             onConfirm={() => {
-              navigate("/tools/manage-people"); // Redirect after deletion
+              handleDeleteMember();
+              setIsDeletePopUpOpen(false); // Close popup after deletion
             }}
           />
         )}

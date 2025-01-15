@@ -1,75 +1,107 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../Components/Sidebar";
 import "./GenerateSummary.css";
-
-// Mock data for email threads
-const mockData = [
-  {
-    id: 1,
-    subject: "Project Kickoff Meeting Notes",
-    sender: "manager@example.com",
-    recipients: ["team@example.com", "stakeholder@example.com"],
-    date: "2025-01-12T10:00:00Z",
-    body: "Here are the notes from our kickoff meeting...",
-    thread: [
-      {
-        id: "1-1",
-        sender: "team@example.com",
-        date: "2025-01-12T11:00:00Z",
-        body: "Thanks for the notes! I have a few questions...",
-      },
-      {
-        id: "1-2",
-        sender: "stakeholder@example.com",
-        date: "2025-01-12T11:30:00Z",
-        body: "Can we schedule a follow-up meeting next week?",
-      },
-    ],
-  },
-  {
-    id: 2,
-    subject: "Budget Discussion Follow-Up",
-    sender: "finance@example.com",
-    recipients: ["manager@example.com"],
-    date: "2025-01-11T15:00:00Z",
-    body: "Following up on the budget discussion...",
-    thread: [],
-  },
-];
+import axios from "axios";
 
 const EmailSummaryPage = () => {
+  const [emails, setEmails] = useState([]);
+  const [filteredEmails, setFilteredEmails] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredEmails, setFilteredEmails] = useState(mockData);
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [emailDetails, setEmailDetails] = useState(null);
   const [summary, setSummary] = useState("");
+  const [pageToken, setPageToken] = useState(""); // Pagination token
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // Flag to check if more pages are available
 
+  const userId = "kohshengwei@gmail.com"; // Replace with dynamic user retrieval if available
+
+  // Step 1: Fetch emails (POST API)
+  const fetchEmails = async (token = "") => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/get-all-emails/`,
+        {
+          user_id: userId,
+          page_token: token || "",
+        }
+      );
+
+      const { emails: newEmails, next_page_token } = response.data;
+      setEmails((prevEmails) => [...prevEmails, ...newEmails]);
+      setFilteredEmails((prevEmails) => [...prevEmails, ...newEmails]);
+      setPageToken(next_page_token || "");
+      setHasMore(!!next_page_token); // Set hasMore based on next_page_token
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch emails on initial load
+  useEffect(() => {
+    fetchEmails();
+  }, []);
+
+  // Step 2: Fetch email details (GET API)
+  const fetchEmailDetails = async (emailId) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/get-email-details/`,
+        {
+          user_id: userId,
+          email_id: emailId,
+        }
+      );
+      setEmailDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching email details:", error);
+      setEmailDetails(null);
+    }
+  };
+
+  // Step 3: Generate summary (POST API)
+  const handleGenerateSummary = async () => {
+    if (!emailDetails) return;
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/summarize-email/`,
+        {
+          email: emailDetails,
+        }
+      );
+      setSummary(response.data.summary || "Summary not available.");
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      setSummary("Failed to generate summary. Please try again.");
+    }
+  };
+
+  // Handle email selection
+  const handleSelectEmail = (email) => {
+    if (selectedEmail?.id === email.id) {
+      setSelectedEmail(null); // Deselect email
+      setEmailDetails(null);
+      setSummary("");
+    } else {
+      setSelectedEmail(email);
+      fetchEmailDetails(email.id); // Fetch full details for the selected email
+      setSummary(""); // Reset summary
+    }
+  };
+
+  // Handle search filtering
   const handleSearch = () => {
     const query = searchQuery.toLowerCase();
-    const filtered = mockData.filter(
+    const filtered = emails.filter(
       (email) =>
         email.subject.toLowerCase().includes(query) ||
         email.sender.toLowerCase().includes(query)
     );
     setFilteredEmails(filtered);
-  };
-
-  const handleSelectEmail = (email) => {
-    if (selectedEmail?.id === email.id) {
-      // Unselect the email if it is already selected
-      setSelectedEmail(null);
-      setSummary(""); // Reset summary when deselecting an email
-    } else {
-      // Select the email
-      setSelectedEmail(email);
-      setSummary(""); // Reset summary when selecting a new email
-    }
-  };
-
-  const handleGenerateSummary = () => {
-    // Mock summary generation
-    setSummary(
-      "This is a summary of the email thread. Key points: Meeting notes, follow-up required."
-    );
   };
 
   return (
@@ -90,6 +122,7 @@ const EmailSummaryPage = () => {
         </div>
 
         <div className="content">
+          {/* Email List */}
           <div className="email-list">
             <h2>Email Threads</h2>
             {filteredEmails.length > 0 ? (
@@ -111,40 +144,31 @@ const EmailSummaryPage = () => {
             ) : (
               <p>No emails found.</p>
             )}
+            {hasMore && (
+              <button onClick={() => fetchEmails(pageToken)} disabled={isLoading}>
+                {isLoading ? "Loading..." : "Load More"}
+              </button>
+            )}
           </div>
-                
+
+          {/* Email Details */}
           <div className="email-details">
-            {selectedEmail ? (
+            {emailDetails ? (
               <>
                 <h2>Email Details</h2>
                 <p>
-                  <strong>Subject:</strong> {selectedEmail.subject}
+                  <strong>Subject:</strong> {emailDetails.subject}
                 </p>
                 <p>
-                  <strong>Sender:</strong> {selectedEmail.sender}
+                  <strong>Sender:</strong> {emailDetails.from}
                 </p>
                 <p>
                   <strong>Recipients:</strong>{" "}
-                  {selectedEmail.recipients.join(", ")}
+                  {emailDetails.to?.join(", ") || "N/A"}
                 </p>
                 <p>
-                  <strong>Body:</strong> {selectedEmail.body}
+                  <strong>Body:</strong> {emailDetails.body}
                 </p>
-                {selectedEmail.thread.length > 0 && (
-                  <>
-                    <h3>Thread</h3>
-                    <ul>
-                      {selectedEmail.thread.map((thread) => (
-                        <li key={thread.id}>
-                          <p>
-                            <strong>{thread.sender}</strong>: {thread.body}
-                          </p>
-                          <p>{new Date(thread.date).toLocaleString()}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
                 <button onClick={handleGenerateSummary}>Generate Summary</button>
               </>
             ) : (
@@ -152,9 +176,7 @@ const EmailSummaryPage = () => {
             )}
           </div>
 
-          {/* Divider */}
-        {/* <hr className="divider" /> */}
-
+          {/* Generated Summary */}
           <div className="summary-section">
             {summary && (
               <>
