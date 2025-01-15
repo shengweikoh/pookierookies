@@ -30,12 +30,13 @@ def verify_token(request):
             # Extract user details from the token
             uid = decoded_token.get("uid")
             email = decoded_token.get("email")
+            name = decoded_token.get("name")
 
             logging.info(f"Token verified successfully for user: {email} (UID: {uid})")
 
             # Create the user's profile in Firestore if it doesn't already exist
             try:
-                create_user_profile(uid, email)
+                create_user_profile(uid, email, name)
                 logging.info(f"Profile created/updated successfully for user: {email} (UID: {uid})")
             except Exception as e:
                 logging.error(f"Failed to create profile: {str(e)}")
@@ -45,7 +46,8 @@ def verify_token(request):
                 "message": "Token verified",
                 "user": {
                     "uid": uid,
-                    "email": email
+                    "email": email,
+                    "name": name
                 }
             }, status=200)
 

@@ -42,15 +42,27 @@ def create_task(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_task(request, profile_id, task_id):
+def get_task_of_user(request, profile_id, task_id):
     if request.method == "GET":
         try:
             # Retrieve the task from the tasks subcollection of the specified profile
             task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
             task = task_ref.get()
 
+            # Retrieve the profile document to access the name field
+            profile_ref = db.collection("profiles").document(profile_id)
+            profile = profile_ref.get()
+
+            if not profile.exists:
+                return JsonResponse({"error": "Profile not found"}, status=404)
+
+            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
+
             if task.exists:
-                return JsonResponse({"task": task.to_dict()}, status=200)
+                return JsonResponse({
+                    "profileName": profile_name,
+                    "task": task.to_dict()
+                }, status=200)
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
 
@@ -60,24 +72,36 @@ def get_task(request, profile_id, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_all_tasks(request, profile_id):
+def get_all_tasks_of_user(request, profile_id):
     if request.method == "GET":
         try:
             # Retrieve all tasks from the tasks subcollection of the specified profile
             tasks_ref = db.collection("profiles").document(profile_id).collection("tasks")
             tasks = tasks_ref.stream()
 
+            # Retrieve the profile document to access the name field
+            profile_ref = db.collection("profiles").document(profile_id)
+            profile = profile_ref.get()
+
+            if not profile.exists:
+                return JsonResponse({"error": "Profile not found"}, status=404)
+
+            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
+    
             # Convert the tasks to a list of dictionaries
             tasks_list = [task.to_dict() for task in tasks]
 
-            return JsonResponse({"tasks": tasks_list}, status=200)
+            return JsonResponse({
+                "profileName": profile_name,
+                "tasks": tasks_list
+            }, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def edit_task(request, profile_id, task_id):
+def edit_task(request, task_id):
     if request.method == "PUT":
         try:
             # Parse the request body
@@ -90,7 +114,7 @@ def edit_task(request, profile_id, task_id):
                 "group": body.get("group"),
                 "dueDate": body.get("dueDate"),
                 "status": body.get("status"),
-                "status": body.get("priority"),
+                "priority": body.get("priority"),  # Fixed repeated "status"
             }
 
             # Remove any fields that are None
@@ -99,13 +123,22 @@ def edit_task(request, profile_id, task_id):
             if not update_fields:
                 return JsonResponse({"error": "No fields to update"}, status=400)
 
-            # Retrieve the task from the tasks subcollection of the specified profile
-            task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
-            task = task_ref.get()
+            # Search for the task across all profiles
+            profiles_ref = db.collection("profiles")
+            task_updated = False
 
-            if task.exists:
-                # Update the task in Firestore
-                task_ref.update(update_fields)
+            for profile in profiles_ref.stream():
+                profile_id = profile.id
+                task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
+                task = task_ref.get()
+
+                if task.exists:
+                    # Update the task in Firestore
+                    task_ref.update(update_fields)
+                    task_updated = True
+                    break
+
+            if task_updated:
                 return JsonResponse({"message": "Task updated successfully", "updatedFields": update_fields}, status=200)
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
@@ -116,16 +149,26 @@ def edit_task(request, profile_id, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def delete_task(request, profile_id, task_id):
+def delete_task(request, task_id):
     if request.method == "DELETE":
         try:
-            # Retrieve the task from the tasks subcollection of the specified profile
-            task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
-            task = task_ref.get()
+            # Query Firestore to find the task by task_id
+            profiles_ref = db.collection("profiles")
+            task_deleted = False
 
-            if task.exists:
-                # Delete the task from Firestore
-                task_ref.delete()
+            # Iterate through profiles to find and delete the task
+            for profile in profiles_ref.stream():
+                profile_id = profile.id
+                task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
+                task = task_ref.get()
+
+                if task.exists:
+                    # Delete the task
+                    task_ref.delete()
+                    task_deleted = True
+                    break
+
+            if task_deleted:
                 return JsonResponse({"message": "Task deleted successfully"}, status=200)
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
@@ -134,3 +177,7 @@ def delete_task(request, profile_id, task_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+# todo after groups
+# @csrf_exempt
+# def get_all_tasks_of_group(request, group_id):
