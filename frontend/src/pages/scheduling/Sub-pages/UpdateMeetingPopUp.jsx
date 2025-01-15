@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./GlobalMeeting.css";
+// import "./GlobalMeeting.css";
 import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";
@@ -70,13 +70,25 @@ const EditMeetingPopup = ({ meeting, onSave, onClose, onDelete }) => {
               />
             </label>
             <div className="popup-buttons">
-              <button type="button" className="button save-button" onClick={() => onSave(editedMeeting)}>
+              <button
+                type="button"
+                className="button save-button"
+                onClick={() => onSave(editedMeeting)}
+              >
                 Save
               </button>
-              <button type="button" className="button cancel-button" onClick={onClose}>
+              <button
+                type="button"
+                className="button cancel-button"
+                onClick={onClose}
+              >
                 Cancel
               </button>
-              <button type="button" className="button delete-button" onClick={openConfirmDelete}>
+              <button
+                type="button"
+                className="button delete-button"
+                onClick={openConfirmDelete}
+              >
                 Delete
               </button>
             </div>

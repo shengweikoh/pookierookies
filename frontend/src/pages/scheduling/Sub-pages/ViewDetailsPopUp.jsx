@@ -1,5 +1,4 @@
 import React from "react";
-import "./GlobalMeeting.css";
 import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";

@@ -29,18 +29,35 @@
 }
 
 .button {
-  padding: 8px 16px;
-  background-color: #4caf50;
-  color: white;
-  text-decoration: none;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  display: inline-flex; /* Use flexbox for centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  background-color: #4caf50; /* Green background */
+  color: white; /* White text */
+  text-decoration: none; /* Remove underline */
+  font-size: 16px; /* Font size */
+  padding: 10px 20px; /* Add padding for size */
+  border-radius: 8px; /* Rounded corners */
+  border: none; /* Remove border */
+  cursor: pointer; /* Pointer cursor */
+  white-space: nowrap; /* Prevent text wrapping */
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+  text-align: center; /* Center align text */
 }
 
 .button:hover {
-  background-color: #45a049;
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.button a {
+  text-decoration: none; /* Remove underline from link */
+  color: inherit; /* Match button text color */
+  width: 100%; /* Full width of button */
+  height: 100%; /* Full height of button */
+  display: flex; /* Use flexbox */
+  align-items: center; /* Center text vertically */
+  justify-content: center; /* Center text horizontally */
+  font-size: inherit; /* Inherit font size from button */
 }
 
 /* See More and See Less Buttons */
