@@ -4,6 +4,7 @@ import Sidebar from "../../Components/Sidebar";
 import AddMemberPopUp from "./PopUps/AddMember";
 import "./Manage_Members.css";
 import axios from "axios";
+import { getLoggedInUserId } from "../../Components/utils";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([]);
@@ -15,11 +16,14 @@ const ManageMembers = () => {
 
   const navigate = useNavigate();
 
+  const profileId = getLoggedInUserId();
+  
+
   // Fetch members from the backend
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}members/all-members/`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}members/all-members/${profileId}`);
         if (response.data && Array.isArray(response.data.members)) {
           setMembers(response.data.members);
         } else {
@@ -56,17 +60,31 @@ const ManageMembers = () => {
   // Add member to the backend
   const handleAddMember = async (newMembers) => {
     try {
+      // Make sure each new member is posted to the backend
       const responses = await Promise.all(
-        newMembers.map((newMember) =>
-          axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}members/create/`, newMember)
-        )
+        newMembers.map((newMember) => {
+          const memberData = { ...newMember, profileId };
+          return axios.post(
+            `${process.env.REACT_APP_BACKEND_BASE_URL}members/create/`,
+            memberData
+          );
+        })
       );
-      setMembers((prev) => [...prev, ...responses.map((res) => res.data)]);
-      setIsAddPopUpOpen(false);
+      console.log(responses); // Inspect the backend response to verify the presence of `id`.
+
+      
+      // Assuming that the response from the backend contains the full member object including 'id'
+      const addedMembers = responses.map((res) => res.data.member);
+      
+      // Immediately update state with the new member information
+      setMembers((prev) => [...prev, ...addedMembers]);
+  
+      setIsAddPopUpOpen(false); // Close popup after adding members
     } catch (error) {
       console.error("Error adding members:", error);
     }
   };
+  
 
   // Handle row click
   const handleRowClick = (member) => {

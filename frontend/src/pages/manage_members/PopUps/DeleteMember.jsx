@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./MemberPopUp.css";
+import { getLoggedInUserId } from "../../../Components/utils";
+
+const profileId = getLoggedInUserId();
 
 const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -9,7 +12,8 @@ const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
     setIsDeleting(true);
     try {
       // Replace with your backend delete endpoint
-      await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${member.id}/`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId
+      }/${member.id}/`);
       onConfirm(); // Notify parent component of successful deletion
     } catch (error) {
       console.error("Error deleting member:", error);

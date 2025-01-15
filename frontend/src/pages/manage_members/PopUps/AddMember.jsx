@@ -8,6 +8,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [bulkInput, setBulkInput] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false); // State to manage success message visibility
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,6 +46,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
         return;
       }
       onSubmit([{ name, email, group, role, profilePhoto: null }]);
+      setIsSuccess(true); // Show success message
       setName("");
       setEmail("");
       setGroup("");
@@ -56,6 +58,12 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
     <div className="popup-overlay">
       <div className="popup-content">
         <h2>{isQuickAdd ? "Quick Add Contacts" : "Add Contact"}</h2>
+        {isSuccess && (
+          <div className="success-message">
+            Member added successfully!
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           {/* Common Group and Role Inputs */}
           <label>
@@ -65,16 +73,22 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
               value={group}
               onChange={(e) => setGroup(e.target.value)}
               required
+              placeholder="Enter Group Name"
             />
           </label>
           <label>
             Role:
-            <input
-              type="text"
+            <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
               required
-            />
+            >
+              <option value="" disabled>
+                Select Role
+              </option>
+              <option value="Head">Head of the group</option>
+              <option value="Member">Member of the group</option>
+            </select>
           </label>
 
           {/* Conditional Inputs */}
@@ -87,6 +101,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  placeholder="Enter Name"
                 />
               </label>
               <label>
@@ -96,6 +111,7 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  placeholder="Enter Email"
                 />
               </label>
             </>

@@ -19,6 +19,11 @@ class CreateMemberAPIView(APIView):
             # Parse the request body
             body = request.data
 
+            # Ensure profile ID is provided
+            profile_id = body.get("profileId")
+            if not profile_id:
+                return JsonResponse({"error": "Profile ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
             # Ensure the necessary fields are provided
             required_fields = ['name', 'email', 'group', 'role']
             for field in required_fields:
@@ -39,28 +44,22 @@ class CreateMemberAPIView(APIView):
 
             # Create a new member in Firestore and get the document reference
             doc_ref = db.collection("members").document()  # Firestore automatically generates an ID
-            member_data["memberId"] = doc_ref.id  # Assign Firestore document ID to memberId
+            member_id = doc_ref.id 
+            member_data["memberId"] = member_id  # Assign Firestore document ID to memberId
 
-            # Set the document with the member data
-            doc_ref.set(member_data)
+            db.collection("profiles").document(profile_id).collection("members").document(member_id).set(member_data)
 
-            # Return a successful response
-            return JsonResponse({
-                'memberId': member_data["memberId"],
-                'name': member_data["name"],
-                'email': member_data["email"],
-                'group': member_data["group"],
-                'role': member_data["role"]
-            }, status=status.HTTP_201_CREATED)
+            return JsonResponse({"message": "Member created successfully", "member": member_data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
+    
 class GetAllMembersAPIView(APIView):
-    def get(self, request):
+    def get(self, request, profile_id):
         try:
-            # Fetch all members from the Firestore "members" collection
-            members_ref = db.collection("members")
+            
+            members_ref = db.collection("profiles").document(profile_id).collection("members")
             members = members_ref.stream()
 
             # Parse the members into a list of dictionaries
@@ -74,10 +73,10 @@ class GetAllMembersAPIView(APIView):
         
 # Function to get a specific member by memberId (Firestore)
 class GetMemberAPIView(APIView):
-    def get(self, request, memberId):
+    def get(self, request, memberId, profile_id):
         try:
             # Retrieve the member from Firestore using the memberId
-            member_ref = db.collection("members").document(memberId)
+            member_ref = db.collection("profiles").document(profile_id).collection("members").document(memberId)
             member = member_ref.get()
 
             if member.exists:
@@ -98,10 +97,10 @@ class GetMemberAPIView(APIView):
 
 # Function to get all unique groups
 class GetUniqueGroupsAPIView(APIView):
-    def get(self, request):
+    def get(self, request, profile_id):
         try:
             # Get unique groups from Firestore
-            members_ref = db.collection("members")
+            members_ref = db.collection("profiles").document(profile_id).collection("members")
             members = members_ref.stream()
 
             # Get the unique groups from the members
@@ -113,10 +112,10 @@ class GetUniqueGroupsAPIView(APIView):
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class GetMembersByGroupAPIView(APIView):
-    def get(self, request, group_name):
+    def get(self, request, group_name, profile_id):
         try:
             # Query Firestore for members in the specified group
-            members_ref = db.collection("members").where("group", "==", group_name)
+            members_ref = db.collection("profiles").document(profile_id).collection("members").where("group", "==", group_name)
             members = members_ref.stream()
 
             # Parse members into a list of dictionaries
@@ -138,20 +137,22 @@ class GetMembersByGroupAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class EditMemberAPIView(APIView):
-    def put(self, request, pk):
+    def put(self, request, profile_id, member_id):
         try:
+            # Parse the request body
+            body = request.data
+
             # Retrieve the member from Firestore
-            member_ref = db.collection("members").document(pk)
+            member_ref = db.collection("profiles").document(profile_id).collection("members").document(member_id)
             member = member_ref.get()
 
             if not member.exists:
                 return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            # Parse the request data and update the fields
-            body = request.data
-            member_ref.update(body)  # Update the member in Firestore
+            # Update the member with the provided data
+            member_ref.update(body)
 
-            return JsonResponse({"message": "Member updated successfully", "member": body}, status=status.HTTP_200_OK)
+            return JsonResponse({"message": "Member updated successfully", "updatedFields": body}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -159,10 +160,10 @@ class EditMemberAPIView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteMemberAPIView(APIView):
-    def delete(self, request, pk):
+    def delete(self, request, profile_id, member_id):
         try:
             # Retrieve the member from Firestore
-            member_ref = db.collection("members").document(pk)
+            member_ref = db.collection("profiles").document(profile_id).collection("members").document(member_id)
             member = member_ref.get()
 
             if not member.exists:
