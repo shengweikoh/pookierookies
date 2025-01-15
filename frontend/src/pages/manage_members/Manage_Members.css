@@ -1,197 +1,188 @@
+
 /* Parent container for sidebar and main content */
 .manage-members-container {
-    display: flex;
-    height: 100vh; /* Make sure it fills the viewport height */
-    flex-direction: row; /* Default side-by-side layout */
+  display: flex;
+  height: 100vh; /* Make sure it fills the viewport height */
+  flex-direction: row; /* Default side-by-side layout */
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: auto;
+}
+
+/* Top container */
+.header-container {
+  display: flex;
+  justify-content: space-between; /* Separate title and actions */
+  align-items: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  gap: 15px; /* Add spacing between items */
+  margin-bottom: 20px; /* Spacing between title and actions */
+}
+
+/* .header-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  flex: 1; 
+  text-align: left; 
+} */
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap; /* Allow search bar and controls to wrap */
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* .search-bar,
+.dropdown,
+.normal-button {
+  flex: 1;
+  min-width: 120px; 
+} */
+
+.search-bar {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 200px;
+}
+
+/* .dropdown {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+} */
+
+.normal-button1 {
+  padding: 8px 16px;
+  background-color: #4aba4f;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+}
+
+.normal-button1:hover {
+  background-color: #45a049;
+}
+
+/* Table container */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 10px; /* Spacing between controls and table */
+}
+
+/* Table header */
+.table-header {
+  display: flex;
+  background-color: #f9f9fb;
+  font-weight: bold;
+  color: #555;
+  border-bottom: 2px solid #ddd;
+}
+
+.table-column {
+  padding: 10px;
+  text-align: left;
+}
+
+.name-column {
+  flex: 2;
+  padding-left: 20px; /* Align with profile photos */
+}
+
+.group-column {
+  flex: 1;
+  padding-left: 35px;
+  padding-right: 25px;
+  text-align: center; /* Center-align header and content */
+}
+
+.role-column {
+  flex: 1;
+  padding-left: 10px;
+  padding-right: 20px;
+  text-align: center;
+}
+
+/* Table row */
+.table-row {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+  transition: background-color 0.3s;
+}
+
+.table-row:hover {
+  background-color: #f5f5f5; /* Slight hover effect */
+}
+
+.table-cell {
+  padding: 10px;
+  text-align: center; /* Center-align content */
+}
+
+.name-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 5px;
+  text-align: left; /* Align names to the left */
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .manage-members-container {
+    flex-direction: column; /* Stack sidebar and content vertically */
   }
-  
-  /* Main content */
-  .main-content {
-    flex: 1;
-    padding: 20px;
-    background-color: #fff;
-    overflow-y: auto;
+
+  .sidebar {
+    width: 100%; /* Full width for sidebar on smaller screens */
+    height: auto; /* Allow dynamic height */
   }
-  
-  /* Top container */
+
   .header-container {
-    display: flex;
-    justify-content: space-between; /* Separate title and actions */
-    align-items: center;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    gap: 15px; /* Add spacing between items */
-    margin-bottom: 20px; /* Spacing between title and actions */
+    flex-direction: column; /* Stack title and actions vertically */
+    align-items: flex-start; /* Align items to the left */
   }
-  
-  /* .header-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-    flex: 1; 
-    text-align: left; 
-  } */
-  
+
   .header-actions {
-    display: flex;
-    flex-wrap: wrap; /* Allow search bar and controls to wrap */
-    gap: 10px;
-    justify-content: flex-end;
+    justify-content: space-between; /* Space controls evenly */
+    width: 100%; /* Take full width */
   }
-  
-  /* .search-bar,
+
+  .search-bar,
   .dropdown,
-  .normal-button {
-    flex: 1;
-    min-width: 120px; 
-  } */
-  
-  .search-bar {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    width: 200px;
-  }
-  
-  /* .dropdown {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-  } */
-  
   .normal-button1 {
-    padding: 8px 16px;
-    background-color: #4aba4f;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-    border: none;
+    width: 100%; /* Full width for controls */
   }
-  
-  .normal-button1:hover {
-    background-color: #45a049;
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 18px; /* Adjust font size for smaller screens */
   }
-  
-  /* Table container */
-  .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-top: 10px; /* Spacing between controls and table */
+
+  .search-bar,
+  .dropdown,
+  .normal-button1 {
+    font-size: 12px; /* Adjust font size for controls */
+    padding: 6px 10px;
   }
-  
-  /* Table header */
-  .table-header {
-    display: flex;
-    background-color: #f9f9fb;
-    font-weight: bold;
-    color: #555;
-    border-bottom: 2px solid #ddd;
+
+  .name-content span {
+    font-size: 14px; /* Reduce font size for smaller screens */
   }
-  
-  .table-column {
-    padding: 10px;
-    text-align: left;
-  }
-  
-  .name-column {
-    flex: 2;
-    padding-left: 60px; /* Align with profile photos */
-  }
-  
-  .group-column {
-    flex: 1;
-    padding-right: 25px;
-    text-align: center; /* Center-align header and content */
-  }
-  
-  .role-column {
-    flex: 1;
-    padding-right: 25px;
-    text-align: center;
-  }
-  
-  /* Table row */
-  .table-row {
-    display: flex;
-    align-items: center;
-    background-color: #fff;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 0;
-    transition: background-color 0.3s;
-  }
-  
-  .table-row:hover {
-    background-color: #f5f5f5; /* Slight hover effect */
-  }
-  
-  .table-cell {
-    padding: 10px;
-    text-align: center; /* Center-align content */
-  }
-  
-  .name-content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left; /* Align names to the left */
-  }
-  
-  .profile-photo {
-    width: 40px;
-    height: 40px;
-    background-color: #ddd;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  
-  /* Media queries for responsiveness */
-  @media (max-width: 768px) {
-    .manage-members-container {
-      flex-direction: column; /* Stack sidebar and content vertically */
-    }
-  
-    .sidebar {
-      width: 100%; /* Full width for sidebar on smaller screens */
-      height: auto; /* Allow dynamic height */
-    }
-  
-    .header-container {
-      flex-direction: column; /* Stack title and actions vertically */
-      align-items: flex-start; /* Align items to the left */
-    }
-  
-    .header-actions {
-      justify-content: space-between; /* Space controls evenly */
-      width: 100%; /* Take full width */
-    }
-  
-    .search-bar,
-    .dropdown,
-    .normal-button1 {
-      width: 100%; /* Full width for controls */
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .header-title {
-      font-size: 18px; /* Adjust font size for smaller screens */
-    }
-  
-    .search-bar,
-    .dropdown,
-    .normal-button1 {
-      font-size: 12px; /* Adjust font size for controls */
-      padding: 6px 10px;
-    }
-  
-    .profile-photo {
-      width: 30px;
-      height: 30px;
-    }
-  
-    .name-content span {
-      font-size: 14px; /* Reduce font size for smaller screens */
-    }
-  }
+}

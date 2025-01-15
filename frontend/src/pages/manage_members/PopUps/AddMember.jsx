@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MemberPopUp.css";
 
 const AddMemberPopUp = ({ onClose, onSubmit }) => {
@@ -8,6 +8,21 @@ const AddMemberPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [bulkInput, setBulkInput] = useState("");
+
+  useEffect(() => {
+    // Add event listener for Escape key
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose(); // Close the pop-up
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
