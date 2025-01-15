@@ -35,10 +35,12 @@ const ManageMembers = () => {
         setIsLoading(false); // Stop loading once the fetch is complete
       }
     };
-
-    fetchMembers();
-  }, []);
-
+  
+    if (profileId) {
+      fetchMembers();
+    }
+  }, [profileId]); // Add profileId as a dependency
+  
   // Filter members
   const filteredMembers = Array.isArray(members)
     ? members.filter((member) => {

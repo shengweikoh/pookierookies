@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "./MemberPopUp.css";
-import { getLoggedInUserId } from "../../../Components/utils";
 
 const EditMemberPopUp = ({ member, onClose, onSubmit }) => {
   const [name, setName] = useState(member.name || "");
