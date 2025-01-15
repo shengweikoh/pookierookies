@@ -1,44 +1,56 @@
 import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import Sidebar from "../../Components/Sidebar"; // Reusable Sidebar component
 import AssignNewTaskPopUp from "./AssignNewTaskPopUp";
 import SendReminderPopUp from "./SendReminderPopUp";
 import "./Assign_Task.css"; // Custom styles for this component
 
 const TasksDashboard = () => {
-  const tasks = useMemo(
-    () => [
-      {
-        id: 1,
-        task: "Plan budget for Bookfest",
-        group: "Finance Dept",
-        personAssigned: "John Doe",
-        status: "Incomplete",
-      },
-      {
-        id: 2,
-        task: "Make poster",
-        group: "Publicity for Bookfest",
-        personAssigned: "Mary Smith",
-        status: "Complete",
-      },
-      {
-        id: 3,
-        task: "Send summary email to stakeholders",
-        group: "",
-        personAssigned: "Jane Cooper",
-        status: "Complete",
-      },
-      {
-        id: 4,
-        task: "Identify blockers and plan solutions",
-        group: "",
-        personAssigned: "Sam Tan",
-        status: "In Progress",
-      },
-    ],
-    []
-  );
+  // const tasks = useMemo(
+  //   () => [
+  //     {
+  //       "name": "New Task",
+  //       "group": "Group A",
+  //       "dueDate": "2025-01-20T12:00:00",
+  //       "description": "This is a new task",
+  //       "userId": "zJjVj3VT6gaoUXmeSI8kgtm6zRy1",
+  //       "creationDate": "2025-01-12T10:02:50.716101",
+  //       "taskId": "04350fed-5006-499c-9622-8e70c393fcee",
+  //       "status": "Incomplete",
+  //       "priority:": "Low"
+  //     }, {
+  //       id: 1,
+  //       task: "Plan budget for Bookfest",
+  //       group: "Finance Dept",
+  //       personAssigned: "John Doe",
+  //       status: "Incomplete",
+  //     },
+  //     {
+  //       id: 2,
+  //       task: "Make poster",
+  //       group: "Publicity for Bookfest",
+  //       personAssigned: "Mary Smith",
+  //       status: "Complete",
+  //     },
+  //     {
+  //       id: 3,
+  //       task: "Send summary email to stakeholders",
+  //       group: "",
+  //       personAssigned: "Jane Cooper",
+  //       status: "Complete",
+  //     },
+  //     {
+  //       id: 4,
+  //       task: "Identify blockers and plan solutions",
+  //       group: "",
+  //       personAssigned: "Sam Tan",
+  //       status: "In Progress",
+  //     },
+  //   ],
+  //   []
+  // );
 
+  const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedPerson, setSelectedPerson] = useState("");
@@ -46,6 +58,25 @@ const TasksDashboard = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
+
+  // Fetch tasks from backend
+  // need to edit the username attribute
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/zJjVj3VT6gaoUXmeSI8kgtm6zRy1/`);
+        setTasks(response.data.tasks); // Assume API returns an array of tasks
+        setFilteredTasks(response.data.tasks); // Initially, all tasks are shown
+        // setLoading(false);
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+        // setError("Failed to fetch tasks. Please try again later.");
+        // setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   // Filter tasks whenever filters or search query change
   useEffect(() => {
@@ -79,18 +110,18 @@ const TasksDashboard = () => {
     }
   };
 
-  const handleDeleteSelectedTasks = () => {
-    // when linking to backend, need to import axios
-    // for (const taskId of selectedTasks) {
-    //   try {
-    //     const response = await axios.delete(`https://your-backend-api.com/tasks/${taskId}`);
-    //     console.log(`Successfully deleted task with ID ${taskId}:`, response.data);
-    //   } catch (error) {
-    //     console.error(`Error deleting task with ID ${taskId}:`, error.response?.data || error.message);
-    //   }
-    // }
+  const handleDeleteSelectedTasks = async () => {
+    // edit this with the variable memberId using nested axios call or change the api
+    for (const taskId of selectedTasks) {
+      try {
+        const response = await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/zJjVj3VT6gaoUXmeSI8kgtm6zRy1/${taskId}/delete/`);
+        console.log(`Successfully deleted task with ID ${taskId}:`, response.data);
+      } catch (error) {
+        console.error(`Error deleting task with ID ${taskId}:`, error.response?.data || error.message);
+      }
+    }
 
-    const remainingTasks = tasks.filter((task) => !selectedTasks.includes(task.id));
+    const remainingTasks = tasks.filter((task) => !selectedTasks.includes(task.taskId));
     setFilteredTasks(remainingTasks);
     setSelectedTasks([]);
     console.log("Deleted tasks with IDs:", selectedTasks);
@@ -187,7 +218,7 @@ const TasksDashboard = () => {
                   type="checkbox"
                   onChange={(e) =>
                     setSelectedTasks(
-                      e.target.checked ? filteredTasks.map((task) => task.id) : []
+                      e.target.checked ? filteredTasks.map((task) => task.taskId) : []
                     )
                   }
                   checked={
@@ -205,16 +236,16 @@ const TasksDashboard = () => {
           </thead>
           <tbody>
             {filteredTasks.map((task, index) => (
-              <tr key={task.id}>
+              <tr key={task.taskId}>
                 <td>
                   <input
                     type="checkbox"
-                    checked={selectedTasks.includes(task.id)}
-                    onChange={() => handleTaskSelection(task.id)}
+                    checked={selectedTasks.includes(task.taskId)}
+                    onChange={() => handleTaskSelection(task.taskId)}
                   />
                 </td>
                 <td>{index + 1}</td>
-                <td>{task.task}</td>
+                <td>{task.name}</td>
                 <td>{task.group || "-"}</td>
                 <td>{task.personAssigned}</td>
                 <td

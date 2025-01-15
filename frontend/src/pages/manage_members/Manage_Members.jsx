@@ -19,7 +19,7 @@ const ManageMembers = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8080/members/all-members/");
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}members/all-members/`);
         if (response.data && Array.isArray(response.data.members)) {
           setMembers(response.data.members);
         } else {
@@ -58,7 +58,7 @@ const ManageMembers = () => {
     try {
       const responses = await Promise.all(
         newMembers.map((newMember) =>
-          axios.post("http://127.0.0.1:8080/members/create/", newMember)
+          axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}members/create/`, newMember)
         )
       );
       setMembers((prev) => [...prev, ...responses.map((res) => res.data)]);
