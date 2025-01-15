@@ -162,12 +162,6 @@ const ManageMembers = () => {
                 >
                   <div className="table-cell name-column">
                     <div className="name-content">
-                      <div
-                        className="profile-photo"
-                        style={{
-                          backgroundImage: `url(${member.profilePhoto || "/default-photo.png"})`,
-                        }}
-                      ></div>
                       <span>{member.name}</span>
                     </div>
                   </div>

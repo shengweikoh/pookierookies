@@ -97,11 +97,12 @@
 
 .name-column {
   flex: 2;
-  padding-left: 60px; /* Align with profile photos */
+  padding-left: 10px; /* Align with profile photos */
 }
 
 .group-column {
   flex: 1;
+  padding-left: 50px;
   padding-right: 25px;
   text-align: center; /* Center-align header and content */
 }
@@ -136,14 +137,6 @@
   align-items: center;
   gap: 10px;
   text-align: left; /* Align names to the left */
-}
-
-.profile-photo {
-  width: 40px;
-  height: 40px;
-  background-color: #ddd;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 /* Media queries for responsiveness */

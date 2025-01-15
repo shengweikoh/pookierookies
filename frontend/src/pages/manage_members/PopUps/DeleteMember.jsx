@@ -3,17 +3,24 @@ import axios from "axios";
 import "./MemberPopUp.css";
 import { getLoggedInUserId } from "../../../Components/utils";
 
-const profileId = getLoggedInUserId();
-
 const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
+    if (!member?.id && !member?.memberId) {
+      console.error("Member ID is undefined or invalid:", member);
+      alert("Failed to delete the member. Invalid member ID.");
+      return;
+    }
+
     setIsDeleting(true);
     try {
-      // Replace with your backend delete endpoint
-      await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId
-      }/${member.id}/`);
+      const profileId = getLoggedInUserId();
+      const memberId = member.id || member.memberId;
+
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId}/${memberId}/`
+      );
       onConfirm(); // Notify parent component of successful deletion
     } catch (error) {
       console.error("Error deleting member:", error);
@@ -28,7 +35,7 @@ const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
       <div className="popup-content">
         <h2>Confirm Delete</h2>
         <p>
-          Are you sure you want to delete <strong>{member.name}</strong>?
+          Are you sure you want to delete <strong>{member?.name || "this member"}</strong>?
         </p>
         <div className="popup-buttons">
           <button
