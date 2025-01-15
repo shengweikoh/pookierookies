@@ -42,7 +42,7 @@ def create_task(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_task(request, profile_id, task_id):
+def get_task_of_user(request, profile_id, task_id):
     if request.method == "GET":
         try:
             # Retrieve the task from the tasks subcollection of the specified profile
@@ -72,7 +72,7 @@ def get_task(request, profile_id, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_all_tasks(request, profile_id):
+def get_all_tasks_of_user(request, profile_id):
     if request.method == "GET":
         try:
             # Retrieve all tasks from the tasks subcollection of the specified profile
@@ -177,3 +177,7 @@ def delete_task(request, task_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+# todo after groups
+# @csrf_exempt
+# def get_all_tasks_of_group(request, group_id):
