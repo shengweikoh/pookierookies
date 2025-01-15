@@ -9,7 +9,7 @@ const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
     setIsDeleting(true);
     try {
       // Replace with your backend delete endpoint
-      await axios.delete(`http://127.0.0.1:8080/members/delete/${member.id}`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${member.id}/`);
       onConfirm(); // Notify parent component of successful deletion
     } catch (error) {
       console.error("Error deleting member:", error);
