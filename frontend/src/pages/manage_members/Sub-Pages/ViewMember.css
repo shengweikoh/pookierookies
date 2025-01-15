@@ -1,96 +1,96 @@
 .member-details-container {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .main-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: #fff;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .header-left h1 {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .profile-photo2 {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid #ddd;
-  }
-  
-  .profile-photo2 img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .header-right {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .normal-button,
-  .danger-button {
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-    border: none;
-  }
-  
-  .normal-button {
-    background-color: #4caf50;
-    color: white;
-  }
-  
-  .normal-button:hover {
-    background-color: #45a049;
-  }
-  
-  .danger-button {
-    background-color: #f44336;
-    color: white;
-  }
-  
-  .danger-button:hover {
-    background-color: #d32f2f;
-  }
-  
-  .member-info {
-    margin-bottom: 20px;
-  }
-  
-  .member-info p {
-    font-size: 16px;
-    margin: 8px 0;
-  }
-  
-  ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  ul li {
-    margin-bottom: 10px;
-    font-size: 16px;
-  }
+  display: flex;
+  height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-left h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.profile-photo2 {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ddd;
+}
+
+.profile-photo2 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.normal-button,
+.danger-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+}
+
+.normal-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.normal-button:hover {
+  background-color: #45a049;
+}
+
+.danger-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.danger-button:hover {
+  background-color: #d32f2f;
+}
+
+.member-info {
+  margin-bottom: 20px;
+}
+
+.member-info p {
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul li {
+  margin-bottom: 10px;
+  font-size: 16px;
+}

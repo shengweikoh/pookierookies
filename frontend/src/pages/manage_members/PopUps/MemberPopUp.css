@@ -43,8 +43,6 @@
   border-radius: 5px;
   cursor: pointer;
   transition: 0.3s;
-  font-size: 14px;
-  flex: 1; /* Makes buttons proportional while maintaining sleekness */
 }
 
 .button:hover {
@@ -61,7 +59,7 @@
   color: white;
 }
 
-.button:not(.cancel-button):not(.delete-button):not(.quick-add-button) {
+.button:not(.cancel-button):not(.delete-button) {
   background-color: #4caf50;
   color: white;
 }
@@ -69,9 +67,7 @@
 .quick-add-button {
   background-color: #007bff;
   color: white;
-  flex: none; /* Allows the button to retain its own size */
-  width: auto; /* Ensures it adjusts dynamically */
-  padding: 10px 20px; /* Slightly larger padding for sleekness */
+  margin-top: 10px;
 }
 
 .quick-add-button:hover {

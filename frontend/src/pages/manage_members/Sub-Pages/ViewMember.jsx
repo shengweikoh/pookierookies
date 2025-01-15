@@ -44,6 +44,14 @@ const MemberDetails = () => {
         <div className="header">
           <div className="header-left">
             <h1>{member.name}</h1>
+            <div className="profile-photo2">
+              {member.profilePhoto && (
+                <img
+                  src={member.profilePhoto}
+                  alt={`${member.name}'s profile`}
+                />
+              )}
+            </div>
           </div>
           <div className="header-right">
             <button
