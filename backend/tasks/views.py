@@ -49,8 +49,20 @@ def get_task(request, profile_id, task_id):
             task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
             task = task_ref.get()
 
+            # Retrieve the profile document to access the name field
+            profile_ref = db.collection("profiles").document(profile_id)
+            profile = profile_ref.get()
+
+            if not profile.exists:
+                return JsonResponse({"error": "Profile not found"}, status=404)
+
+            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
+
             if task.exists:
-                return JsonResponse({"task": task.to_dict()}, status=200)
+                return JsonResponse({
+                    "profileName": profile_name,
+                    "task": task.to_dict()
+                }, status=200)
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
 
@@ -66,11 +78,23 @@ def get_all_tasks(request, profile_id):
             # Retrieve all tasks from the tasks subcollection of the specified profile
             tasks_ref = db.collection("profiles").document(profile_id).collection("tasks")
             tasks = tasks_ref.stream()
+            
+            # Retrieve the profile document to access the name field
+            profile_ref = db.collection("profiles").document(profile_id)
+            profile = profile_ref.get()
 
+            if not profile.exists:
+                return JsonResponse({"error": "Profile not found"}, status=404)
+
+            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
+    
             # Convert the tasks to a list of dictionaries
             tasks_list = [task.to_dict() for task in tasks]
 
-            return JsonResponse({"tasks": tasks_list}, status=200)
+            return JsonResponse({
+                "profileName": profile_name,
+                "tasks": tasks_list
+            }, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
