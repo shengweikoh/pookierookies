@@ -92,6 +92,28 @@ def send_email(sender, to, subject, body):
         print(f"An error occurred: {error}")
         raise
 
+def format_email_body(sender_name, meeting_name, poll_link, poll_deadline):
+    return f"""
+Hi,
+
+{sender_name} has initiated a meeting poll for '{meeting_name}' and requests your participation in selecting a suitable date and time.
+
+Meeting Details:
+- Meeting Name: {meeting_name}
+- Poll Deadline: {poll_deadline}
+
+Please click the link below to access the poll and indicate your availability:
+{poll_link}
+
+Your timely response would be greatly appreciated. The poll will remain open until {poll_deadline}.
+
+Best regards,
+{sender_name}
+    """
+
+def format_email_subject(sender_name, meeting_name):
+    return f"Meeting Poll Request: {meeting_name} - Action Required"
+
 def list_emails(user_id, page_token=None, max_results=50):
     """Retrieve a paginated list of emails for a specific user."""
     # Initialize Gmail service for the user

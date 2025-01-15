@@ -8,7 +8,7 @@ from .serializers import MeetingSerializer
 import json
 from firebase_admin import firestore
 from collections import Counter
-from authapp.gmail_utils import send_email
+from authapp.gmail_utils import send_email, format_email_body, format_email_subject
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -170,16 +170,16 @@ class SendEmailPollsAPIView(APIView):
             meeting_name = meeting.to_dict()["name"]
             attendees = [attendee["email"] for attendee in meeting.to_dict()["attendees"]]
             poll_link = f"https://pookie-rookies.web.app/poll/{meeting_id}"
+            poll_deadline = meeting.to_dict().get("poll_deadline", "the specified deadline") 
 
             # Send emails and log each one
             for email in attendees:
-                logger.info(f"Sending email to: {email}")
+                # logger.info(f"Sending email to: {email}")
                 send_email(
                     sender=sender_email,
                     to=email,
-                    subject=f"Meeting Poll Invitation from {sender_name} for {meeting_name}",
-                    body=f"{sender_name} has invited you to vote for a meeting date for {meeting_name}. "
-                         f"Please select a date here: {poll_link}"
+                    subject=format_email_subject(sender_name, meeting_name),
+                    body=format_email_body(sender_name, meeting_name, poll_link, poll_deadline)
                 )
 
             logger.info("All emails sent successfully")
