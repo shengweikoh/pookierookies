@@ -116,8 +116,7 @@ const MemberDetails = () => {
             member={member}
             onClose={() => setIsDeletePopUpOpen(false)}
             onConfirm={() => {
-              console.log("Member Deleted");
-              navigate("/tools/manage-people"); // Redirect to Manage Members after deletion
+              navigate("/tools/manage-people"); // Redirect after deletion
             }}
           />
         )}

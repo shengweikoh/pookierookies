@@ -1,41 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../Components/Sidebar";
 import AddMemberPopUp from "./PopUps/AddMember";
 import "./Manage_Members.css";
+import axios from "axios";
 
 const ManageMembers = () => {
-  const [members, setMembers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      group: "Group 1",
-      role: "Admin",
-      profilePhoto: null, // Can be updated with actual URLs
-    },
-    {
-      id: 2, 
-      name: "Jane Smith",
-      group: "Group 2",
-      role: "Member",
-      profilePhoto: null,
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      group: "Group 1",
-      role: "Member",
-      profilePhoto: null,
-    },
-    {
-      id: 4,
-      name: "Bob Brown",
-      group: "Group 2",
-      role: "Admin",
-      profilePhoto: null,
-    },
-  ]);
-
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
@@ -43,18 +15,60 @@ const ManageMembers = () => {
 
   const navigate = useNavigate();
 
-  const filteredMembers = members.filter((member) => {
-    const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGroup = selectedGroup ? member.group === selectedGroup : true;
-    const matchesRole = selectedRole ? member.role === selectedRole : true;
-    return matchesSearch && matchesGroup && matchesRole;
-  });
+  // Fetch members from the backend
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8080/members/all-members/");
+        if (response.data && Array.isArray(response.data.members)) {
+          setMembers(response.data.members);
+        } else {
+          console.error("Unexpected data format:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setIsLoading(false); // Stop loading once the fetch is complete
+      }
+    };
 
-const handleAddMember = (newMembers) => {
-  setMembers((prev) => [...prev, ...newMembers]); // Append multiple members for Quick Add
-  setIsAddPopUpOpen(false);
-};
+    fetchMembers();
+  }, []);
 
+  // Filter members
+  const filteredMembers = Array.isArray(members)
+    ? members.filter((member) => {
+        const matchesSearch = searchQuery
+          ? member.name.toLowerCase().includes(searchQuery.toLowerCase())
+          : true;
+        const matchesGroup =
+          selectedGroup && selectedGroup !== "All Groups"
+            ? member.group === selectedGroup
+            : true;
+        const matchesRole =
+          selectedRole && selectedRole !== "All Roles"
+            ? member.role === selectedRole
+            : true;
+        return matchesSearch && matchesGroup && matchesRole;
+      })
+    : [];
+
+  // Add member to the backend
+  const handleAddMember = async (newMembers) => {
+    try {
+      const responses = await Promise.all(
+        newMembers.map((newMember) =>
+          axios.post("http://127.0.0.1:8080/members/create/", newMember)
+        )
+      );
+      setMembers((prev) => [...prev, ...responses.map((res) => res.data)]);
+      setIsAddPopUpOpen(false);
+    } catch (error) {
+      console.error("Error adding members:", error);
+    }
+  };
+
+  // Handle row click
   const handleRowClick = (member) => {
     navigate(`/tools/manage-people/${member.id}`, { state: { member } });
   };
@@ -69,6 +83,8 @@ const handleAddMember = (newMembers) => {
             Add Contact
           </button>
         </div>
+
+        {/* Filters Section */}
         <div className="filters-container">
           <input
             type="text"
@@ -82,56 +98,70 @@ const handleAddMember = (newMembers) => {
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
           >
-            <option value="">Groups</option>
-            <option value="Group 1">Group 1</option>
-            <option value="Group 2">Group 2</option>
+            <option value="">All Groups</option>
+            {Array.from(new Set(members.map((member) => member.group)))
+              .filter((group) => group)
+              .map((group, index) => (
+                <option key={index} value={group}>
+                  {group}
+                </option>
+              ))}
           </select>
           <select
             className="dropdown"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
           >
-            <option value="">Roles</option>
-            <option value="Admin">Admin</option>
-            <option value="Member">Member</option>
+            <option value="">All Roles</option>
+            {Array.from(new Set(members.map((member) => member.role)))
+              .filter((role) => role)
+              .map((role, index) => (
+                <option key={index} value={role}>
+                  {role}
+                </option>
+              ))}
           </select>
         </div>
-        <div className="table">
-          <div className="table-header">
-            <div className="table-column name-column">Name</div>
-            <div className="table-column group-column">Group</div>
-            <div className="table-column role-column">Role</div>
-          </div>
-          {filteredMembers.map((member) => (
-            <div
-              key={member.id}
-              className="table-row"
-              onClick={() => handleRowClick(member)}
-            >
-              <div className="table-cell name-column">
-                <div className="name-content">
-                  <div
-                    className="profile-photo"
-                    style={{
-                      backgroundImage: `url(${member.profilePhoto || "/default-photo.png"})`,
-                    }}
-                  ></div>
-                  <span>{member.name}</span>
-                </div>
-              </div>
-              <div className="table-cell group-column">{member.group}</div>
-              <div className="table-cell role-column">{member.role}</div>
-            </div>
-          ))}
-          {filteredMembers.length === 0 && (
-            <div className="table-row">
-              <div className="table-cell" colSpan="3">
-                No members found.
-              </div>
-            </div>
-          )}
-        </div>
 
+        {/* Table Section */}
+        {isLoading ? (
+          <p>Loading members...</p>
+        ) : (
+          <div className="table">
+            <div className="table-header">
+              <div className="table-column name-column">Name</div>
+              <div className="table-column group-column">Group</div>
+              <div className="table-column role-column">Role</div>
+            </div>
+            {filteredMembers.length > 0 ? (
+              filteredMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="table-row"
+                  onClick={() => handleRowClick(member)}
+                >
+                  <div className="table-cell name-column">
+                    <div className="name-content">
+                      <div
+                        className="profile-photo"
+                        style={{
+                          backgroundImage: `url(${member.profilePhoto || "/default-photo.png"})`,
+                        }}
+                      ></div>
+                      <span>{member.name}</span>
+                    </div>
+                  </div>
+                  <div className="table-cell group-column">{member.group}</div>
+                  <div className="table-cell role-column">{member.role}</div>
+                </div>
+              ))
+            ) : (
+              <p>No members found.</p>
+            )}
+          </div>
+        )}
+
+        {/* Add Member Popup */}
         {isAddPopUpOpen && (
           <AddMemberPopUp
             onClose={() => setIsAddPopUpOpen(false)}
