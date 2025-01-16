@@ -223,6 +223,9 @@ const handleLoadMore = () => {
                 <p>
                   <strong>Recipients:</strong> {emailDetails.to || "N/A"}
                 </p>
+                <p>
+                  <strong>Body:</strong> {emailDetails.body || "N/A"}
+                </p>
                 <button onClick={handleGenerateSummary}>Generate Summary</button>
               </>
             ) : (
