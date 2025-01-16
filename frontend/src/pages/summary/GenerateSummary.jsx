@@ -69,13 +69,10 @@ const EmailSummaryPage = () => {
     if (!emailDetails) return;
   
     try {
-      // Send only the nested email object if emailDetails has an 'email' key
-      const emailToSummarize = emailDetails.email || emailDetails;
-  
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/summarize-email/`,
         {
-          email: emailToSummarize,
+          email: emailDetails,
         }
       );
       setSummary(response.data.summary || "Summary not available.");
@@ -99,15 +96,21 @@ const EmailSummaryPage = () => {
   };
 
   // Handle search filtering
+
   const handleSearch = () => {
     const query = searchQuery.toLowerCase();
-    const filtered = emails.filter(
-      (email) =>
-        email.subject.toLowerCase().includes(query) ||
-        email.sender.toLowerCase().includes(query)
+    const filtered = filteredEmails.filter((email) =>
+      email.subject.toLowerCase().includes(query)
     );
     setFilteredEmails(filtered);
-  };
+  }; 
+
+  // Reset filteredEmails when searchQuery changes or clear search
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredEmails(emails);
+    }
+  }, [searchQuery, emails]);
 
   return (
     <div className="email-summary-container">
@@ -118,7 +121,7 @@ const EmailSummaryPage = () => {
           <div className="search-bar">
             <input
               type="text"
-              placeholder="Search emails by subject or sender"
+              placeholder="Search emails by subject"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -168,9 +171,6 @@ const EmailSummaryPage = () => {
                 </p>
                 <p>
                   <strong>Recipients:</strong> {emailDetails.to || "N/A"}
-                </p>
-                <p>
-                  <strong>Body:</strong> {emailDetails.body}
                 </p>
                 <button onClick={handleGenerateSummary}>Generate Summary</button>
               </>
