@@ -8,6 +8,12 @@ from firebase_admin import credentials as admin_credentials, firestore
 from datetime import datetime, timedelta
 import warnings
 from django.conf import settings
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from zoneinfo import ZoneInfo
+
 
 # Suppress specific warning about file_cache
 warnings.filterwarnings("ignore", message="file_cache is only supported with oauth2client<4.0.0")
@@ -348,3 +354,96 @@ def get_google_calendar(user_id, month_year=None):
     except ValueError as ve:
         print(f"An error occurred while parsing month-year: {ve}")
         raise
+
+def send_email_with_ics(sender, to, subject, body, ics_content):
+    """Send an email with a .ics calendar invite attached."""
+    try:
+        service = get_gmail_service(sender)
+
+        # Create message container
+        message = MIMEMultipart()
+        message['From'] = sender
+        message['To'] = to
+        message['Subject'] = subject
+        
+        # Attach the body with the message
+        message.attach(MIMEText(body, 'plain'))
+        
+        # Create the .ics attachment
+        part = MIMEBase('text', 'calendar', method='REQUEST', name='invite.ics')
+        part.set_payload(ics_content)
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="invite.ics"')
+        part.add_header('Content-Type', 'text/calendar; method=REQUEST; name="invite.ics"')
+        
+        # Attach the .ics file to the email
+        message.attach(part)
+
+        # Send email
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+        service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
+
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        raise
+
+def send_email_with_ics(sender, to, subject, body, ics_content):
+    """Send an email with a .ics calendar invite attached."""
+    try:
+        service = get_gmail_service(sender)
+
+        # Create message container
+        message = MIMEMultipart()
+        message['From'] = sender
+        message['To'] = to
+        message['Subject'] = subject
+        
+        # Attach the body with the message
+        message.attach(MIMEText(body, 'plain'))
+        
+        # Create the .ics attachment
+        part = MIMEBase('text', 'calendar', method='REQUEST')
+        part.set_payload(ics_content)
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="invite.ics"')
+        part.add_header('Content-Type', 'text/calendar; charset="UTF-8"; method=REQUEST')
+        
+        # Attach the .ics file to the email
+        message.attach(part)
+
+        # Send email
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+        service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
+
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        raise
+
+def create_calendar_event(sender_email, event_name, start_time, end_time, location, description, attendees):
+    """
+    Create a calendar event in the sender's Google Calendar.
+    """
+    creds = Credentials.from_authorized_user_file(f'token_{sender_email}.json', ['https://www.googleapis.com/auth/calendar'])
+    service = build('calendar', 'v3', credentials=creds)
+
+    event = {
+        'summary': event_name,
+        'location': location,
+        'description': description,
+        'start': {
+            'dateTime': start_time.isoformat(),
+            'timeZone': 'Asia/Singapore',
+        },
+        'end': {
+            'dateTime': end_time.isoformat(),
+            'timeZone': 'Asia/Singapore',
+        },
+        'attendees': [{'email': attendee} for attendee in attendees],
+        'reminders': {
+            'useDefault': True,
+        },
+    }
+
+    event = service.events().insert(calendarId='primary', body=event).execute()
+    print(f'Event created: {event.get("htmlLink")}')
+
