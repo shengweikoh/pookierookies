@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'meetings',
     'emailSummarizer',
     'members',
+    'calendar_app',
     'rest_framework',
     "django.contrib.admin",
     "django.contrib.auth",

@@ -5,17 +5,18 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
 from firebase_admin import credentials as admin_credentials, firestore
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 import warnings
 from django.conf import settings
 
 # Suppress specific warning about file_cache
 warnings.filterwarnings("ignore", message="file_cache is only supported with oauth2client<4.0.0")
 
-# Define the required Gmail API scopes
+# Define the required google API scopes
 SCOPES = [
-    'https://www.googleapis.com/auth/gmail.readonly',  # Read-only access to Gmail
-    'https://www.googleapis.com/auth/gmail.send'      # Permission to send emails
+    'https://www.googleapis.com/auth/calendar.readonly',  # Read-only access to Calendar
+    'https://www.googleapis.com/auth/gmail.readonly',     # Read-only access to Gmail
+    'https://www.googleapis.com/auth/gmail.send'          # Permission to send emails
 ]
 
 # Initialize Firestore client
@@ -229,4 +230,109 @@ def send_task_email(sender, receiver, email_content):
         return result
     except HttpError as error:
         print(f"An error occurred: {error}")
+        raise
+
+
+def get_google_calendar_service(user_id):
+    """Authenticate and return the Google Calendar service instance for a specific user."""
+    # Retrieve token data from Firestore
+    token_data = get_token_from_firestore(user_id)
+
+    if token_data is None:
+        print(f"No token data found for user_id: {user_id}. Triggering reauthentication...")
+        # Trigger reauthentication if no valid token exists
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=9090, prompt='consent')
+        save_token_to_firestore(
+            user_id=user_id,
+            access_token=creds.token,
+            refresh_token=creds.refresh_token,
+            expiry_date=creds.expiry.isoformat()
+        )
+    else:
+        print("Token data found. Validating credentials...")
+        expiry_date = datetime.fromisoformat(token_data.get("expiry_date"))
+        creds = Credentials(
+            token=token_data['access_token'],
+            refresh_token=token_data['refresh_token'],
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=settings.GOOGLE_CLIENT_ID,
+            client_secret=settings.GOOGLE_CLIENT_SECRET
+        )
+
+        # Refresh the access token if it has expired
+        if creds.expired or expiry_date < datetime.now():
+            print("Token expired. Refreshing...")
+            try:
+                creds.refresh(Request())
+                save_token_to_firestore(
+                    user_id=user_id,
+                    access_token=creds.token,
+                    refresh_token=creds.refresh_token,
+                    expiry_date=creds.expiry.isoformat()
+                )
+            except HttpError as error:
+                print(f"Error during token refresh: {error}")
+                raise
+
+    # Build the Google Calendar service instance
+    return build('calendar', 'v3', credentials=creds, cache_discovery=False)
+
+def get_google_calendar(user_id, month_year=None):
+    """Retrieve the monthly calendar events for the given Gmail account."""
+    try:
+        # Initialize Google Calendar API service for the user
+        service = get_google_calendar_service(user_id)
+
+        # Determine the time range based on the month_year parameter
+        if month_year:
+            # Parse the month_year in the format 'YYYY-MM'
+            try:
+                year, month = map(int, month_year.split('-'))
+                start_of_month = datetime(year, month, 1, 0, 0, 0).isoformat() + 'Z'  # Start of the specified month in UTC
+                # Calculate the first day of the next month
+                end_of_month = (datetime(year, month, 1) + timedelta(days=31)).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
+            except ValueError:
+                raise ValueError("Invalid month-year format. Use 'YYYY-MM'.")
+        else:
+            # Default to the current month
+            now = datetime.now()
+            start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
+            end_of_month = (now.replace(day=1) + timedelta(days=31)).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
+
+        # Fetch events within the time range
+        events_result = service.events().list(
+            calendarId='primary',  # The primary calendar for the user
+            timeMin=start_of_month,
+            timeMax=end_of_month,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        # Extract events from the API response
+        events = events_result.get('items', [])
+        if not events:
+            print(f"No events found for the month: {month_year or 'current'}.")
+            return []
+
+        # Parse event details
+        calendar_events = []
+        for event in events:
+            start = event.get('start', {}).get('dateTime', event.get('start', {}).get('date'))
+            end = event.get('end', {}).get('dateTime', event.get('end', {}).get('date'))
+            calendar_events.append({
+                'summary': event.get('summary', 'No Title'),
+                'start': start,
+                'end': end,
+                'description': event.get('description', 'No Description'),
+                'location': event.get('location', 'No Location')
+            })
+
+        return calendar_events
+
+    except HttpError as error:
+        print(f"An error occurred while fetching the calendar: {error}")
+        raise
+    except ValueError as ve:
+        print(f"An error occurred while parsing month-year: {ve}")
         raise
