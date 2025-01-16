@@ -3,6 +3,7 @@ import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";
 import axios from "axios";
+import { getLoggedInUserId } from "../../../Components/utils";
 
 const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");
@@ -14,6 +15,7 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [duration, setDuration] = useState(""); // Duration is required
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
+  const profileId = getLoggedInUserId();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -60,6 +62,7 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
       poll_deadline: pollDeadline,
       location: location.trim() || null, // If blank, send `null` to backend
       duration,
+      assigned_by: profileId, // Add profileId here
     };
 
     try {
