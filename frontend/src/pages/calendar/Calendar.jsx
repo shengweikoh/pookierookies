@@ -45,7 +45,7 @@ const CalendarPage = () => {
         `${process.env.REACT_APP_BACKEND_BASE_URL}calendar/events/`,
         {
           email: user.email,
-          monthYear: monthYear || formatMonthYear(new Date()), // Default to current month
+          monthYear: monthYear || "", // Default to current month
         }
       );
 
@@ -61,13 +61,14 @@ const CalendarPage = () => {
         },
       }));
 
+      // Replace events with those for the current date range
       setEvents(formattedEvents);
     } catch (error) {
       console.error("Error fetching Google Calendar events:", error.response?.data || error.message);
     }
   }, [user]);
 
-  // Fetch initial events
+  // Fetch events on component load or user change
   useEffect(() => {
     if (user) {
       fetchGoogleCalendarEvents(formatMonthYear(currentDate));
@@ -76,9 +77,11 @@ const CalendarPage = () => {
 
   // Handle month navigation
   const handleDatesSet = (info) => {
+    setEvents([]);
     const newDate = new Date(info.start);
+    newDate.setDate(newDate.getDate() + 7);
     setCurrentDate(newDate);
-    fetchGoogleCalendarEvents(formatMonthYear(newDate));
+    fetchGoogleCalendarEvents(formatMonthYear(newDate)); // Fetch events for the new month
   };
 
   if (!user) {
@@ -97,7 +100,7 @@ const CalendarPage = () => {
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           events={events}
-          datesSet={handleDatesSet} // Triggered when month changes
+          datesSet={handleDatesSet} // Triggered when the user navigates months
           headerToolbar={{
             start: "prev,next",
             center: "title",
