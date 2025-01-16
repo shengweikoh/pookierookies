@@ -126,37 +126,45 @@ def create_task(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_task_of_user(request, profile_id, task_id):
+def get_all_tasks_assigned_by_user(request, uid):
     if request.method == "GET":
         try:
-            # Retrieve the task from the tasks subcollection of the specified profile
-            task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
-            task = task_ref.get()
+            # Retrieve the profile document for the given UID
+            profile_ref = db.collection("profiles").document(uid)
+            profile_snapshot = profile_ref.get()
 
-            # Retrieve the profile document to access the name field
-            profile_ref = db.collection("profiles").document(profile_id)
-            profile = profile_ref.get()
+            # Check if the profile exists
+            if not profile_snapshot.exists:
+                return JsonResponse({"error": f"Profile with UID {uid} not found"}, status=404)
 
-            if not profile.exists:
-                return JsonResponse({"error": "Profile not found"}, status=404)
+            # Extract the email from the profile document
+            profile_data = profile_snapshot.to_dict()
+            email = profile_data.get("email")
 
-            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
+            if not email:
+                return JsonResponse({"error": "Email not found in the profile document"}, status=400)
 
-            if task.exists:
-                return JsonResponse({
-                    "profileName": profile_name,
-                    "task": task.to_dict()
-                }, status=200)
-            else:
-                return JsonResponse({"error": "Task not found"}, status=404)
+            # Retrieve all tasks from the tasks subcollection of the specified profile
+            tasks_ref = profile_ref.collection("tasks")
+            tasks = tasks_ref.stream()
 
+            # Filter tasks where the email matches "assignedBy"
+            tasks_list = [
+                task.to_dict()
+                for task in tasks
+                if task.to_dict().get("assignedBy") == email
+            ]
+
+            return JsonResponse({
+                "tasks": tasks_list
+            }, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_all_tasks_assigned_by_user(request, uid):
+def get_all_tasks_of_user(request, uid):
     if request.method == "GET":
         try:
             # Retrieve all tasks from the tasks subcollection of the specified profile
