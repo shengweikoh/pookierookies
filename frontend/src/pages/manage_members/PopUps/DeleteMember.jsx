@@ -21,7 +21,8 @@ const DeleteConfirmPopUp = ({ member, onClose, onConfirm }) => {
       await axios.delete(
         `${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId}/${memberId}/`
       );
-      onConfirm(); // Notify parent component of successful deletion
+      alert(`${member.name} has been successfully deleted!`);
+      onConfirm(); // Navigate back to Manage Members
     } catch (error) {
       console.error("Error deleting member:", error);
       alert("Failed to delete the member. Please try again.");

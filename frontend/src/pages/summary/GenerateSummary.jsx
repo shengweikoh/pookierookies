@@ -21,7 +21,7 @@ const EmailSummaryPage = () => {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/get-all-emails/`,
+        `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
         {
           user_id: userId,
           page_token: token || "",
@@ -48,11 +48,13 @@ const EmailSummaryPage = () => {
   // Step 2: Fetch email details (GET API)
   const fetchEmailDetails = async (emailId) => {
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/get-email-details/`,
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-email/`,
         {
-          user_id: userId,
-          email_id: emailId,
+          params: {
+            user_id: userId,
+            email_id: emailId,
+          },
         }
       );
       setEmailDetails(response.data);
@@ -68,7 +70,7 @@ const EmailSummaryPage = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/emails/summarize-email/`,
+        `${process.env.REACT_APP_BACKEND_BASE_URL}emails/summarize-email/`,
         {
           email: emailDetails,
         }
