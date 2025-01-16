@@ -16,9 +16,11 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState(""); // State to track error messages
+    const [loading, setLoading] = useState(false);
 
     const handleGoogleLogin = async () => {
         setErrorMessage(""); // Clear any previous error messages
+        setLoading(true);
         try {
             // Google Sign-In using Firebase Auth
             const result = await signInWithPopup(auth, provider);
@@ -66,6 +68,8 @@ const LoginPage = () => {
         } catch (error) {
             console.error("Error during sign-in:", error.response?.data || error.message);
             setErrorMessage("Sign-in failed. Please try again."); // Display error
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,14 +92,21 @@ const LoginPage = () => {
                         type="button"
                         className="google-login-button"
                         onClick={handleGoogleLogin}
+                        disabled={loading}
                     >
                         <img src={googleLogo} alt="Google Logo" />
-                        Sign in with Google
+                        {loading ? "Signing in..." : "Sign in with Google"}
                     </button>
 
                     {errorMessage && (
                         <div className="error-message">
                             {errorMessage}
+                        </div>
+                    )}
+
+                    {loading && (
+                        <div className="loading-indicator">
+                            Loading...
                         </div>
                     )}
                 </form>

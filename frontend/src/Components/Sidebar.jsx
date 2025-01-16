@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import { toast } from "react-toastify";
+// import { ToastContainer, toast } from "react-toastify";
 import "./Sidebar.css";
 import { Link } from "react-router-dom"
 import { FaSignOutAlt } from "react-icons/fa";
@@ -20,9 +20,12 @@ const Sidebar = () => {
       .then(() => {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
-        // toast.success("You have been logged out successfully.");
+        // toast.success("You have been logged out successfully!", {
+        //   position: toast.POSITION.TOP_RIGHT,
+        // }); // Show success toast
         alert("You have been logged out successfully.")
         navigate("/")
+        // toast.success("You have been logged out successfully.");
         console.log("User logged out");
       })
       .catch((error) => {
@@ -54,6 +57,7 @@ const Sidebar = () => {
             <button className="logout-button" onClick={handleLogout}>
               <FaSignOutAlt className="logout-icon" /> Logout
             </button>
+            {/* <ToastContainer />  */}
           </div>
         </>
       )}
