@@ -57,22 +57,25 @@ const EmailSummaryPage = () => {
           },
         }
       );
-      setEmailDetails(response.data);
+      console.log("Fetched email details:", response.data);
+      setEmailDetails(response.data.email); // Set the nested 'email' object
     } catch (error) {
       console.error("Error fetching email details:", error);
       setEmailDetails(null);
     }
   };
-
-  // Step 3: Generate summary (POST API)
+  
   const handleGenerateSummary = async () => {
     if (!emailDetails) return;
-
+  
     try {
+      // Send only the nested email object if emailDetails has an 'email' key
+      const emailToSummarize = emailDetails.email || emailDetails;
+  
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/summarize-email/`,
         {
-          email: emailDetails,
+          email: emailToSummarize,
         }
       );
       setSummary(response.data.summary || "Summary not available.");
@@ -153,7 +156,6 @@ const EmailSummaryPage = () => {
             )}
           </div>
 
-          {/* Email Details */}
           <div className="email-details">
             {emailDetails ? (
               <>
@@ -165,8 +167,7 @@ const EmailSummaryPage = () => {
                   <strong>Sender:</strong> {emailDetails.from}
                 </p>
                 <p>
-                  <strong>Recipients:</strong>{" "}
-                  {emailDetails.to?.join(", ") || "N/A"}
+                  <strong>Recipients:</strong> {emailDetails.to || "N/A"}
                 </p>
                 <p>
                   <strong>Body:</strong> {emailDetails.body}
