@@ -41,51 +41,59 @@ const EmailSummaryPage = () => {
     return () => unsubscribe();
   }, []);
 
-  // Step 1: Memoize fetchEmails
-  const fetchEmails = useCallback(
-    async (token = "") => {
-      if (!user?.email) return; // Ensure user.email exists
-      try {
-        setIsLoading(true);
-        const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
-          {
-            user_id: user.email,
-            page_token: token || "",
-          }
-        );
-  
-        const { emails: newEmails, next_page_token } = response.data;
-  
-        // Deduplicate emails based on ID
-        const uniqueEmails = [
-          ...emails,
-          ...newEmails.filter(
-            (newEmail) => !emails.some((existingEmail) => existingEmail.id === newEmail.id)
-          ),
-        ];
-  
-        setEmails(uniqueEmails);
-        setFilteredEmails(uniqueEmails);
-        setPageToken(next_page_token || "");
-        setHasMore(!!next_page_token);
-  
-        console.log("Unique Email IDs:", uniqueEmails.map((email) => email.id));
-      } catch (error) {
-        console.error("Error fetching emails:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [emails, user?.email] // Dependencies
-  );
-  
-  // Step 2: Update useEffect
-  useEffect(() => {
-    if (user && user.uid) {
-      fetchEmails(); // Use the memoized fetchEmails
+// Step 1: Memoize fetchEmails
+const fetchEmails = useCallback(
+  async (token = "") => {
+    if (!user?.email) return; // Ensure user.email exists
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
+        {
+          user_id: user.email,
+          page_token: token || "",
+        }
+      );
+
+      const { emails: newEmails, next_page_token } = response.data;
+
+      // Deduplicate emails based on ID
+      const uniqueEmails = [
+        ...emails,
+        ...newEmails.filter(
+          (newEmail) => !emails.some((existingEmail) => existingEmail.id === newEmail.id)
+        ),
+      ];
+
+      setEmails(uniqueEmails);
+      setFilteredEmails(uniqueEmails);
+      setPageToken(next_page_token || "");
+      setHasMore(!!next_page_token);
+
+      console.log("Unique Email IDs:", uniqueEmails.map((email) => email.id));
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, fetchEmails]); // Add fetchEmails to the dependency array
+  },
+  [emails, user?.email] // Dependencies
+);
+
+// Step 2: Trigger fetchEmails on initial load when user.email exists
+useEffect(() => {
+  if (user?.email && pageToken === "") {
+    // Only fetch emails on initial load
+    fetchEmails();
+  }
+}, [user?.email, pageToken, fetchEmails]);
+
+// Step 3: Handler for loading the next page
+const handleLoadMore = () => {
+  if (hasMore && !isLoading) {
+    fetchEmails(pageToken); // Pass the current page token for the next page
+  }
+};
 
   // Step 2: Fetch email details (GET API)
   const fetchEmailDetails = async (emailId) => {
@@ -196,7 +204,7 @@ const EmailSummaryPage = () => {
               <p>No emails found.</p>
             )}
             {hasMore && (
-              <button onClick={() => fetchEmails(pageToken)} disabled={isLoading}>
+              <button onClick={() => handleLoadMore(pageToken)} disabled={isLoading}>
                 {isLoading ? "Loading..." : "Load More"}
               </button>
             )}
