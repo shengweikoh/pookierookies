@@ -15,14 +15,14 @@
 
 /* Card container */
 .signin-card {
-    width: 400px;
-    padding: 40px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transition: transform 0.3s ease;
-  }
+  width: 400px;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
 
 /* Header section */
 .signin-header h2 {
@@ -79,37 +79,50 @@
 
 /* Google Login Button */
 .google-login-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #555;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    gap: 10px;
-  }
-  
-  .google-login-button img {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .google-login-button:hover {
-    background: #f1f1f1;
-    border-color: #ccc;
-  }  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 10px;
+}
 
-  .error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-  }
+.google-login-button img {
+  width: 20px;
+  height: 20px;
+}
 
+.google-login-button:hover {
+  background: #f1f1f1;
+  border-color: #ccc;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+
+/* loading styles */
+.loading-indicator {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+}
+
+.google-login-button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
 
 /* @keyframes gradientAnimation {
     0% {

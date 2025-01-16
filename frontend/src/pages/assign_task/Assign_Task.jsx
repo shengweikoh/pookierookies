@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "../../Components/Sidebar"; // Reusable Sidebar component
 import AssignNewTaskPopUp from "./AssignNewTaskPopUp";
+import EditTaskPopUp from "./EditTaskPopUp";
 import SendReminderPopUp from "./SendReminderPopUp";
 import "./Assign_Task.css"; // Custom styles for this component
+import { getLoggedInUserId } from "../../Components/utils";
 
 const TasksDashboard = () => {
   // const tasks = useMemo(
@@ -51,6 +53,7 @@ const TasksDashboard = () => {
   //   []
   // );
 
+  const profileId = getLoggedInUserId();
   const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
@@ -59,13 +62,15 @@ const TasksDashboard = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
   const [selectedTasks, setSelectedTasks] = useState([]);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null)
 
   // Fetch tasks from backend
   // need to edit the username attribute
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/zJjVj3VT6gaoUXmeSI8kgtm6zRy1/`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/assignedBy/`);
         setTasks(response.data.tasks); // Assume API returns an array of tasks
         setFilteredTasks(response.data.tasks); // Initially, all tasks are shown
         // setLoading(false);
@@ -77,7 +82,7 @@ const TasksDashboard = () => {
     };
 
     fetchTasks();
-  }, []);
+  }, [profileId]);
 
   // Filter tasks whenever filters or search query change
   useEffect(() => {
@@ -115,7 +120,7 @@ const TasksDashboard = () => {
     // edit this with the variable memberId using nested axios call or change the api
     for (const taskId of selectedTasks) {
       try {
-        const response = await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/zJjVj3VT6gaoUXmeSI8kgtm6zRy1/${taskId}/delete/`);
+        const response = await axios.delete(`${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/${taskId}/delete/`);
         console.log(`Successfully deleted task with ID ${taskId}:`, response.data);
       } catch (error) {
         console.error(`Error deleting task with ID ${taskId}:`, error.response?.data || error.message);
@@ -142,6 +147,16 @@ const TasksDashboard = () => {
     ];
     setFilteredTasks(updatedTasks);
     setIsPopupOpen(false);
+  };
+
+  const handleEditTask = (task) => {
+    setTaskToEdit(task); // Set the task to edit
+    setIsEditPopupOpen(true); // Open the pop-up
+  };
+
+  const closeEditPopup = () => {
+    setIsEditPopupOpen(false); // Close the pop-up
+    setTaskToEdit(null); // Clear the task being edited
   };
 
   return (
@@ -201,7 +216,7 @@ const TasksDashboard = () => {
             onChange={(e) => setSelectedPerson(e.target.value)}
           >
             <option value="">All Persons</option>
-            {Array.from(new Set(tasks.map((task) => task.personAssigned)))
+            {Array.from(new Set(tasks.map((task) => task.assignedTo)))
               .filter((person) => person)
               .map((person, index) => (
                 <option key={index} value={person}>
@@ -233,6 +248,7 @@ const TasksDashboard = () => {
               <th>Group</th>
               <th>Person Assigned</th>
               <th>Progress</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -248,7 +264,7 @@ const TasksDashboard = () => {
                 <td>{index + 1}</td>
                 <td>{task.name}</td>
                 <td>{task.group || "-"}</td>
-                <td>{task.personAssigned}</td>
+                <td>{task.assignedTo}</td>
                 <td
                   className={(() => {
                     switch (task.status) {
@@ -263,6 +279,14 @@ const TasksDashboard = () => {
                   })()}
                 >
                   {task.status}
+                </td>
+                <td>
+                  <button
+                    className="edit-button"
+                    onClick={() => handleEditTask(task.taskId)}
+                  >
+                    Edit
+                  </button>
                 </td>
               </tr>
             ))}
@@ -283,6 +307,18 @@ const TasksDashboard = () => {
           selectedTasks={selectedTasks}
         />
       )}
+
+      {isEditPopupOpen && (
+        <EditTaskPopUp
+          task={taskToEdit}
+          onClose={closeEditPopup}
+          onSave={(updatedTask) => {
+            console.log("Updated Task:", updatedTask);
+            closeEditPopup();
+          }}
+        />
+      )}
+
     </div>
   );
 };

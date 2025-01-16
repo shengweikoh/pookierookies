@@ -18,22 +18,19 @@ import AutoLogout from './Components/AutoLogout.js';
 import PrivateRoute from "./routeProtection/privateRoute.js";
 import { auth } from "./firebase/firebase";
 
-// import { toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
+// import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import './App.css';
 // import Landing from './pages/LandingPage';
 // import logo from './logo.svg';
-
-// initialise toast
-// toast.configure();
 
 function App() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const token = await user.getIdToken();
-        const email = user.email; 
+        const email = user.email;
         localStorage.setItem("authToken", token);
         localStorage.setItem("userEmail", email);
       } else {
@@ -63,9 +60,9 @@ function App() {
     //     </a>
     //   </header>
     // </div>
-    
-      <Router>
-        <AutoLogout>
+
+    <Router>
+      <AutoLogout>
         <div>
           {/* Routes */}
           <Routes>
@@ -122,8 +119,8 @@ function App() {
 
           </Routes>
         </div>
-        </AutoLogout>
-      </Router>
+      </AutoLogout>
+    </Router>
 
   );
 }
