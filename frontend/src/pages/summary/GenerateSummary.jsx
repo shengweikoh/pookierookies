@@ -107,9 +107,6 @@ const EmailSummaryPage = () => {
     if (!emailDetails) return;
   
     try {
-      // Send only the nested email object if emailDetails has an 'email' key
-      const emailToSummarize = emailDetails.email || emailDetails;
-      
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/summarize-email/`,
         {
