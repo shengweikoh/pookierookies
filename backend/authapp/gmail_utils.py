@@ -13,6 +13,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from zoneinfo import ZoneInfo
+import os
 
 
 # Suppress specific warning about file_cache
@@ -23,6 +24,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',  # Read-only access to Calendar
     'https://www.googleapis.com/auth/gmail.readonly',     # Read-only access to Gmail
     'https://www.googleapis.com/auth/gmail.send'          # Permission to send emails
+    "https://www.googleapis.com/auth/calendar.events"      # Permission to create calendar events
 ]
 
 # Initialize Firestore client
@@ -419,31 +421,40 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
         print(f"Error sending email: {str(e)}")
         raise
 
-def create_calendar_event(sender_email, event_name, start_time, end_time, location, description, attendees):
-    """
-    Create a calendar event in the sender's Google Calendar.
-    """
-    creds = Credentials.from_authorized_user_file(f'token_{sender_email}.json', ['https://www.googleapis.com/auth/calendar'])
+def create_or_update_calendar_event(sender_email, name, start_time, end_time, location, agenda, attendees_emails, event_id=None):
+    # Path to the tokens directory
+    TOKEN_DIR = 'tokens'
+
+    # Ensure the directory exists
+    os.makedirs(TOKEN_DIR, exist_ok=True)
+
+    # Load the token file for the sender
+    token_file_path = os.path.join(TOKEN_DIR, f'token_{sender_email}.json')
+
+    creds = Credentials.from_authorized_user_file(token_file_path, ['https://www.googleapis.com/auth/calendar'])
     service = build('calendar', 'v3', credentials=creds)
 
-    event = {
-        'summary': event_name,
-        'location': location,
-        'description': description,
-        'start': {
-            'dateTime': start_time.isoformat(),
-            'timeZone': 'Asia/Singapore',
+    event_body = {
+        "summary": name,
+        "location": location,
+        "description": agenda,
+        "start": {
+            "dateTime": start_time.isoformat(),
+            "timeZone": "Asia/Singapore",
         },
-        'end': {
-            'dateTime': end_time.isoformat(),
-            'timeZone': 'Asia/Singapore',
+        "end": {
+            "dateTime": end_time.isoformat(),
+            "timeZone": "Asia/Singapore",
         },
-        'attendees': [{'email': attendee} for attendee in attendees],
-        'reminders': {
-            'useDefault': True,
-        },
+        "attendees": [{"email": email} for email in attendees_emails],
     }
 
-    event = service.events().insert(calendarId='primary', body=event).execute()
-    print(f'Event created: {event.get("htmlLink")}')
+    if event_id:
+        # Update the existing event
+        event = service.events().update(calendarId="primary", eventId=event_id, body=event_body).execute()
+    else:
+        # Create a new event
+        event = service.events().insert(calendarId="primary", body=event_body).execute()
+
+    return event["id"]
 

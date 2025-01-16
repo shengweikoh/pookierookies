@@ -9,3 +9,10 @@ venv/
 __pycache__/
 backend/gemini_key.json
 backend/backend/django_secret_key.py
+
+
+# Ignore all token files
+backend/token_*.json
+
+# Ignore the tokens directory (if using a folder for token storage)
+backend/tokens/
