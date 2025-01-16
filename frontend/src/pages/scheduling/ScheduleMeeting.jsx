@@ -44,15 +44,19 @@ const ScheduleMeeting = () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/`);
         if (response.data && Array.isArray(response.data)) {
-          const formattedMeetings = response.data.map((meeting) => ({
+          // Filter for finalized meetings
+          const finalizedMeetings = response.data.filter((meeting) => meeting.finalized);
+
+          const formattedMeetings = finalizedMeetings.map((meeting) => ({
             meetingId: meeting.meetingId,
             name: meeting.name,
             date: formatDate(meeting.finalized_date),
             time: formatTime(meeting.finalized_date, meeting.duration || 1), // Adjusting for duration
-            location: meeting.location,
+            location: meeting.location || "TBC",
             attendees: meeting.attendees.map((attendee) => attendee.email),
             agenda: meeting.agenda,
           }));
+
           setMeetings(formattedMeetings);
         } else {
           console.error("Unexpected data format:", response.data);

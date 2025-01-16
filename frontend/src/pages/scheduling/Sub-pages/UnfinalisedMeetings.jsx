@@ -3,6 +3,7 @@ import Sidebar from "../../../Components/Sidebar";
 import CreateMeetingPopUp from "../../../pages/scheduling/Sub-pages/CreateMeetingPopUp";
 import FinaliseMeetingPopUp from "../../../pages/scheduling/Sub-pages/FinaliseMeetingPopUp";
 import SendDetailsPopUp from "../../../pages/scheduling/Sub-pages/SendDetailsPopUp";
+import DeleteMeetingPopUp from "../../../pages/scheduling/Sub-pages/DeleteMeetingPopUp"; // Import the new component
 import "./UnfinalisedMeetings.css";
 import axios from "axios";
 
@@ -14,6 +15,7 @@ const formatDate = (isoDate) => {
 
 const UnfinalizedMeetings = () => {
   const [meetings, setMeetings] = useState([]);
+  const [showAllMeetings, setShowAllMeetings] = useState(false); // Toggle for showing more/less meetings
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
   const [isUpdatePopupOpen, setIsUpdatePopupOpen] = useState(false);
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false);
@@ -24,7 +26,7 @@ const UnfinalizedMeetings = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("http://your-backend-url/api/meetings");
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/`);
         const unfinalizedMeetings = response.data.filter((meeting) => !meeting.finalized);
         setMeetings(unfinalizedMeetings);
       } catch (error) {
@@ -57,16 +59,11 @@ const UnfinalizedMeetings = () => {
   };
   const closeDeletePopup = () => setIsDeletePopupOpen(false);
 
-  const handleDeleteMeeting = async () => {
-    try {
-      await axios.delete(`http://your-backend-url/api/meetings/${currentMeeting.meetingId}`);
-      setMeetings((prev) => prev.filter((meeting) => meeting.meetingId !== currentMeeting.meetingId));
-      closeDeletePopup();
-    } catch (error) {
-      console.error("Error deleting meeting:", error);
-      alert("Failed to delete meeting. Please try again.");
-    }
+  const handleDeleteSuccess = () => {
+    setMeetings((prev) => prev.filter((meeting) => meeting.meetingId !== currentMeeting.meetingId));
   };
+
+  const visibleMeetings = showAllMeetings ? meetings : meetings.slice(0, 3); // Show all or only first 3 meetings
 
   return (
     <div className="schedule-meeting-container">
@@ -82,8 +79,8 @@ const UnfinalizedMeetings = () => {
         </div>
 
         <section className="upcoming-meetings">
-          {meetings.length > 0 ? (
-            meetings.map((meeting) => (
+          {visibleMeetings.length > 0 ? (
+            visibleMeetings.map((meeting) => (
               <div key={meeting.meetingId} className="meeting-item">
                 <div className="meeting-details">
                   <p className="meeting-name">{meeting.name}</p>
@@ -93,20 +90,18 @@ const UnfinalizedMeetings = () => {
                   <p className="meeting-title">
                     <strong>Proposed Dates:</strong>{" "}
                     {meeting.proposed_dates?.map((date, index) => (
-                      <span key={index}>{formatDate(date)}{index < meeting.proposed_dates.length - 1 ? ", " : ""}</span>
+                      <span key={index}>
+                        {formatDate(date)}
+                        {index < meeting.proposed_dates.length - 1 ? ", " : ""}
+                      </span>
                     ))}
                   </p>
                   <p className="meeting-title">
-                    <strong>Poll Deadline:</strong> {meeting.poll_deadline ? formatDate(meeting.poll_deadline) : "N/A"}
+                    <strong>Poll Deadline:</strong>{" "}
+                    {meeting.poll_deadline ? formatDate(meeting.poll_deadline) : "N/A"}
                   </p>
                   <p className="meeting-location">
                     <strong>Location:</strong> {meeting.location || "TBC"}
-                  </p>
-                  <p className="meeting-location">
-                    <strong>Poll Link:</strong>{" "}
-                    <a href={meeting.poll_link} target="_blank" rel="noopener noreferrer">
-                      {meeting.poll_link}
-                    </a>
                   </p>
                 </div>
                 <div className="button-group">
@@ -135,6 +130,18 @@ const UnfinalizedMeetings = () => {
           ) : (
             <p>No unfinalized meetings available.</p>
           )}
+
+          {/* See More / See Less Button */}
+          {meetings.length > 3 && (
+            <button
+              className={`see-more-button ${
+                showAllMeetings ? "see-less-button" : ""
+              }`}
+              onClick={() => setShowAllMeetings(!showAllMeetings)}
+            >
+              {showAllMeetings ? "See Less" : "See More"}
+            </button>
+          )}
         </section>
 
         {/* Create Meeting Pop-Up */}
@@ -150,7 +157,11 @@ const UnfinalizedMeetings = () => {
 
         {/* Update Meeting Pop-Up */}
         {isUpdatePopupOpen && (
-          <FinaliseMeetingPopUp meeting={currentMeeting} onClose={closeUpdatePopup} />
+          <FinaliseMeetingPopUp
+            meetingId={currentMeeting.meetingId}
+            meeting={currentMeeting}
+            onClose={closeUpdatePopup}
+          />
         )}
 
         {/* Send Details Pop-Up */}
@@ -158,32 +169,17 @@ const UnfinalizedMeetings = () => {
           <SendDetailsPopUp
             attendees={currentMeeting.attendees.map((attendee) => attendee.email)}
             onClose={closeSendPopup}
-            onSend={(recipients) => {
-              console.log("Details sent to:", recipients);
-              closeSendPopup();
-            }}
           />
         )}
 
         {/* Delete Confirmation Pop-Up */}
         {isDeletePopupOpen && (
-          <div className="delete-popup-overlay">
-            <div className="delete-popup-content">
-              <h3>Confirm Delete</h3>
-              <p>
-                Are you sure you want to delete the meeting{" "}
-                <strong>{currentMeeting.name}</strong>?
-              </p>
-              <div className="popup-buttons">
-                <button className="button" onClick={handleDeleteMeeting}>
-                  Yes, Delete
-                </button>
-                <button className="button cancel-button" onClick={closeDeletePopup}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+          <DeleteMeetingPopUp
+            meetingId={currentMeeting.meetingId}
+            meetingName={currentMeeting.name}
+            onClose={closeDeletePopup}
+            onDeleteSuccess={handleDeleteSuccess}
+          />
         )}
       </div>
     </div>

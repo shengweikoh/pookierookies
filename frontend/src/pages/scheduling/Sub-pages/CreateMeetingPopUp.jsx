@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";
-import axios from "axios"; // Ensure axios is installed
+import axios from "axios";
 
 const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");
@@ -10,19 +10,18 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [attendees, setAttendees] = useState("");
   const [proposedDates, setProposedDates] = useState([{ id: 1, value: "" }]);
   const [pollDeadline, setPollDeadline] = useState("");
+  const [location, setLocation] = useState(""); // Location is optional
+  const [duration, setDuration] = useState(""); // Duration is required
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
 
   useEffect(() => {
-    // Add event listener for Escape key
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        onClose(); // Close the pop-up
+        onClose();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
-
-    // Cleanup event listener on component unmount
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -30,9 +29,7 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
 
   const handleProposedDateChange = (id, value) => {
     setProposedDates((prevDates) =>
-      prevDates.map((date) =>
-        date.id === id ? { ...date, value } : date
-      )
+      prevDates.map((date) => (date.id === id ? { ...date, value } : date))
     );
   };
 
@@ -55,25 +52,27 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
       .map((date) => date.value.trim())
       .filter((date) => date); // Filter out any empty inputs
 
-    // Prepare the new meeting data
     const newMeeting = {
       name,
       agenda,
       attendees: attendees.split(",").map((email) => email.trim()),
       proposed_dates: formattedDates,
       poll_deadline: pollDeadline,
+      location: location.trim() || null, // If blank, send `null` to backend
+      duration,
     };
 
     try {
-      // Replace with your actual API URL
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/create/`, newMeeting);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}meetings/create/`,
+        newMeeting
+      );
 
-      // Call parent onSubmit with created meeting data
       onSubmit(response.data);
 
-      setSuccessMessage(true); // Show success message
-      setTimeout(() => setSuccessMessage(false), 3000); // Hide after 3 seconds
-      onClose(); // Close the pop-up
+      setSuccessMessage(true);
+      setTimeout(() => setSuccessMessage(false), 3000);
+      onClose();
     } catch (error) {
       console.error("Error creating meeting:", error);
       alert("Failed to create meeting. Please try again.");
@@ -105,9 +104,29 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
               <textarea
                 value={agenda}
                 onChange={(e) => setAgenda(e.target.value)}
-                rows="3"
+                rows={agenda.length > 50 ? 5 : 2} // Adjust rows dynamically
                 placeholder="Enter the meeting agenda"
                 style={{ overflowY: "auto" }}
+                required
+              />
+            </label>
+            <label>
+              Location (optional):
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter the meeting location (optional)"
+              />
+            </label>
+            <label>
+              Duration (in hours):
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                min="0"
+                placeholder="Enter duration in hours"
                 required
               />
             </label>
@@ -122,29 +141,34 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
                 required
               />
             </label>
-            <label>Proposed Dates:</label>
-            {proposedDates.map((date, index) => (
-              <div key={date.id} className="date-input-container">
-                <input
-                  type="datetime-local"
-                  value={date.value}
-                  onChange={(e) => handleProposedDateChange(date.id, e.target.value)}
-                  required
-                />
-                {index > 0 && (
-                  <button
-                    type="button"
-                    className="remove-date-button"
-                    onClick={() => removeProposedDate(date.id)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-            <button type="button" className="button add-date-button" onClick={addProposedDate}>
-              Add Another Date
-            </button>
+            <label>Proposed Dates:
+              {proposedDates.map((date, index) => (
+                <div key={date.id} className="date-input-container">
+                  <input
+                    type="datetime-local"
+                    value={date.value}
+                    onChange={(e) => handleProposedDateChange(date.id, e.target.value)}
+                    required
+                  />
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      className="remove-date-button"
+                      onClick={() => removeProposedDate(date.id)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="button add-date-button"
+                onClick={addProposedDate}
+              >
+                Add Another Date
+              </button>
+              </label>
             <label>
               Poll Deadline:
               <input
