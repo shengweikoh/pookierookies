@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// import { toast } from "react-toastify";
 import "./Sidebar.css";
 import { Link } from "react-router-dom"
 import { FaSignOutAlt } from "react-icons/fa";
@@ -18,10 +19,14 @@ const Sidebar = () => {
     auth.signOut()
       .then(() => {
         localStorage.removeItem("authToken");
+        localStorage.removeItem("userEmail");
+        // toast.success("You have been logged out successfully.");
+        alert("You have been logged out successfully.")
         navigate("/")
         console.log("User logged out");
       })
       .catch((error) => {
+        // toast.error("Error signing out. Please try again.");
         console.error("error signing in", error)
       })
   };
@@ -39,12 +44,11 @@ const Sidebar = () => {
           <ul className="nav-list">
             {/* <li className="nav-item section-title"><Link to="/account" className="links">Account</Link></li> */}
             <Link to="/calendar" className="links"><li className="nav-item section-title">Calendar</li></Link>
-            <li className="nav-item section-title" id="tools">Tools</li>
-            <Link to="/tools/manage-people" className="links"><li className="nav-item2">Manage Contacts</li></Link>
-            <Link to="/tools/assign-task" className="links"><li className="nav-item2">Assign Tasks</li></Link>
-            <Link to="/tools/schedule-meeting" className="links"><li className="nav-item2">Manage Meetings</li></Link>
-            <Link to="/tools/reminders" className="links"><li className="nav-item2">Send Reminders</li></Link>
-            <Link to="/tools/generate-summary" className="links"><li className="nav-item2">Generate Summary</li></Link>
+            {/* <li className="nav-item section-title" id="tools">Tools</li> */}
+            <Link to="/manage-people" className="links"><li className="nav-item section-title">Manage Contacts</li></Link>
+            <Link to="/assign-task" className="links"><li className="nav-item section-title">Assign Tasks</li></Link>
+            <Link to="/schedule-meeting" className="links"><li className="nav-item section-title">Manage Meetings</li></Link>
+            <Link to="/generate-summary" className="links"><li className="nav-item section-title">Generate Summary</li></Link>
           </ul>
           <div className="logout-section">
             <button className="logout-button" onClick={handleLogout}>

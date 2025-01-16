@@ -12,6 +12,7 @@ const AutoLogout = ({ children }) => {
         auth.signOut()
           .then(() => {
             localStorage.removeItem("authToken");
+            localStorage.removeItem("userEmail");
             alert("You have been logged out due to inactivity")
             navigate("/"); // Redirect to login
           })

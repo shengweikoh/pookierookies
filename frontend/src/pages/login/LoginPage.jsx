@@ -3,9 +3,9 @@ import './LoginPage.css';
 import googleLogo from "../../assets/google.png";
 
 // Firebase imports
-import { auth, provider, db } from "../../firebase/firebase";
+import { auth, provider } from "../../firebase/firebase";
 import { signInWithPopup } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
+// import { collection, query, where, getDocs } from "firebase/firestore";
 
 // Axios for backend requests
 import axios from "axios";
@@ -24,28 +24,29 @@ const LoginPage = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            // Check if the email is authorized
-            const email = user.email;
-            const q = query(
-                collection(db, "authorisedEmails"),
-                where("email", "==", email)
-            );
-            const querySnapshot = await getDocs(q);
+            // // Check if the email is authorized
+            // const email = user.email;
+            // const q = query(
+            //     collection(db, "authorisedEmails"),
+            //     where("email", "==", email)
+            // );
+            // const querySnapshot = await getDocs(q);
 
-            console.log("Query Object:", q);
-            console.log("Query Snapshot:", querySnapshot);
-            console.log("Email:", email);
+            // console.log("Query Object:", q);
+            // console.log("Query Snapshot:", querySnapshot);
+            // console.log("Email:", email);
 
-            if (querySnapshot.empty) {
-                // If email is not authorized, show an alert and sign the user out
-                setErrorMessage("You are not authorized to access this application.");
-                auth.signOut();
-                return;
-            }
+            // if (querySnapshot.empty) {
+            //     // If email is not authorized, show an alert and sign the user out
+            //     setErrorMessage("You are not authorized to access this application.");
+            //     auth.signOut();
+            //     return;
+            // }
 
             // Get the ID token for backend verification
             const idToken = await user.getIdToken();
             console.log("Token:", idToken);
+            console.log(user.email)
 
             // Send the token to the backend for verification
             const backendResponse = await axios.post(
