@@ -1,11 +1,14 @@
 /* General Layout */
 .member-details-container {
   display: flex;
-  height: 100vh;
+  height: 100vh; /* Full viewport height */
+  flex-direction: row; /* Side-by-side layout */
 }
 
+/* Sidebar */
 .sidebar {
   flex: 0 0 250px; /* Sidebar fixed width */
+  background-color: #f4f4f4; /* Sidebar background */
 }
 
 .main-content {
@@ -21,6 +24,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 .header-left h1 {
@@ -32,6 +36,7 @@
 .header-right {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap; /* Allow buttons to wrap */
 }
 
 /* Member Info */
@@ -76,4 +81,61 @@
 
 .danger-button:hover {
   background-color: #d32f2f;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .member-details-container {
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+
+  .sidebar {
+    width: 100%; /* Full width for sidebar on smaller screens */
+    height: auto; /* Dynamic height for sidebar */
+  }
+
+  .main-content {
+    padding: 15px; /* Adjust padding for smaller screens */
+  }
+
+  .header {
+    flex-direction: column; /* Stack header elements vertically */
+    align-items: flex-start;
+  }
+
+  .header-left h1 {
+    font-size: 20px; /* Adjust font size */
+  }
+
+  .header-right {
+    justify-content: space-between;
+    width: 100%; /* Full width for header actions */
+  }
+
+  .normal-button,
+  .danger-button {
+    width: 100%; /* Full width for buttons */
+    font-size: 14px; /* Adjust font size */
+    padding: 8px 10px; /* Adjust padding */
+  }
+
+  .member-info p {
+    font-size: 12px; /* Smaller font size for member info */
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left h1 {
+    font-size: 18px; /* Smaller font size for very small screens */
+  }
+
+  .normal-button,
+  .danger-button {
+    font-size: 12px; /* Smaller font size for buttons */
+    padding: 6px 8px;
+  }
+
+  .member-info p {
+    font-size: 12px; /* Smaller text for member details */
+  }
 }

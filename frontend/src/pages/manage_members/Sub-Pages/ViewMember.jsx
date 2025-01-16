@@ -58,22 +58,6 @@ const MemberDetails = () => {
     }
   };
 
-  const handleDeleteMember = async () => {
-    try {
-      const response = await axios.delete(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}members/delete/${profileId}/${member.id}/`
-      );
-      if (response.status === 200) {
-        console.log("Member deleted successfully");
-        navigate("/tools/manage-people"); // Redirect after successful deletion
-      } else {
-        console.error("Failed to delete member:", response);
-      }
-    } catch (error) {
-      console.error("Error deleting member:", error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="member-details-container">
@@ -162,10 +146,7 @@ const MemberDetails = () => {
           <DeleteConfirmPopUp
             member={member}
             onClose={() => setIsDeletePopUpOpen(false)}
-            onConfirm={() => {
-              handleDeleteMember();
-              setIsDeletePopUpOpen(false); // Close popup after deletion
-            }}
+            onConfirm={() => navigate("/tools/manage-people")} // Pass navigation to popup
           />
         )}
       </div>

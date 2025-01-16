@@ -77,15 +77,3 @@
 .quick-add-button:hover {
   background-color: #0056b3;
 }
-
-.photo-preview {
-  margin-top: 15px;
-  text-align: center;
-}
-
-.photo-preview img {
-  max-width: 100px;
-  max-height: 100px;
-  border-radius: 50%;
-  border: 2px solid #ddd;
-}

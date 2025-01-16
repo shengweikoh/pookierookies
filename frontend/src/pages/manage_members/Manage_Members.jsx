@@ -62,7 +62,6 @@ const ManageMembers = () => {
   // Add member to the backend
   const handleAddMember = async (newMembers) => {
     try {
-      // Make sure each new member is posted to the backend
       const responses = await Promise.all(
         newMembers.map((newMember) => {
           const memberData = { ...newMember, profileId };
@@ -72,18 +71,16 @@ const ManageMembers = () => {
           );
         })
       );
-      console.log(responses); // Inspect the backend response to verify the presence of `id`.
-
-      
-      // Assuming that the response from the backend contains the full member object including 'id'
-      const addedMembers = responses.map((res) => res.data.member);
-      
-      // Immediately update state with the new member information
-      setMembers((prev) => [...prev, ...addedMembers]);
   
-      setIsAddPopUpOpen(false); // Close popup after adding members
+      // Assuming backend response contains the full member object
+      const addedMembers = responses.map((res) => res.data.member);
+  
+      setMembers((prev) => [...prev, ...addedMembers]); // Update members list immediately
+      setIsAddPopUpOpen(false); // Close popup after successful addition
+      alert("New members have been successfully added!"); // Show success message
     } catch (error) {
       console.error("Error adding members:", error);
+      alert("Failed to add members. Please try again.");
     }
   };
   
