@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Sidebar from "../../Components/Sidebar";
 import "./GenerateSummary.css";
 import axios from "axios";
@@ -14,7 +15,31 @@ const EmailSummaryPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true); // Flag to check if more pages are available
 
-  const userId = "kohshengwei@gmail.com"; // Replace with dynamic user retrieval if available
+  const [user, setUser] = useState(null); // To store user details
+  useEffect(() => {
+    const auth = getAuth();
+    
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        // User is logged in
+        console.log("User UID:", currentUser.uid);
+        console.log("User Email:", currentUser.email);
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+        });
+      } else {
+        // User is logged out
+        console.log("No user is signed in.");
+        setUser(null);
+      }
+    });
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
+  }, []);
+
 
   // Step 1: Fetch emails (POST API)
   const fetchEmails = async (token = "") => {
@@ -23,16 +48,27 @@ const EmailSummaryPage = () => {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
         {
-          user_id: userId,
+          user_id: user.email,
           page_token: token || "",
         }
       );
-
+  
       const { emails: newEmails, next_page_token } = response.data;
-      setEmails((prevEmails) => [...prevEmails, ...newEmails]);
-      setFilteredEmails((prevEmails) => [...prevEmails, ...newEmails]);
+  
+      // Deduplicate emails based on ID
+      const uniqueEmails = [
+        ...emails,
+        ...newEmails.filter(
+          (newEmail) => !emails.some((existingEmail) => existingEmail.id === newEmail.id)
+        ),
+      ];
+  
+      setEmails(uniqueEmails);
+      setFilteredEmails(uniqueEmails);
       setPageToken(next_page_token || "");
-      setHasMore(!!next_page_token); // Set hasMore based on next_page_token
+      setHasMore(!!next_page_token);
+  
+      console.log("Unique Email IDs:", uniqueEmails.map(email => email.id));
     } catch (error) {
       console.error("Error fetching emails:", error);
     } finally {
@@ -42,8 +78,10 @@ const EmailSummaryPage = () => {
 
   // Fetch emails on initial load
   useEffect(() => {
-    fetchEmails();
-  }, []);
+    if (user && user.uid) {
+      fetchEmails(); // Call fetchEmails with the user ID
+    }
+  }, [user]);
 
   // Step 2: Fetch email details (GET API)
   const fetchEmailDetails = async (emailId) => {
@@ -52,7 +90,7 @@ const EmailSummaryPage = () => {
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-email/`,
         {
           params: {
-            user_id: userId,
+            user_id: user.email,
             email_id: emailId,
           },
         }
@@ -71,14 +109,16 @@ const EmailSummaryPage = () => {
     try {
       // Send only the nested email object if emailDetails has an 'email' key
       const emailToSummarize = emailDetails.email || emailDetails;
-  
+      
+
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}emails/summarize-email/`,
         {
           email: emailToSummarize,
         }
       );
-      setSummary(response.data.summary || "Summary not available.");
+
+      setSummary(response.data || "Summary not available.");
     } catch (error) {
       console.error("Error generating summary:", error);
       setSummary("Failed to generate summary. Please try again.");
@@ -184,7 +224,8 @@ const EmailSummaryPage = () => {
             {summary && (
               <>
                 <h2>Generated Summary</h2>
-                <p>{summary}</p>
+                <h3>{summary.title}</h3>
+                <p>{summary.body}</p>
               </>
             )}
           </div>
