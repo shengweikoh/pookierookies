@@ -205,11 +205,11 @@ def edit_task(request, uid, task_id):
                 # Convert task to dictionary
                 task = task_snapshot.to_dict()
 
-                # Update the task in Firestore
-                task_ref.update(update_fields)
-
                 assignedBy_email = task["assignedBy"]
                 assignedTo_email = task["assignedTo"]
+
+                # Update the task in Firestore
+                task_ref.update(update_fields)
 
                 if assignedBy_email != assignedTo_email:
                     # Check if the assignedTo email exists in Firebase Authentication
@@ -243,27 +243,44 @@ def edit_task(request, uid, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def delete_task(request, task_id):
+def delete_task(request, uid, task_id):
     if request.method == "DELETE":
         try:
-            # Query Firestore to find the task by task_id
-            profiles_ref = db.collection("profiles")
-            task_deleted = False
+            # Reference the task in the specified UID's profile
+            task_ref = db.collection("profiles").document(uid).collection("tasks").document(task_id)
+            task_snapshot = task_ref.get()
 
-            # Iterate through profiles to find and delete the task
-            for profile in profiles_ref.stream():
-                profile_id = profile.id
-                task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
-                task = task_ref.get()
+            if task_snapshot.exists:
+                # Convert DocumentSnapshot to dictionary
+                task = task_snapshot.to_dict()
 
-                if task.exists:
-                    # Delete the task
-                    task_ref.delete()
-                    task_deleted = True
-                    break
+                assignedBy_email = task["assignedBy"]
+                assignedTo_email = task["assignedTo"]
 
-            if task_deleted:
+                if assignedBy_email != assignedTo_email:
+                    # Check if the assignedTo email exists in Firebase Authentication
+                    try:
+                        assignedTo_user = auth.get_user_by_email(assignedTo_email)
+                        assignedTo_uid = assignedTo_user.uid
+                        print("Receiver is an admin")
+
+                        # Delete the task in the assignedTo_uid profile
+                        task_ref_other = db.collection("profiles").document(assignedTo_uid).collection("tasks").document(task_id)
+                        task_other_snapshot = task_ref_other.get()
+
+                        if task_other_snapshot.exists:
+                            task_ref_other.delete()
+                        else:
+                            return JsonResponse({"error": "Task not found in assignedTo_uid"}, status=404)
+
+                    except auth.UserNotFoundError:
+                        print("Receiver is a non-admin")
+
+                # Delete the task in the assignedBy_uid profile
+                task_ref.delete()
+
                 return JsonResponse({"message": "Task deleted successfully"}, status=200)
+
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
 
@@ -271,7 +288,3 @@ def delete_task(request, task_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
-
-# todo after groups
-# @csrf_exempt
-# def get_all_tasks_of_group(request, group_id):
