@@ -7,4 +7,5 @@ def create_user_profile(user_id, email, name):
         'userId': user_id,
         'name': name,
         'email': email,
+        'isAdmin': False
     })

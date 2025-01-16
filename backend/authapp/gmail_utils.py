@@ -22,10 +22,11 @@ SCOPES = [
 db = firestore.client()
 
 def get_token_from_firestore(user_id):
-    """Fetch the user's token details from Firestore."""
-    doc_ref = db.collection('user_tokens').document(user_id)
-    doc = doc_ref.get()
-    return doc.to_dict() if doc.exists else None
+    doc = db.collection("user_tokens").document(user_id).get()
+    if doc.exists:
+        return doc.to_dict()
+    return None  # Return None if the document does not exist
+    
 
 def save_token_to_firestore(user_id, access_token, refresh_token, expiry_date):
     """Save or update the user's token in Firestore."""
@@ -37,10 +38,23 @@ def save_token_to_firestore(user_id, access_token, refresh_token, expiry_date):
 
 def get_gmail_service(user_id):
     """Authenticate and return the Gmail service instance for a specific user."""
+    # Retrieve token data from Firestore
     token_data = get_token_from_firestore(user_id)
 
-    # Check if token data exists
-    if token_data:
+    if token_data is None:
+        print(f"No token data found for user_id: {user_id}. Triggering reauthentication...")
+        # Trigger reauthentication if no valid token exists
+        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        creds = flow.run_local_server(port=9090, prompt='consent')
+        save_token_to_firestore(
+            user_id=user_id,
+            access_token=creds.token,
+            refresh_token=creds.refresh_token,
+            expiry_date=creds.expiry.isoformat()
+        )
+    else:
+        print("Token data found. Validating credentials...")
+        expiry_date = datetime.fromisoformat(token_data.get("expiry_date"))
         creds = Credentials(
             token=token_data['access_token'],
             refresh_token=token_data['refresh_token'],
@@ -49,8 +63,9 @@ def get_gmail_service(user_id):
             client_secret=settings.GOOGLE_CLIENT_SECRET
         )
 
-        # Refresh the access token if it has expired or the scopes are invalid
-        if creds.expired:
+        # Refresh the access token if it has expired
+        if creds.expired or expiry_date < datetime.now():
+            print("Token expired. Refreshing...")
             try:
                 creds.refresh(Request())
                 save_token_to_firestore(
@@ -62,17 +77,8 @@ def get_gmail_service(user_id):
             except HttpError as error:
                 print(f"Error during token refresh: {error}")
                 raise
-    else:
-        # Trigger reauthentication if no valid token exists
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=9090)
-        save_token_to_firestore(
-            user_id=user_id,
-            access_token=creds.token,
-            refresh_token=creds.refresh_token,
-            expiry_date=creds.expiry.isoformat()
-        )
 
+    # Build the Gmail service instance
     return build('gmail', 'v1', credentials=creds, cache_discovery=False)
 
 def send_email(sender, to, subject, body):
