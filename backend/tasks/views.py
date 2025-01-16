@@ -66,6 +66,33 @@ Best regards,
     send_task_email(sender, receiver, email_content)
     print(f"Email sent by {sender} to {receiver} for task edit.")
 
+def send_email_for_reminder(sender, receiver, task_data):
+    email_content = {
+        "subject": f"Reminder: Upcoming Deadline for Task - {task_data['name']}",
+        "body": f"""\
+Dear {receiver},
+
+This is a friendly reminder about an upcoming task deadline. Below are the details of the task:
+
+Task ID: {task_data['taskId']}
+Task Name: {task_data['name']}
+Description: {task_data['description']}
+Status: {task_data['status']}
+Priority: {task_data['priority']}
+Group: {task_data['group']}
+Assigned By: {task_data['assignedBy']}
+Creation Date: {task_data['creationDate']}
+Due Date: {task_data['dueDate']}
+
+Please ensure this task is completed by the due date: {task_data['dueDate']}. If you have any questions or need further assistance, feel free to reach out to the assigner at {sender}.
+
+Best regards,
+{sender}
+    """
+    }
+    send_task_email(sender, receiver, email_content)
+    print(f"Reminder email sent by {sender} to {receiver} for task reminder.")
+
 @csrf_exempt
 def create_task(request):
     if request.method == "POST":
@@ -291,6 +318,39 @@ def delete_task(request, uid, task_id):
 
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def send_task_reminder(request, uid, task_id):
+    if request.method == "POST":
+        try:
+            # Reference to the task in the specified UID's profile
+            task_ref = db.collection("profiles").document(uid).collection("tasks").document(task_id)
+            task_snapshot = task_ref.get()
+
+            # Check if the task exists
+            if not task_snapshot.exists:
+                return JsonResponse({"error": "Task not found"}, status=404)
+
+            # Convert the task snapshot to a dictionary
+            task = task_snapshot.to_dict()
+
+            # Extract required fields for sending the email
+            assignedBy_email = task.get("assignedBy")
+            assignedTo_email = task.get("assignedTo")
+
+            # Validate required fields
+            if not assignedBy_email or not assignedTo_email:
+                return JsonResponse({"error": "Missing assignedBy or assignedTo email in task data"}, status=400)
+
+            # Send the reminder email
+            send_email_for_reminder(assignedBy_email, assignedTo_email, task)
+
+            return JsonResponse({"message": f"Reminder email sent from {assignedBy_email} to {assignedTo_email}"}, status=200)
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
