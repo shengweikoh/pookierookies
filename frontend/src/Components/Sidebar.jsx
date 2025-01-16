@@ -41,7 +41,7 @@ const Sidebar = () => {
             <Link to="/calendar" className="links"><li className="nav-item section-title">Calendar</li></Link>
             <li className="nav-item section-title" id="tools">Tools</li>
             <Link to="/tools/manage-people" className="links"><li className="nav-item2">Manage Contacts</li></Link>
-            <Link to="/tools/assign-task" className="links"><li className="nav-item2">Manage Tasks</li></Link>
+            <Link to="/tools/assign-task" className="links"><li className="nav-item2">Assign Tasks</li></Link>
             <Link to="/tools/schedule-meeting" className="links"><li className="nav-item2">Manage Meetings</li></Link>
             <Link to="/tools/reminders" className="links"><li className="nav-item2">Send Reminders</li></Link>
             <Link to="/tools/generate-summary" className="links"><li className="nav-item2">Generate Summary</li></Link>
