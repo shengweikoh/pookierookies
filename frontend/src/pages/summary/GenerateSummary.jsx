@@ -30,7 +30,8 @@ const EmailSummaryPage = () => {
 
   const fetchEmails = useCallback(
     async (token = "") => {
-      if (!user?.email) return;
+      if (!user?.email || isLoading) return;
+
       try {
         setIsLoading(true);
         const response = await axios.post(
@@ -38,6 +39,7 @@ const EmailSummaryPage = () => {
           { user_id: user.email, page_token: token || "" }
         );
         const { emails: newEmails, next_page_token } = response.data;
+
         const uniqueEmails = [
           ...emails,
           ...newEmails.filter(
@@ -45,6 +47,7 @@ const EmailSummaryPage = () => {
               !emails.some((existingEmail) => existingEmail.id === newEmail.id)
           ),
         ];
+
         setEmails(uniqueEmails);
         setFilteredEmails(uniqueEmails);
         setPageToken(next_page_token || "");
@@ -55,14 +58,15 @@ const EmailSummaryPage = () => {
         setIsLoading(false);
       }
     },
-    [emails, user?.email]
+    [emails, user?.email, isLoading]
   );
 
+  // Load emails on initial render when user is authenticated
   useEffect(() => {
-    if (user?.email && pageToken === "") {
+    if (user && emails.length === 0) {
       fetchEmails();
     }
-  }, [user?.email, pageToken, fetchEmails]);
+  }, [user, fetchEmails, emails.length]);
 
   const handleLoadMore = () => {
     if (hasMore && !isLoading) {
@@ -182,12 +186,16 @@ const EmailSummaryPage = () => {
                 <p>
                   <strong>Recipients:</strong> {emailDetails.to || "N/A"}
                 </p>
-                <p>
-                  <strong>Body:</strong>{" "}
-                  {emailDetails.body
-                    ? `${emailDetails.body.slice(0, 500)}...`
-                    : "N/A"}
-                </p>
+                <div>
+                  <strong>Body:</strong>
+                  {emailDetails.body ? (
+                    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                      {emailDetails.body.slice(0, 2000)}
+                    </pre>
+                  ) : (
+                    "N/A"
+                  )}
+                </div>
                 <button onClick={handleGenerateSummary}>Generate Summary</button>
               </div>
             ) : (

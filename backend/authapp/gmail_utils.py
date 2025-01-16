@@ -137,18 +137,34 @@ def list_emails(user_id, page_token=None, max_results=50):
         print(f"An error occurred while listing emails: {error}")
         raise
 
-def extract_email_body(parts):
-    """Extract email body from the payload parts."""
-    for part in parts:
-        if part.get('mimeType') == 'text/plain':
-            data = part.get('body', {}).get('data', '')
-            return base64.urlsafe_b64decode(data).decode('utf-8')
-        elif part.get('mimeType') == 'text/html':
-            data = part.get('body', {}).get('data', '')
-            return base64.urlsafe_b64decode(data).decode('utf-8')
-        elif 'parts' in part:
-            # Recursively check for body in nested parts
-            return extract_email_body(part['parts'])
+def extract_email_body(payload):
+    """Recursively extract the email body from the payload."""
+    if "parts" in payload:
+        for part in payload["parts"]:
+            if part.get("mimeType") == "text/plain":
+                # Extract plain text content
+                data = part.get("body", {}).get("data", "")
+                return base64.urlsafe_b64decode(data).decode("utf-8")
+            elif part.get("mimeType") == "text/html":
+                # Extract HTML content if available
+                data = part.get("body", {}).get("data", "")
+                return base64.urlsafe_b64decode(data).decode("utf-8")
+            elif "parts" in part:
+                # Recursively check nested parts
+                body = extract_email_body(part)
+                if body != "No body content found":
+                    return body
+
+    # If no "parts", check the top-level "body"
+    if payload.get("mimeType") == "text/plain":
+        data = payload.get("body", {}).get("data", "")
+        if data:
+            return base64.urlsafe_b64decode(data).decode("utf-8")
+    elif payload.get("mimeType") == "text/html":
+        data = payload.get("body", {}).get("data", "")
+        if data:
+            return base64.urlsafe_b64decode(data).decode("utf-8")
+
     return "No body content found"
 
 def extract_attachments(service, msg):
@@ -177,42 +193,37 @@ def extract_attachments(service, msg):
 
 def get_email_details(user_id, email_id):
     """Retrieve full details of a specific email for a specific user."""
-    # Initialize Gmail service for the user
     service = get_gmail_service(user_id)
 
     try:
         # Fetch the email details
-        msg = service.users().messages().get(userId='me', id=email_id, format='full').execute()
-        payload = msg.get('payload', {})
-        headers = payload.get('headers', [])
-        parts = payload.get('parts', [])
+        message = service.users().messages().get(userId="me", id=email_id, format="full").execute()
+        payload = message.get("payload", {})
+        headers = payload.get("headers", [])
 
-        # Extract key headers
-        subject = next((header['value'] for header in headers if header['name'] == 'Subject'), "No Subject")
-        sender = next((header['value'] for header in headers if header['name'] == 'From'), "Unknown Sender")
-        to = next((header['value'] for header in headers if header['name'] == 'To'), "Unknown Recipient")
-        date = next((header['value'] for header in headers if header['name'] == 'Date'), "Unknown Date")
+        # Extract key headers using a fallback mechanism
+        subject = next((header.get("value", "No Subject") for header in headers if header.get("name") == "Subject"), "No Subject")
+        sender = next((header.get("value", "Unknown Sender") for header in headers if header.get("name") == "From"), "Unknown Sender")
+        to = next((header.get("value", "Unknown Recipient") for header in headers if header.get("name") == "To"), "Unknown Recipient")
+        date = next((header.get("value", "Unknown Date") for header in headers if header.get("name") == "Date"), "Unknown Date")
 
-        # Extract email body (text or HTML)
-        body = extract_email_body(parts)
+        # Extract the body
+        body = extract_email_body(payload)
 
-        # Extract attachments
-        attachments = extract_attachments(service, msg)
-
+        # Return email details
         return {
-            'id': email_id,
-            'snippet': msg.get('snippet', ''),
-            'subject': subject,
-            'from': sender,
-            'to': to,
-            'date': date,
-            'body': body,
-            'attachments': attachments
+            "id": email_id,
+            "snippet": message.get("snippet", ""),
+            "subject": subject,
+            "from": sender,
+            "to": to,
+            "date": date,
+            "body": body,
+            "attachments": []
         }
     except HttpError as error:
         print(f"An error occurred while fetching email details: {error}")
         raise
-
 
 def send_task_email(sender, receiver, email_content):
     """Send an email using Gmail API."""
@@ -224,8 +235,9 @@ def send_task_email(sender, receiver, email_content):
             f"From: {sender}\nTo: {receiver}\nSubject: {email_content['subject']}\n\n{email_content['body']}".encode('utf-8')
         ).decode('utf-8')
     }
-
+    
     try:
+        # Send the email using Gmail API
         result = service.users().messages().send(userId="me", body=message).execute()
         return result
     except HttpError as error:
