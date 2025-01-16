@@ -6,6 +6,7 @@ import SendDetailsPopUp from "../../../pages/scheduling/Sub-pages/SendDetailsPop
 import DeleteMeetingPopUp from "../../../pages/scheduling/Sub-pages/DeleteMeetingPopUp"; // Import the new component
 import "./UnfinalisedMeetings.css";
 import axios from "axios";
+import { getLoggedInUserId } from "../../../Components/utils";
 
 // Utility function to format date
 const formatDate = (isoDate) => {
@@ -21,6 +22,7 @@ const UnfinalizedMeetings = () => {
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
+  const profileId = getLoggedInUserId();
 
   // Fetch meetings from the API
   useEffect(() => {
@@ -109,13 +111,13 @@ const UnfinalizedMeetings = () => {
                     className="view-details-button"
                     onClick={() => openSendPopup(meeting)}
                   >
-                    Send Details
+                    Send Poll
                   </button>
                   <button
                     className="edit-button"
                     onClick={() => openUpdatePopup(meeting)}
                   >
-                    Update
+                    Finalise
                   </button>
                   <button
                     className="view-details-button"
@@ -164,10 +166,10 @@ const UnfinalizedMeetings = () => {
           />
         )}
 
-        {/* Send Details Pop-Up */}
         {isSendPopupOpen && currentMeeting && (
           <SendDetailsPopUp
-            attendees={currentMeeting.attendees.map((attendee) => attendee.email)}
+            meetingId={currentMeeting.meetingId}
+            userId={profileId} // Replace with the logged-in user's ID
             onClose={closeSendPopup}
           />
         )}

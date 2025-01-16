@@ -1,97 +1,50 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";
 
-const SendDetailsPopUp = ({ attendees, onClose, onSend }) => {
-  const [mode, setMode] = useState("all"); // "all" or "manual"
-  const [selectedRecipients, setSelectedRecipients] = useState(
-    attendees.map((email) => ({ email, selected: true }))
-  );
-  const [searchQuery, setSearchQuery] = useState("");
+const SendDetailsPopUp = ({ meetingId, userId, onClose }) => {
+  const [isSending, setIsSending] = useState(false);
 
-  // Close the pop-up on Esc key press
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
+  const handleSendDetails = async () => {
+    if (!meetingId || !userId) {
+      alert("Invalid meeting or user ID.");
+      return;
+    }
 
-    document.addEventListener("keydown", handleKeyDown);
+    setIsSending(true);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onClose]);
-
-  const toggleRecipient = (email) => {
-    setSelectedRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.email === email
-          ? { ...recipient, selected: !recipient.selected }
-          : recipient
-      )
-    );
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}meetings/send-emails/`,
+        {
+          meetingId,
+          userId,
+        }
+      );
+      alert("Meeting details sent successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error sending meeting details:", error);
+      alert("Failed to send meeting details. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
-
-  const handleSend = () => {
-    const recipientsToSend =
-      mode === "all"
-        ? attendees
-        : selectedRecipients
-            .filter((recipient) => recipient.selected)
-            .map((recipient) => recipient.email);
-    onSend(recipientsToSend);
-    onClose();
-  };
-
-  const filteredRecipients = selectedRecipients.filter((recipient) =>
-    recipient.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="popup-overlay">
       <div className="popup-content">
-        <h2 className="popup-title">Send Meeting Details</h2>
-        <p className="popup-description">Choose recipients:</p>
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          className="dropdown"
-        >
-          <option value="all">Send to All</option>
-          <option value="manual">Manually Select</option>
-        </select>
-        {mode === "manual" && (
-          <>
-            <input
-              type="text"
-              placeholder="Search recipients..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-bar"
-            />
-            <ul className="recipient-list">
-              {filteredRecipients.map((recipient) => (
-                <li key={recipient.email} className="recipient-item">
-                  <label className="recipient-label">
-                    <input
-                      type="checkbox"
-                      checked={recipient.selected}
-                      onChange={() => toggleRecipient(recipient.email)}
-                      className="recipient-checkbox"
-                    />
-                    {recipient.email}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        <h2>Send Meeting Details</h2>
+        <p>Are you sure you want to send meeting details to attendees?</p>
         <div className="popup-buttons">
-          <button className="button" onClick={handleSend}>
-            Send
+          <button
+            className="button"
+            onClick={handleSendDetails}
+            disabled={isSending}
+          >
+            {isSending ? "Sending..." : "Confirm"}
           </button>
           <button className="button cancel-button" onClick={onClose}>
             Cancel
