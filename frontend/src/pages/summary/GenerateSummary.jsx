@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useCallback } from "react";
 import Sidebar from "../../Components/Sidebar";
 import "./GenerateSummary.css";
 import axios from "axios";
@@ -40,48 +41,51 @@ const EmailSummaryPage = () => {
     return () => unsubscribe();
   }, []);
 
-
-  // Step 1: Fetch emails (POST API)
-  const fetchEmails = async (token = "") => {
-    try {
-      setIsLoading(true);
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
-        {
-          user_id: user.email,
-          page_token: token || "",
-        }
-      );
+  // Step 1: Memoize fetchEmails
+  const fetchEmails = useCallback(
+    async (token = "") => {
+      if (!user?.email) return; // Ensure user.email exists
+      try {
+        setIsLoading(true);
+        const response = await axios.post(
+          `${process.env.REACT_APP_BACKEND_BASE_URL}emails/get-all-emails/`,
+          {
+            user_id: user.email,
+            page_token: token || "",
+          }
+        );
   
-      const { emails: newEmails, next_page_token } = response.data;
+        const { emails: newEmails, next_page_token } = response.data;
   
-      // Deduplicate emails based on ID
-      const uniqueEmails = [
-        ...emails,
-        ...newEmails.filter(
-          (newEmail) => !emails.some((existingEmail) => existingEmail.id === newEmail.id)
-        ),
-      ];
+        // Deduplicate emails based on ID
+        const uniqueEmails = [
+          ...emails,
+          ...newEmails.filter(
+            (newEmail) => !emails.some((existingEmail) => existingEmail.id === newEmail.id)
+          ),
+        ];
   
-      setEmails(uniqueEmails);
-      setFilteredEmails(uniqueEmails);
-      setPageToken(next_page_token || "");
-      setHasMore(!!next_page_token);
+        setEmails(uniqueEmails);
+        setFilteredEmails(uniqueEmails);
+        setPageToken(next_page_token || "");
+        setHasMore(!!next_page_token);
   
-      console.log("Unique Email IDs:", uniqueEmails.map(email => email.id));
-    } catch (error) {
-      console.error("Error fetching emails:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Fetch emails on initial load
+        console.log("Unique Email IDs:", uniqueEmails.map((email) => email.id));
+      } catch (error) {
+        console.error("Error fetching emails:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [emails, user?.email] // Dependencies
+  );
+  
+  // Step 2: Update useEffect
   useEffect(() => {
     if (user && user.uid) {
-      fetchEmails(); // Call fetchEmails with the user ID
+      fetchEmails(); // Use the memoized fetchEmails
     }
-  }, [user]);
+  }, [user, fetchEmails]); // Add fetchEmails to the dependency array
 
   // Step 2: Fetch email details (GET API)
   const fetchEmailDetails = async (emailId) => {
