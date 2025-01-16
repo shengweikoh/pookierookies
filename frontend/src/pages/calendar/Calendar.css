@@ -1,84 +1,137 @@
 /* Calendar Container */
 .calendar-container {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .main-content {
-    flex: 1;
-    padding: 20px;
-    background-color: #fff;
-    overflow-y: auto;
-  }
-  
-  /* Header */
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    position: relative;
-  }
-  
-  /* Title */
-  .header-title {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  /* Controls */
-  .calendar-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .month-picker {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-  }
-  
-  .today-button {
-    padding: 8px 16px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .today-button:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Event Details Pop-Up */
-  .event-details {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translate(-50%, -20%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  }
-  
-  .close-button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .close-button:hover {
-    background-color: #d32f2f;
-  }
+  display: flex;
+  height: 100vh;
+}
 
-  
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: auto;
+}
+
+/* Header */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* Title */
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Controls */
+.calendar-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.month-picker {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.today-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.today-button:hover {
+  background-color: #0056b3;
+}
+
+/* Event Details Pop-Up */
+.event-details {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1050;
+  width: 90%; /* Adjusted for smaller screens */
+  max-width: 500px;
+  text-align: center;
+}
+
+/* Overlay for Pop-Up */
+.event-details-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1049;
+}
+
+/* Close Button */
+.close-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.close-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Event Pop-Up */
+.event-popup {
+  position: absolute;
+  background-color: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1050;
+  width: 250px;
+  transform: translate(-50%, -100%);
+}
+
+.event-popup h5 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.event-popup p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.popup-close-button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.popup-close-button:hover {
+  background-color: #d32f2f;
+}
