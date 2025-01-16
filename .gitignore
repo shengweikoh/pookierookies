@@ -8,3 +8,4 @@ venv/
 *.pyc
 __pycache__/
 backend/gemini_key.json
+backend/backend/django_secret_key.py
