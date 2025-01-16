@@ -211,3 +211,22 @@ def get_email_details(user_id, email_id):
     except HttpError as error:
         print(f"An error occurred while fetching email details: {error}")
         raise
+
+
+def send_task_email(sender, receiver, email_content):
+    """Send an email using Gmail API."""
+    service = get_gmail_service(sender)
+
+    # Construct the email message
+    message = {
+        'raw': base64.urlsafe_b64encode(
+            f"From: {sender}\nTo: {receiver}\nSubject: {email_content['subject']}\n\n{email_content['body']}".encode('utf-8')
+        ).decode('utf-8')
+    }
+
+    try:
+        result = service.users().messages().send(userId="me", body=message).execute()
+        return result
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        raise

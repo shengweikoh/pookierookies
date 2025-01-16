@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from authapp.gmail_utils import send_task_email
 import json
 import uuid
 from firebase_admin import auth
@@ -11,8 +12,32 @@ def add_task_to_another_admin(uid, task_data):
     db.collection("profiles").document(uid).collection("tasks").document(task_data["taskId"]).set(task_data)
     print(f"Task with ID {task_data['taskId']} added to assignedTo UID: {uid}")
 
-def send_email_for_task_assignment(email, task_data):
-    print("TODO")
+def send_email_for_task_assignment(sender, receiver, task_data):
+    email_content = {
+        "subject": f"You have been assigned a task: {task_data['name']}",
+        "body": f"""\
+Dear {receiver},
+
+You have been assigned a new task. Below are the details:
+
+Task ID: {task_data['taskId']}
+Task Name: {task_data['name']}
+Description: {task_data['description']}
+Status: {task_data['status']}
+Priority: {task_data['priority']}
+Group: {task_data['group']}
+Assigned By: {task_data['assignedBy']}
+Creation Date: {task_data['creationDate']}
+Due Date: {task_data['dueDate']}
+
+Please ensure the task is completed by the due date. If you have any questions or need further assistance, feel free to reach out to the assigner at {sender}.
+
+Best regards,
+{sender}
+            """
+    }
+    send_task_email(sender, receiver, email_content)
+    print(f"Email sent by {sender} to {receiver} for task assignment.")
 
 
 @csrf_exempt
@@ -63,7 +88,7 @@ def create_task(request):
                 except auth.UserNotFoundError:
                     print("Receiver is a non-admin")
 
-                send_email_for_task_assignment(assignedTo_email, task_data)
+                send_email_for_task_assignment(assignedBy_email, assignedTo_email, task_data)
 
             # Add task to the tasks subcollection of the specified UID
             db.collection("profiles").document(assignedBy_uid).collection("tasks").document(task_id).set(task_data)
