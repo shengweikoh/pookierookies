@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import "./Meetings.css";
 import "./PopUps.css";
 import "./Responsive.css";
+import axios from "axios"; // Ensure axios is installed
 
 const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
   const [name, setName] = useState("");
   const [agenda, setAgenda] = useState("");
   const [attendees, setAttendees] = useState("");
-  const [location, setLocation] = useState("");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [successMessage, setSuccessMessage] = useState(false); // Success message state
+  const [proposedDates, setProposedDates] = useState([{ id: 1, value: "" }]);
+  const [pollDeadline, setPollDeadline] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(false);
 
   useEffect(() => {
     // Add event listener for Escape key
@@ -26,19 +28,58 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
     };
   }, [onClose]);
 
-  const handleSubmit = (e) => {
+  const handleProposedDateChange = (id, value) => {
+    setProposedDates((prevDates) =>
+      prevDates.map((date) =>
+        date.id === id ? { ...date, value } : date
+      )
+    );
+  };
+
+  const addProposedDate = () => {
+    setProposedDates((prevDates) => [
+      ...prevDates,
+      { id: prevDates.length + 1, value: "" },
+    ]);
+  };
+
+  const removeProposedDate = (id) => {
+    setProposedDates((prevDates) => prevDates.filter((date) => date.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
+    setLoading(true);
+
+    const formattedDates = proposedDates
+      .map((date) => date.value.trim())
+      .filter((date) => date); // Filter out any empty inputs
+
+    // Prepare the new meeting data
+    const newMeeting = {
       name,
       agenda,
       attendees: attendees.split(",").map((email) => email.trim()),
-      location, // Location can remain blank
-      dateRange,
-      finalized: false,
-    });
-    setSuccessMessage(true); // Show success message
-    setTimeout(() => setSuccessMessage(false), 3000); // Hide message after 3 seconds
-    onClose(); // Close the pop-up
+      proposed_dates: formattedDates,
+      poll_deadline: pollDeadline,
+    };
+
+    try {
+      // Replace with your actual API URL
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/create/`, newMeeting);
+
+      // Call parent onSubmit with created meeting data
+      onSubmit(response.data);
+
+      setSuccessMessage(true); // Show success message
+      setTimeout(() => setSuccessMessage(false), 3000); // Hide after 3 seconds
+      onClose(); // Close the pop-up
+    } catch (error) {
+      console.error("Error creating meeting:", error);
+      alert("Failed to create meeting. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,77 +89,81 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
         {successMessage && (
           <p className="success-message">Meeting created successfully!</p>
         )}
-        <form onSubmit={handleSubmit}>
-          <label>
-            Meeting Name:
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Agenda:
-            <textarea
-              value={agenda}
-              onChange={(e) => setAgenda(e.target.value)}
-              rows="3"
-              placeholder="Enter the meeting agenda"
-              style={{
-                overflowY: "auto", // Enable vertical scrolling
-              }}
-              required
-            />
-          </label>
-          <label>
-            Attendees (comma-separated emails):
-            <textarea
-              value={attendees}
-              onChange={(e) => setAttendees(e.target.value)}
-              rows="3"
-              placeholder="Enter attendee emails, separated by commas"
-              style={{
-                overflowY: "auto", // Enable vertical scrolling
-              }}
-              required
-            />
-          </label>
-          <label>
-            Location (optional):
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Optional"
-            />
-          </label>
-          <label>
-            Date Range:
-            <input
-              type="datetime-local"
-              value={dateRange.start}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, start: e.target.value })
-              }
-              required
-            />
-            <input
-              type="datetime-local"
-              value={dateRange.end}
-              onChange={(e) =>
-                setDateRange({ ...dateRange, end: e.target.value })
-              }
-              required
-            />
-          </label>
-          <div className="popup-buttons">
-            <button type="submit" className="button">Add Meeting</button>
-            <button type="button" className="button cancel-button" onClick={onClose}>
-              Cancel
+        <div className="popup-scrollable-content">
+          <form onSubmit={handleSubmit}>
+            <label>
+              Meeting Name:
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Agenda:
+              <textarea
+                value={agenda}
+                onChange={(e) => setAgenda(e.target.value)}
+                rows="3"
+                placeholder="Enter the meeting agenda"
+                style={{ overflowY: "auto" }}
+                required
+              />
+            </label>
+            <label>
+              Attendees (comma-separated emails):
+              <textarea
+                value={attendees}
+                onChange={(e) => setAttendees(e.target.value)}
+                rows="3"
+                placeholder="Enter attendee emails, separated by commas"
+                style={{ overflowY: "auto" }}
+                required
+              />
+            </label>
+            <label>Proposed Dates:</label>
+            {proposedDates.map((date, index) => (
+              <div key={date.id} className="date-input-container">
+                <input
+                  type="datetime-local"
+                  value={date.value}
+                  onChange={(e) => handleProposedDateChange(date.id, e.target.value)}
+                  required
+                />
+                {index > 0 && (
+                  <button
+                    type="button"
+                    className="remove-date-button"
+                    onClick={() => removeProposedDate(date.id)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" className="button add-date-button" onClick={addProposedDate}>
+              Add Another Date
             </button>
-          </div>
-        </form>
+            <label>
+              Poll Deadline:
+              <input
+                type="datetime-local"
+                value={pollDeadline}
+                onChange={(e) => setPollDeadline(e.target.value)}
+                required
+              />
+            </label>
+            <div className="popup-buttons">
+              <button type="submit" className="button" disabled={loading}>
+                {loading ? "Adding..." : "Add Meeting"}
+              </button>
+              <button type="button" className="button cancel-button" onClick={onClose}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
