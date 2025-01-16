@@ -11,6 +11,8 @@ const CalendarPage = () => {
   const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [user, setUser] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null); // State for the selected event
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // State for popup visibility
 
   useEffect(() => {
     const auth = getAuth();
@@ -84,6 +86,24 @@ const CalendarPage = () => {
     fetchGoogleCalendarEvents(formatMonthYear(newDate)); // Fetch events for the new month
   };
 
+  // Handle event click
+  const handleEventClick = (clickInfo) => {
+    const event = clickInfo.event;
+    setSelectedEvent({
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      description: event.extendedProps.description,
+    });
+    setIsPopupOpen(true);
+  };
+
+  // Close the popup
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedEvent(null);
+  };
+
   if (!user) {
     return <div>Please log in to view the calendar.</div>;
   }
@@ -101,6 +121,7 @@ const CalendarPage = () => {
           initialView="dayGridMonth"
           events={events}
           datesSet={handleDatesSet} // Triggered when the user navigates months
+          eventClick={handleEventClick} // Triggered when an event is clicked
           headerToolbar={{
             start: "prev,next",
             center: "title",
@@ -108,6 +129,18 @@ const CalendarPage = () => {
           }}
           height="auto"
         />
+
+        {isPopupOpen && (
+          <div className="popup-overlay">
+            <div className="popup-content">
+              <h2>{selectedEvent.title}</h2>
+              <p><strong>Start:</strong> {new Date(selectedEvent.start).toLocaleString()}</p>
+              <p><strong>End:</strong> {new Date(selectedEvent.end).toLocaleString()}</p>
+              <p><strong>Description:</strong> {selectedEvent.description}</p>
+              <button onClick={handleClosePopup}>Close</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

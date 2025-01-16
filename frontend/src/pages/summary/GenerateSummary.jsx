@@ -185,7 +185,7 @@ const EmailSummaryPage = () => {
                 <p>
                   <strong>Body:</strong>{" "}
                   {emailDetails.body
-                    ? `${emailDetails.body.slice(0, 200)}...`
+                    ? `${emailDetails.body.slice(0, 500)}...`
                     : "N/A"}
                 </p>
                 <button onClick={handleGenerateSummary}>Generate Summary</button>
