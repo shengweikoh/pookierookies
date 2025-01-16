@@ -11,7 +11,6 @@ import ScheduleMeeting from './pages/scheduling/ScheduleMeeting.jsx'
 import GenerateSummary from './pages/summary/GenerateSummary.jsx'
 import UnfinalisedMeetings from './pages/scheduling/Sub-pages/UnfinalisedMeetings.jsx'
 import MemberDetails from "./pages/manage_members/Sub-Pages/ViewMember.jsx";
-import Reminders from "./pages/reminders/Reminders.jsx";
 import MeetingPoll from "./pages/poll/MeetingPoll.jsx";
 
 import AutoLogout from './Components/AutoLogout.js';
@@ -19,18 +18,27 @@ import AutoLogout from './Components/AutoLogout.js';
 import PrivateRoute from "./routeProtection/privateRoute.js";
 import { auth } from "./firebase/firebase";
 
+// import { toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.css";
+
 import './App.css';
 // import Landing from './pages/LandingPage';
 // import logo from './logo.svg';
+
+// initialise toast
+// toast.configure();
 
 function App() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const token = await user.getIdToken();
+        const email = user.email; 
         localStorage.setItem("authToken", token);
+        localStorage.setItem("userEmail", email);
       } else {
         localStorage.removeItem("authToken");
+        localStorage.removeItem("userEmail");
       }
     });
 
@@ -81,37 +89,32 @@ function App() {
                 <Calendar />
               </PrivateRoute>
             } />
-            <Route path="/tools/manage-people" element={
+            <Route path="/manage-people" element={
               <PrivateRoute>
                 <ManagePeople />
               </PrivateRoute>
             } />
-            <Route path="/tools/manage-people/:id" element={
+            <Route path="/manage-people/:id" element={
               <PrivateRoute>
                 <MemberDetails />
               </PrivateRoute>
             } />
-            <Route path="/tools/assign-task" element={
+            <Route path="/assign-task" element={
               <PrivateRoute>
                 <AssignTask />
               </PrivateRoute>
             } />
-            <Route path="/tools/schedule-meeting" element={
+            <Route path="/schedule-meeting" element={
               <PrivateRoute>
                 <ScheduleMeeting />
               </PrivateRoute>
             } />
-            <Route path="/tools/reminders" element={
-              <PrivateRoute>
-                <Reminders />
-              </PrivateRoute>
-            } />
-            <Route path="/tools/generate-summary" element={
+            <Route path="/generate-summary" element={
               <PrivateRoute>
                 <GenerateSummary />
               </PrivateRoute>
             } />
-            <Route path="/tools/schedule-meeting/unfinalised-meetings" element={
+            <Route path="/schedule-meeting/unfinalised-meetings" element={
               <PrivateRoute>
                 <UnfinalisedMeetings />
               </PrivateRoute>

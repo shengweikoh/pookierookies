@@ -87,7 +87,7 @@ const ManageMembers = () => {
 
   // Handle row click
   const handleRowClick = (member) => {
-    navigate(`/tools/manage-people/${member.id}`, { state: { member } });
+    navigate(`/manage-people/${member.id}`, { state: { member } });
   };
 
   return (
