@@ -25,4 +25,5 @@ urlpatterns = [
     path('meetings/', include('meetings.urls')),
     path('emails/', include('emailSummarizer.urls')),
     path('members/', include('members.urls')),
+    path('calendar/', include('calendar_app.urls')),
 ]
