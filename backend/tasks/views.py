@@ -39,6 +39,32 @@ Best regards,
     send_task_email(sender, receiver, email_content)
     print(f"Email sent by {sender} to {receiver} for task assignment.")
 
+def send_email_for_task_edit(sender, receiver, task_data):
+    email_content = {
+        "subject": f"The following task has been updated: {task_data['name']}",
+        "body": f"""\
+Dear {receiver},
+
+The following task has been updated. Below are the updated details:
+
+Task ID: {task_data['taskId']}
+Task Name: {task_data['name']}
+Description: {task_data['description']}
+Status: {task_data['status']}
+Priority: {task_data['priority']}
+Group: {task_data['group']}
+Assigned By: {task_data['assignedBy']}
+Creation Date: {task_data['creationDate']}
+Due Date: {task_data['dueDate']}
+
+Please ensure the updated task is completed by the due date. If you have any questions or need further assistance, feel free to reach out to the assigner at {sender}.
+
+Best regards,
+{sender}
+            """
+    }
+    send_task_email(sender, receiver, email_content)
+    print(f"Email sent by {sender} to {receiver} for task edit.")
 
 @csrf_exempt
 def create_task(request):
@@ -130,27 +156,17 @@ def get_task_of_user(request, profile_id, task_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def get_all_tasks_of_user(request, profile_id):
+def get_all_tasks_assigned_by_user(request, uid):
     if request.method == "GET":
         try:
             # Retrieve all tasks from the tasks subcollection of the specified profile
-            tasks_ref = db.collection("profiles").document(profile_id).collection("tasks")
+            tasks_ref = db.collection("profiles").document(uid).collection("tasks")
             tasks = tasks_ref.stream()
 
-            # Retrieve the profile document to access the name field
-            profile_ref = db.collection("profiles").document(profile_id)
-            profile = profile_ref.get()
-
-            if not profile.exists:
-                return JsonResponse({"error": "Profile not found"}, status=404)
-
-            profile_name = profile.to_dict().get("name", "Unknown Profile")  # Default if "name" is missing
-    
             # Convert the tasks to a list of dictionaries
             tasks_list = [task.to_dict() for task in tasks]
 
             return JsonResponse({
-                "profileName": profile_name,
                 "tasks": tasks_list
             }, status=200)
         except Exception as e:
@@ -159,7 +175,7 @@ def get_all_tasks_of_user(request, profile_id):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
-def edit_task(request, task_id):
+def edit_task(request, uid, task_id):
     if request.method == "PUT":
         try:
             # Parse the request body
@@ -181,23 +197,43 @@ def edit_task(request, task_id):
             if not update_fields:
                 return JsonResponse({"error": "No fields to update"}, status=400)
 
-            # Search for the task across all profiles
-            profiles_ref = db.collection("profiles")
-            task_updated = False
+            # Get the task document from Firestore
+            task_ref = db.collection("profiles").document(uid).collection("tasks").document(task_id)
+            task_snapshot = task_ref.get()
 
-            for profile in profiles_ref.stream():
-                profile_id = profile.id
-                task_ref = db.collection("profiles").document(profile_id).collection("tasks").document(task_id)
-                task = task_ref.get()
+            if task_snapshot.exists:
+                # Convert task to dictionary
+                task = task_snapshot.to_dict()
 
-                if task.exists:
-                    # Update the task in Firestore
-                    task_ref.update(update_fields)
-                    task_updated = True
-                    break
+                # Update the task in Firestore
+                task_ref.update(update_fields)
 
-            if task_updated:
-                return JsonResponse({"message": "Task updated successfully", "updatedFields": update_fields}, status=200)
+                assignedBy_email = task["assignedBy"]
+                assignedTo_email = task["assignedTo"]
+
+                if assignedBy_email != assignedTo_email:
+                    # Check if the assignedTo email exists in Firebase Authentication
+                    try:
+                        assignedTo_user = auth.get_user_by_email(assignedTo_email)
+                        assignedTo_uid = assignedTo_user.uid
+                        print("Receiver is an admin")
+
+                        # Update the task in the assignedTo_uid profile
+                        task_ref_other = db.collection("profiles").document(assignedTo_uid).collection("tasks").document(task_id)
+                        task_other_snapshot = task_ref_other.get()
+
+                        if task_other_snapshot.exists:
+                            task_ref_other.update(update_fields)
+                        else:
+                            return JsonResponse({"error": "Task not found in assignedTo_uid"}, status=404)
+
+                    except auth.UserNotFoundError:
+                        print("Receiver is a non-admin")
+
+                    # Send email notification for task update
+                    send_email_for_task_edit(assignedBy_email, assignedTo_email, {**task, **update_fields})
+                
+                return JsonResponse({"message": "Task updated successfully"}, status=200)
             else:
                 return JsonResponse({"error": "Task not found"}, status=404)
 
