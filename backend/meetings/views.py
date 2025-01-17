@@ -381,16 +381,30 @@ class FinalizeMeetingAPIView(APIView):
         try:
             body = request.data
             meeting_id = body.get("meeting_id")
-            user_id = body.get("user_id")
+            user_email = body.get("user_id")  # This is actually the user's email
 
-            user_ref = db.collection("profiles").document(user_id)
+            if not meeting_id or not user_email:
+                logger.error("Missing meetingId or user email in request")
+                return JsonResponse({"error": "Missing meetingId or user email"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_ref = db.collection("profiles").document(user_email)  # Using email as document ID
             user_profile = user_ref.get()
 
             if not user_profile.exists:
                 logger.error("User not found")
                 return JsonResponse({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # No need to get email from profile since we already have it
             sender_name = user_profile.to_dict().get("name")
-            sender_email = user_profile.to_dict().get("email")
+
+            # Pass the email directly to get_credentials
+            creds_or_auth_info = get_credentials(user_email, meeting_id=meeting_id)
+            
+            if isinstance(creds_or_auth_info, dict) and "auth_url" in creds_or_auth_info:
+                return JsonResponse({
+                    "status": "authentication_required",
+                    "auth_url": creds_or_auth_info["auth_url"]
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
             meeting_ref = db.collection("meetings").document(meeting_id)
             meeting = meeting_ref.get()
@@ -418,12 +432,6 @@ class FinalizeMeetingAPIView(APIView):
 
             most_common_date = most_common_date_entry[0][0]
 
-            logger.debug(f"Most common date: {most_common_date} (type: {type(most_common_date)})")
-
-            if not isinstance(most_common_date, str):
-                logger.error(f"most_common_date is not a string: {most_common_date}")
-                return JsonResponse({"error": "Invalid date format in poll responses"}, status=status.HTTP_400_BAD_REQUEST)
-
             try:
                 start_time = datetime.fromisoformat(most_common_date)
             except ValueError as ve:
@@ -433,35 +441,13 @@ class FinalizeMeetingAPIView(APIView):
             duration = meeting_data.get("duration")
             end_time = calculate_end_time(start_time.isoformat(), duration)
 
-            location = meeting_data.get("location")
-            agenda = meeting_data.get("agenda")
+            location = meeting_data.get("location", "")
+            agenda = meeting_data.get("agenda", "")
             attendees_emails = [attendee["email"] for attendee in meeting_data["attendees"]]
-
-            creds_or_auth_info = get_credentials(sender_email)
-            if isinstance(creds_or_auth_info, dict) and "auth_url" in creds_or_auth_info:
-                # We need to authenticate
-                return JsonResponse(creds_or_auth_info, status=status.HTTP_401_UNAUTHORIZED)
 
             try:
                 event_id = create_or_update_calendar_event(
-                    sender_email,
-                    meeting_data["name"],
-                    start_time,
-                    end_time,
-                    location,
-                    agenda,
-                    attendees_emails
-                )
-            except RefreshError:
-                # If we get a RefreshError, we need to re-authenticate
-                creds_or_auth_info = get_credentials(sender_email, force_refresh=True)
-                if isinstance(creds_or_auth_info, dict) and "auth_url" in creds_or_auth_info:
-                    return JsonResponse(creds_or_auth_info, status=status.HTTP_401_UNAUTHORIZED)
-
-                # Retry the operation after re-authentication
-                event_id = create_or_update_calendar_event(
-                    sender_email,
-                    None,
+                    user_email,  # Using email directly
                     meeting_data["name"],
                     start_time,
                     end_time,
@@ -470,33 +456,32 @@ class FinalizeMeetingAPIView(APIView):
                     attendees_emails
                 )
 
-            # Update meeting with finalized date and calendar event ID
-            meeting_ref.update({
-                "finalized_date": start_time.isoformat(),
-                "finalized": True,
-                "calendar_event_id": event_id
-            })
+                meeting_ref.update({
+                    "finalized_date": start_time.isoformat(),
+                    "finalized": True,
+                    "calendar_event_id": event_id
+                })
 
-            start_time_sgt = to_sgt(start_time)
-            end_time_sgt = to_sgt(end_time)
+                start_time_sgt = to_sgt(start_time)
+                end_time_sgt = to_sgt(end_time)
 
-            ics_content = generate_ics_file(
-                meeting_data["name"],
-                start_time,
-                end_time,
-                location,
-                agenda,
-                sender_email,
-                attendees_emails
-            )
+                ics_content = generate_ics_file(
+                    meeting_data["name"],
+                    start_time,
+                    end_time,
+                    location,
+                    agenda,
+                    user_email,
+                    attendees_emails
+                )
 
-            logger.debug("Sending email with ICS...")
-            for email in attendees_emails:
-                send_email_with_ics(
-                    sender=sender_email,
-                    to=email,
-                    subject=f"Meeting Finalized: {meeting_data['name']}",
-                    body=f"""
+                logger.debug("Sending email with ICS...")
+                for email in attendees_emails:
+                    send_email_with_ics(
+                        sender=user_email,  # Using email directly
+                        to=email,
+                        subject=f"Meeting Finalized: {meeting_data['name']}",
+                        body=f"""
 Hi,
 
 The meeting '{meeting_data['name']}' has been finalized. Details:
@@ -511,11 +496,17 @@ Please find the attached calendar invite.
 
 Best Regards,
 {sender_name}
-                    """,
-                    ics_content=ics_content
-                )
-            logger.debug("Email sent.")
-            return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
+                        """,
+                        ics_content=ics_content
+                    )
+                logger.debug("Email sent.")
+                return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
+
+            except RefreshError:
+                return JsonResponse({
+                    "status": "authentication_required",
+                    "auth_url": get_credentials(user_email, force_refresh=True, meeting_id=meeting_id)["auth_url"]
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
             logger.exception("An error occurred while finalizing the meeting")
@@ -525,13 +516,28 @@ Best Regards,
 class OAuth2CallbackView(APIView):
     def get(self, request):
         try:
-            credentials = handle_oauth2_callback(request)
-            # Redirect to a success page or return a success response
+            result = handle_oauth2_callback(request)
+            
+            # Check if the callback includes meeting finalization context
+            state_param = request.GET.get('state', '{}')
+            try:
+                state = json.loads(state_param)
+                if 'meeting_id' in state:
+                    # Return response that includes context for meeting finalization
+                    return JsonResponse({
+                        "message": "Authentication successful",
+                        "next_action": "finalize_meeting",
+                        "meeting_id": state['meeting_id']
+                    }, status=status.HTTP_200_OK)
+            except json.JSONDecodeError:
+                pass
+                
+            # Default response for general authentication
             return JsonResponse({"message": "Authentication successful"}, status=status.HTTP_200_OK)
+            
         except Exception as e:
             logger.exception("An error occurred during OAuth2 callback")
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 # Function to send reminder of a meeting

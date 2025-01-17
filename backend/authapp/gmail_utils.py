@@ -17,6 +17,8 @@ from datetime import timezone
 from google.auth.exceptions import RefreshError
 import pytz
 import json
+import webbrowser
+from django.http import JsonResponse
 
 
 # Suppress specific warning about file_cache
@@ -33,7 +35,7 @@ SCOPES = [
 # Initialize Firestore client
 db = firestore.client()
 
-OAUTH_REDIRECT_URI = "https://pookierookies-backend.duckdns.org/oauth2callback"
+OAUTH_REDIRECT_URI = "https://pookierookies-backend.duckdns.org/meetings/oauth2callback"
 
 
 def save_token_to_firestore(user_id, access_token, refresh_token, expiry_date):
@@ -49,59 +51,80 @@ def get_token_from_firestore(user_id):
     doc = db.collection('user_tokens').document(user_id).get()
     return doc.to_dict() if doc.exists else None
 
-def get_credentials(user_id, force_refresh=False):
-    """Get or refresh credentials for a user."""
-    # Fetch token data from Firestore
-    token_data = get_token_from_firestore(user_id)
-
-    if token_data is None or force_refresh:
-        # Start the OAuth2 flow to get new credentials
+def handle_oauth2_callback(request):
+    """Handle OAuth2 callback and save credentials, then resume original operation."""
+    state_param = request.GET.get('state', '{}')
+    try:
+        state = json.loads(state_param)
+        user_id = state.get('user_id')
+        meeting_id = state.get('meeting_id')  # Added meeting_id to state
+        
+        if not user_id:
+            return {"error": "User ID missing in state parameter"}
+            
         flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json',
+            'credentials.json', 
             scopes=SCOPES
         )
         flow.redirect_uri = OAUTH_REDIRECT_URI
 
-        # Generate authorization URL
-        auth_url, _ = flow.authorization_url(prompt='consent')
-        return {
-            "auth_url": auth_url,
-            "state": json.dumps({"user_id": user_id})
-        }
+        auth_code = request.GET.get('code')
+        if not auth_code:
+            return {"error": "Authorization code missing in callback"}
 
-    try:
-        # Initialize credentials
-        creds = Credentials(
-            token=token_data['access_token'],
-            refresh_token=token_data.get('refresh_token'),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=settings.GOOGLE_CLIENT_ID,
-            client_secret=settings.GOOGLE_CLIENT_SECRET,
+        flow.fetch_token(code=auth_code)
+        credentials = flow.credentials
+
+        # Save the credentials
+        save_token_to_firestore(
+            user_id=user_id,
+            access_token=credentials.token,
+            refresh_token=credentials.refresh_token,
+            expiry_date=credentials.expiry.replace(tzinfo=pytz.utc).isoformat(),
+        )
+        
+        # If this was part of meeting finalization, redirect back to complete the process
+        if meeting_id:
+            return JsonResponse({
+                "success": True,
+                "message": "Authentication successful",
+                "redirect": f"/meetings/finalize",
+                "meeting_id": meeting_id,
+                "user_id": user_id
+            })
+            
+        return {"success": True, "message": "Credentials saved successfully"}
+
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
+
+def get_credentials(user_id, force_refresh=False, meeting_id=None):
+    """Get or refresh credentials for a user."""
+    token_data = get_token_from_firestore(user_id)
+
+    if token_data is None or force_refresh:
+        # Start OAuth2 flow to get new credentials
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json', 
             scopes=SCOPES
         )
+        flow.redirect_uri = OAUTH_REDIRECT_URI
 
-        # Handle token expiration
-        expiry_date = datetime.fromisoformat(token_data['expiry_date'])
-        if expiry_date.tzinfo is None:
-            expiry_date = expiry_date.replace(tzinfo=pytz.utc)
+        # Include both user_id and meeting_id in state
+        state = {
+            "user_id": user_id
+        }
+        if meeting_id:
+            state["meeting_id"] = meeting_id
 
-        if creds.expired or expiry_date < datetime.now(pytz.utc):
-            creds.refresh(Request())
-            save_token_to_firestore(
-                user_id=user_id,
-                access_token=creds.token,
-                refresh_token=creds.refresh_token,
-                expiry_date=creds.expiry.replace(tzinfo=pytz.utc).isoformat()
-            )
+        # Generate authorization URL with state
+        auth_url, _ = flow.authorization_url(
+            prompt='consent',
+            state=json.dumps(state)
+        )
 
-        return creds
+        return {"auth_url": auth_url, "state": json.dumps(state)}
 
-    except RefreshError:
-        # If refresh fails, restart OAuth2 flow
-        return get_credentials(user_id, force_refresh=True)
-    except Exception as e:
-        print(f"Unexpected error while fetching credentials: {e}")
-        return None
 
 def get_gmail_service(user_id):
     """Authenticate and return the Gmail service instance for a specific user."""
@@ -410,46 +433,4 @@ def create_or_update_calendar_event(sender_email, event_name, start_time, end_ti
     except Exception as e:
         print(f"Unexpected error: {e}")
         raise
-
-def handle_oauth2_callback(request):
-    """Handle the OAuth2 callback and save the credentials."""
-    # Extract and decode the state parameter
-    state_param = request.GET.get('state', '{}')
-    try:
-        state = json.loads(state_param)
-    except json.JSONDecodeError:
-        return {"error": "Invalid state parameter"}
-    
-    user_id = state.get('user_id')
-    if not user_id:
-        return {"error": "User ID missing in state parameter"}
-    
-    try:
-        # Initialize the flow
-        flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json',
-            scopes=SCOPES
-        )
-        flow.redirect_uri = OAUTH_REDIRECT_URI
-
-        # Exchange the authorization code for credentials
-        auth_code = request.GET.get('code')
-        if not auth_code:
-            return {"error": "Authorization code missing in callback"}
-
-        flow.fetch_token(code=auth_code)
-        credentials = flow.credentials
-
-        # Save the credentials to Firestore
-        save_token_to_firestore(
-            user_id=user_id,
-            access_token=credentials.token,
-            refresh_token=credentials.refresh_token,
-            expiry_date=credentials.expiry.replace(tzinfo=pytz.utc).isoformat()
-        )
-        
-        return {"success": True, "message": "Credentials saved successfully"}
-
-    except Exception as e:
-        return {"error": f"An error occurred: {str(e)}"}
 
