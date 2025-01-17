@@ -62,7 +62,7 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
       poll_deadline: pollDeadline,
       location: location.trim() || null, // If blank, send `null` to backend
       duration,
-      assigned_by: profileId, // Add profileId here
+      profile_id: profileId, // Add profileId here
     };
 
     try {
