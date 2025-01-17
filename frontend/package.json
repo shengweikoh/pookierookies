@@ -46,6 +46,7 @@
     ]
   },
   "devDependencies": {
+    "eslint-config-react-app": "^7.0.1",
     "web-vitals": "^4.2.4"
   }
 }

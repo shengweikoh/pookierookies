@@ -19,22 +19,23 @@ const TasksDashboard = () => {
   const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
-  const [loading, setLoading] = useState(true); // Added loading state
+  const [loading, setLoading] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Sidebar collapse state
 
   // Fetch tasks from backend
   useEffect(() => {
     const fetchTasks = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/assignedBy/`
         );
-        setTasks(response.data.tasks || []); // Ensure `tasks` is an array
+        setTasks(response.data.tasks || []);
         setFilteredTasks(response.data.tasks || []);
       } catch (err) {
         console.error("Error fetching tasks:", err);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     };
     fetchTasks();
@@ -100,7 +101,7 @@ const TasksDashboard = () => {
 
   const handleSendReminders = () => {
     if (selectedTasks.length > 0) {
-      setIsReminderPopupOpen(true); // Open the reminder pop-up
+      setIsReminderPopupOpen(true);
     } else {
       alert("Please select at least one task to send reminders.");
     }
@@ -112,9 +113,9 @@ const TasksDashboard = () => {
   };
 
   return (
-    <div className="tasks-dashboard">
+    <div>
       <Sidebar />
-      <main className="tasks-container">
+      <div className="main-content">
         {loading ? (
           <div className="loading-container">
             <p>Loading tasks...</p>
@@ -220,7 +221,7 @@ const TasksDashboard = () => {
             </table>
           </>
         )}
-      </main>
+      </div>
 
       {isPopupOpen && (
         <AssignNewTaskPopUp
