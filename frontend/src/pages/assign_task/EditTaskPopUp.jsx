@@ -15,7 +15,7 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
 
     const handleSave = useCallback(async () => {
         const updatedTask = {};
-
+      
         // Add only fields that have been edited
         if (taskName !== task.name) updatedTask.name = taskName;
         if (taskDetails !== task.description) updatedTask.description = taskDetails;
@@ -25,11 +25,11 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
         if (dueDate !== task.dueDate.split("T")[0]) {
             updatedTask.dueDate = new Date(dueDate).toISOString();
         }
-
+      
         try {
-            // Axios PATCH request to update task
+            // Axios PUT request to update task
             const response = await axios.put(
-                `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/${task.taskId}/edit/`, // Adjust endpoint as needed
+                `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/${task.taskId}/edit/`,
                 updatedTask,
                 {
                     headers: {
@@ -37,22 +37,24 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
                     },
                 }
             );
-
+      
             console.log("Task successfully updated:", response.data);
             alert("Task successfully updated!");
-            onSave(response.data); // Pass the updated task back to parent
+      
+            // Pass the updated task to the parent
+            onSave(response.data); // This should trigger the parent state update
             onClose(); // Close the popup
         } catch (err) {
             console.error("Error updating task:", err);
             alert("Failed to update task. Please try again later.");
         }
-    }, [task, taskName, dueDate, group, priority, taskDetails, status, onSave, onClose]
-    );
+      }, [task, taskName, dueDate, group, priority, taskDetails, status, onSave, onClose]);
+      
 
     useEffect(() => {
         // Lock body scroll when the popup is open
         document.body.style.overflow = "hidden";
-    
+
         // Event listener for keyboard events
         const handleKeyDown = (e) => {
           if (e.key === "Escape") {
@@ -61,15 +63,15 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
             handleSave(); // Submit the form on Enter key
           }
         };
-    
+
         document.addEventListener("keydown", handleKeyDown);
-    
+
         // Cleanup function to unlock body scroll and remove event listener
         return () => {
           document.body.style.overflow = "auto";
           document.removeEventListener("keydown", handleKeyDown);
         };
-      }, [onClose, handleSave]);
+    }, [onClose, handleSave]);
 
     return (
         <div className="popup-overlay">
@@ -107,11 +109,11 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
                         <label>
                             Status:
                             <select
-                                value={priority}
+                                value={status}
                                 onChange={(e) => setStatus(e.target.value)}
                             >
                                 <option value="Incomplete">Incomplete</option>
-                                <option value="In Progress">In Progress</option>
+                                <option value="Pending">Pending</option>
                                 <option value="Complete">Complete</option>
                             </select>
                         </label>
@@ -132,8 +134,8 @@ const EditTaskPopUp = ({ task, onClose, onSave }) => {
                             />
                         </label>
                         <div className="popup-buttons">
-                            <button onClick={handleSave} className="button">Save</button>
-                            <button onClick={onClose} className="cancel-button button">Cancel</button>
+                            <button type="button" onClick={handleSave} className="button">Save</button>
+                            <button type="button" onClick={onClose} className="cancel-button button">Cancel</button>
                         </div>
                     </form>
                 </div>

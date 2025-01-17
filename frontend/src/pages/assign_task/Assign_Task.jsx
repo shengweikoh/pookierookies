@@ -110,6 +110,18 @@ const TasksDashboard = () => {
     setIsEditPopupOpen(true);
   };
 
+  const handleSaveEditedTask = (updatedTask) => {
+    // Update the task in the tasks state
+    const updatedTaskList = tasks.map((t) =>
+      t.taskId === updatedTask.taskId ? updatedTask : t
+    );
+
+    // Update both tasks and filteredTasks immediately
+    setTasks(updatedTaskList);
+    setFilteredTasks(updatedTaskList);  // Ensure filtered tasks update as well
+    closeEditPopup();
+  };
+
   const handleSendReminders = () => {
     if (selectedTasks.length > 0) {
       setIsReminderPopupOpen(true);
@@ -256,14 +268,7 @@ const TasksDashboard = () => {
         <EditTaskPopUp
           task={taskToEdit}
           onClose={closeEditPopup}
-          onSave={(updatedTask) => {
-            const updatedTaskList = tasks.map((t) =>
-              t.taskId === updatedTask.taskId ? updatedTask : t
-            );
-            setTasks(updatedTaskList);
-            // setFilteredTasks(updatedTaskList);
-            closeEditPopup();
-          }}
+          onSave={handleSaveEditedTask}  // Pass the handler here
         />
       )}
     </div>
