@@ -136,12 +136,6 @@ const ScheduleMeeting = () => {
                       </div>
                       <div className="button-group">
                         <button
-                          className="edit-button"
-                          onClick={() => handleEditClick(meeting)}
-                        >
-                          Edit
-                        </button>
-                        <button
                           className="view-details-button"
                           onClick={() => handleViewDetailsClick(meeting)}
                         >

@@ -10,27 +10,22 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px; /* Add padding for better spacing on smaller screens */
 }
 
+/* Popup Content */
 .popup-content {
   background-color: white;
-  width: 90%; /* Responsive width */
-  max-width: 500px; /* Limit the max width */
-  height: 90%; /* Responsive height */
-  max-height: 600px; /* Limit max height */
+  width: auto; /* Let content determine width */
+  max-width: 90%; /* Ensure it doesn't exceed screen width */
+  height: auto; /* Let content determine height */
+  max-height: 90%; /* Prevent overflow on smaller screens */
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   padding: 20px;
-  overflow: hidden; /* Prevent overflow outside the box */
-}
-
-/* Scrollable Content */
-.popup-scrollable-content {
-  flex: 1;
-  overflow-y: auto; /* Enable vertical scrolling */
-  padding-right: 10px; /* Add space for scrollbar */
+  overflow: auto; /* Enable scrolling if content exceeds max height */
 }
 
 /* Buttons */
@@ -75,3 +70,9 @@
   background-color: #d32f2f;
 }
 
+/* Scrollable Content */
+.popup-scrollable-content {
+  flex: 1;
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding-right: 10px; /* Add space for scrollbar */
+}
