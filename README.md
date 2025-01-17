@@ -3,6 +3,7 @@
 Welcome to **BookBuddy**! This project is a web application designed to help users manage tasks, meetings, and group activities efficiently. Built with React for the frontend and Django for the backend, it leverages Firebase for database storage and integrates several APIs to enhance functionality.
 
 [Deployed Application](https://pookie-rookies.web.app)
+
 NOTE: Check on the health of the backend server: (https://pookierookies-backend.duckdns.org/health/) before trying the application!
 Sometimes it down D:
 
