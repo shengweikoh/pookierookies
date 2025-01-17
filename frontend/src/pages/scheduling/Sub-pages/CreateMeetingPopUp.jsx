@@ -71,12 +71,19 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
         `${process.env.REACT_APP_BACKEND_BASE_URL}meetings/create/`,
         newMeeting
       );
-
-
-      setSuccessMessage(true);
-      setTimeout(() => setSuccessMessage(false), 3000);
+    
+      // Assuming the response contains the newly created meeting data
+      const createdMeeting = response.data.meeting;
+    
+      console.log("Meeting created successfully:", createdMeeting);
+    
+      setSuccessMessage(`Meeting "${createdMeeting.name}" created successfully!`);
+      setTimeout(() => {
+        setSuccessMessage(false);
+        window.location.reload(); // Refresh the page
+      }, 3000);
+    
       onClose();
-      window.location.reload(); // Refresh the page
     } catch (error) {
       console.error("Error creating meeting:", error);
       alert("Failed to create meeting. Please try again.");
