@@ -39,6 +39,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'oauth',
     'healthcheck',
     'corsheaders',
     'authapp',
@@ -190,6 +191,7 @@ db = firestore.client()
 
 # Path to the credentials.json file
 CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials.json')
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(BASE_DIR, 'firebase_key.json')
 
 # Load the credentials.json file
 with open(CREDENTIALS_PATH) as credentials_file:
