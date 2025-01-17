@@ -53,15 +53,19 @@ const CalendarPage = () => {
 
       const { events: fetchedEvents } = response.data;
 
-      const formattedEvents = fetchedEvents.map((event) => ({
-        id: event.id,
-        title: event.title,
-        start: event.start,
-        end: event.end,
-        extendedProps: {
-          description: event.description,
-        },
-      }));
+      const formattedEvents = fetchedEvents.map((event) => {
+        const [description, location] = event.description.split(" | Location: ");
+        return {
+          id: event.id,
+          title: event.title,
+          start: event.start,
+          end: event.end,
+          extendedProps: {
+            description,
+            location: location || "No Location", // Default to "No Location" if not found
+          },
+        };
+      });
 
       // Replace events with those for the current date range
       setEvents(formattedEvents);
@@ -94,6 +98,7 @@ const CalendarPage = () => {
       start: event.start,
       end: event.end,
       description: event.extendedProps.description,
+      location: event.extendedProps.location, // Add location here
     });
     setIsPopupOpen(true);
   };
@@ -137,6 +142,7 @@ const CalendarPage = () => {
               <p><strong>Start:</strong> {new Date(selectedEvent.start).toLocaleString()}</p>
               <p><strong>End:</strong> {new Date(selectedEvent.end).toLocaleString()}</p>
               <p><strong>Description:</strong> {selectedEvent.description}</p>
+              <p><strong>Location:</strong> {selectedEvent.location}</p> {/* Display location separately */}
               <button onClick={handleClosePopup}>Close</button>
             </div>
           </div>
