@@ -1,4 +1,3 @@
-/* General Styles */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -18,36 +17,35 @@ body {
 
 .tasks-dashboard {
   display: flex;
-  height: 100vh; /* Full viewport height */
-  flex-direction: row; /* Sidebar and main content side-by-side */
-  margin-left: 250px; /* Matches sidebar width when expanded */
-  transition: margin-left 0.3s ease; /* Smooth adjustment for sidebar collapse/expand */
+  height: 100vh;
+  flex-direction: row;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
 }
 
 .sidebar.collapsed + .tasks-dashboard {
-  margin-left: 70px; /* Adjust main content margin when sidebar is collapsed */
+  margin-left: 70px;
 }
 
 .tasks-container {
   flex: 1;
   padding: 20px;
   background-color: #fff;
-  overflow-y: auto; /* Allow scrolling for content overflow */
+  overflow-y: auto;
 }
 
-/* Header Section */
 .tasks-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  gap: 15px; /* Add spacing between header items */
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .filters {
   display: flex;
-  gap: 10px; /* Add spacing between filter inputs */
+  gap: 10px;
 }
 
 .search-input,
@@ -86,7 +84,6 @@ body {
   background-color: rgb(153, 17, 17);
 }
 
-/* Table Section */
 .tasks-table {
   width: 100%;
   border-collapse: collapse;
@@ -137,61 +134,58 @@ body {
   background-color: #223f6b !important;
 }
 
-/* Sidebar */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 250px; /* Full width when expanded */
-  height: 100vh; /* Full height of the viewport */
+  width: 250px;
+  height: 100vh;
   background-color: #f9f9fb;
   padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  z-index: 1000; /* Ensures it stays on top of other content */
-  transition: width 0.3s ease, padding 0.3s ease; /* Smooth transition for collapsing */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: width 0.3s ease, padding 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .sidebar.collapsed {
-  width: 70px; /* Reduced width for collapsed state */
+  width: 70px;
   padding: 10px;
 }
 
-/* Ensure the sidebar transitions properly */
 .tasks-dashboard.expanded-sidebar {
-  margin-left: 250px; /* Matches sidebar's expanded width */
+  margin-left: 250px;
 }
 
 .tasks-dashboard.collapsed-sidebar {
-  margin-left: 70px; /* Matches sidebar's collapsed width */
+  margin-left: 70px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .tasks-dashboard {
-    flex-direction: column; /* Stack sidebar and content vertically */
-    margin-left: 0; /* Reset margin for smaller screens */
-    height: auto; /* Allow height to adjust naturally */
+    flex-direction: column;
+    margin-left: 0;
+    height: auto;
   }
 
   .sidebar {
     width: 100%;
     height: auto;
     position: relative;
-    margin: 0; /* Reset any extra margins */
+    margin: 0;
     box-shadow: none;
   }
 
   .sidebar.collapsed {
-    width: 100%; /* Full width when toggled */
+    width: 100%;
   }
 
   .tasks-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px; /* Smaller gap between header items */
+    gap: 10px;
   }
 
   .filters {
@@ -201,108 +195,67 @@ body {
 
   .search-input,
   .group-select {
-    width: 100%; /* Full-width inputs on smaller screens */
+    width: 100%;
   }
 
   .add-task-button {
-    width: 100%; /* Full-width button */
-    text-align: center; /* Center-align text */
+    width: 100%;
+    text-align: center;
   }
 
   .red-button {
-    width: 100%; /* Full-width red button */
+    width: 100%;
     text-align: center;
   }
 }
 
 @media (max-width: 480px) {
   .tasks-header {
-    gap: 5px; /* Reduce gap for smaller screens */
+    gap: 5px;
   }
 
   .tasks-table th,
   .tasks-table td {
-    padding: 8px; /* Reduce padding for smaller screens */
-    font-size: 12px; /* Smaller text size */
+    padding: 8px;
+    font-size: 12px;
   }
 
   .edit-button {
-    background-color: #5c7faa!important;
+    background-color: #5c7faa !important;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 5px 10px!important;
-    width: 50px!important;
+    padding: 5px 10px !important;
+    width: 50px !important;
     height: auto !important;
     cursor: pointer;
     margin-right: 0px !important;
   }
-  
+
   .edit-button:hover {
-    background-color: #223f6b!important;
-    ;
+    background-color: #223f6b !important;
   }
 
   .remind-button {
-    background-color: #5c7faa!important;
+    background-color: #5c7faa !important;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 5px 10px!important;
-    width: 70px!important;
+    padding: 5px 10px !important;
+    width: 70px !important;
     height: auto !important;
     cursor: pointer;
     font-size: 12px;
     margin-left: 0px !important;
   }
-  
-  .remind-button:hover {
-    background-color: #223f6b!important;
-  }
-  
-  /* th .actions {
-    text-align: center !important;
-  } */
 
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    /* Sidebar stacks above main content */
-    .tasks-dashboard {
-      flex-direction: column; /* Stack sidebar and content vertically */
-      height: auto; /* Allow height to adjust naturally */
-    }
-  
-    /* Header stacks vertically */
-    .tasks-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px; /* Smaller gap between header items */
-    }
-  
-    .filters {
-      flex-direction: column;
-      gap: 5px;
-    }
-  
-    .search-input,
-    .group-select {
-      width: 100%; /* Full-width inputs on smaller screens */
-    }
-  
-/*     .add-task-button {
-      width: 100%; /* Full-width button */
- /* Center-align text */
-    }
-  
-    .red-button {
-      width: 100%; /* Full-width red button */
-      text-align: center;
-    }
- */
+  .remind-button:hover {
+    background-color: #223f6b !important;
+  }
+
   .add-task-button,
   .red-button {
-    font-size: 12px; /* Smaller button text size */
-    padding: 6px 10px; /* Adjust button padding */
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }
-
