@@ -1,8 +1,6 @@
 from django.http import JsonResponse
 from google_auth_oauthlib.flow import Flow
 from oauth.utils import save_token_to_firestore
-from datetime import datetime, timedelta
-import pytz
 
 SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
@@ -33,7 +31,8 @@ def oauth2callback(request):
         if not user_id:
             return JsonResponse({"error": "User ID missing in state"}, status=400)
 
-        expiry_date = (datetime.now(pytz.utc) + timedelta(seconds=credentials.expiry)).isoformat()
+        # Use `credentials.expiry` directly (already a datetime object)
+        expiry_date = credentials.expiry.isoformat()  # Convert to ISO 8601 string
         save_token_to_firestore(user_id, credentials.token, credentials.refresh_token, expiry_date)
 
         return JsonResponse({"message": "Authorization successful and token saved."}, status=200)
