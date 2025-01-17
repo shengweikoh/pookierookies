@@ -3,7 +3,7 @@ import axios from "axios";
 import Sidebar from "../../Components/Sidebar";
 import AssignNewTaskPopUp from "./AssignNewTaskPopUp";
 import EditTaskPopUp from "./EditTaskPopUp";
-import SendReminderPopUp from "./SendReminderPopUp";
+// import SendReminderPopUp from "./SendReminderPopUp";
 import "./Assign_Task.css";
 import { getLoggedInUserId } from "../../Components/utils";
 
@@ -16,7 +16,7 @@ const TasksDashboard = () => {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
+  // const [isReminderPopupOpen, setIsReminderPopupOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -122,13 +122,13 @@ const TasksDashboard = () => {
     closeEditPopup();
   };
 
-  const handleSendReminders = () => {
-    if (selectedTasks.length > 0) {
-      setIsReminderPopupOpen(true);
-    } else {
-      alert("Please select at least one task to send reminders.");
-    }
-  };
+  // const handleSendReminders = () => {
+  //   if (selectedTasks.length > 0) {
+  //     setIsReminderPopupOpen(true);
+  //   } else {
+  //     alert("Please select at least one task to send reminders.");
+  //   }
+  // };
 
   const closeEditPopup = () => {
     setIsEditPopupOpen(false);
@@ -151,9 +151,9 @@ const TasksDashboard = () => {
                 <button className="normal-button" onClick={() => setIsPopupOpen(true)}>
                   Add New Task
                 </button>
-                <button className="normal-button" onClick={handleSendReminders}>
+                {/* <button className="normal-button" onClick={handleSendReminders}>
                   Send Reminders
-                </button>
+                </button> */}
                 <button className="red-button" onClick={handleDeleteSelectedTasks}>
                   Delete Tasks
                 </button>
@@ -257,12 +257,12 @@ const TasksDashboard = () => {
           onSubmit={handleAssignTask}
         />
       )}
-      {isReminderPopupOpen && (
+      {/* {isReminderPopupOpen && (
         <SendReminderPopUp
           onClose={() => setIsReminderPopupOpen(false)}
           selectedTasks={selectedTasks}
         />
-      )}
+      )} */}
 
       {isEditPopupOpen && taskToEdit && (
         <EditTaskPopUp
