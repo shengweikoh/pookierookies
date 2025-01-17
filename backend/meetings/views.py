@@ -217,8 +217,8 @@ class EditMeetingAPIView(APIView):
                 updated_event_id = create_or_update_calendar_event(
                     sender_email,
                     meeting_data["name"],
-                    start_time,
-                    end_time,
+                    start_time_sgt,
+                    end_time_sgt,
                     location,
                     agenda,
                     attendees_emails,
