@@ -393,12 +393,14 @@ class FinalizeMeetingAPIView(APIView):
             meeting_id = body.get("meeting_id")
             user_id = body.get("user_id")
 
+            if not meeting_id or not user_id:
+                return JsonResponse({"error": "Missing meeting_id or user_id"}, status=status.HTTP_400_BAD_REQUEST)
+
             # Retrieve user data
             user_ref = db.collection("profiles").document(user_id)
             user_profile = user_ref.get()
 
             if not user_profile.exists:
-                logger.error("User not found")
                 return JsonResponse({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
             sender_name = user_profile.to_dict().get("name")
@@ -420,23 +422,20 @@ class FinalizeMeetingAPIView(APIView):
             ]
 
             if not responses:
-                logger.error("No valid poll responses received")
                 return JsonResponse({"error": "No valid poll responses received"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Determine the most common response (date)
             most_common_date_entry = Counter(response["response"] for response in responses if "response" in response).most_common(1)
 
             if not most_common_date_entry or not most_common_date_entry[0]:
-                logger.error("No valid most common date found")
                 return JsonResponse({"error": "No valid most common date found"}, status=status.HTTP_400_BAD_REQUEST)
 
             most_common_date = most_common_date_entry[0][0]
 
-            # Validate date format
+            # Validate and parse the date
             try:
                 start_time = datetime.fromisoformat(most_common_date)
             except ValueError:
-                logger.error(f"Invalid ISO format for date: {most_common_date}")
                 return JsonResponse({"error": f"Invalid ISO format for date: {most_common_date}"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Calculate the end time using the duration
@@ -459,10 +458,7 @@ class FinalizeMeetingAPIView(APIView):
                 if isinstance(attendee, dict) and "email" in attendee and attendee["email"].strip()
             ]
 
-            # Check for existing event_id
-            event_id = meeting_data.get("event_id")
-
-            # Create or update the Google Calendar event
+            # Create one Google Calendar event
             updated_event_id = create_or_update_calendar_event(
                 sender_email,
                 meeting_data["name"],
@@ -471,26 +467,26 @@ class FinalizeMeetingAPIView(APIView):
                 location,
                 agenda,
                 attendees_emails,
-                event_id  # Pass the event_id if it exists
+                event_id=None  # New event creation
             )
 
             # Update Firestore with the event_id
             meeting_ref.update({"event_id": updated_event_id})
 
-            # Send emails with the ICS attachment
-            for email in attendees_emails:
+            # Generate a single ICS file for the event
+            ics_content = generate_ics_file(
+                meeting_data["name"],
+                start_time,
+                end_time,
+                location,
+                agenda,
+                sender_email,
+                attendees_emails,
+                event_id=updated_event_id
+            )
 
-                # Generate the ICS file content once
-                ics_content = generate_ics_file(
-                    meeting_data["name"],
-                    start_time,
-                    end_time,
-                    location,
-                    agenda,
-                    sender_email,
-                    email,
-                    event_id=updated_event_id
-                )
+            # Send invitations to all attendees
+            for email in attendees_emails:
                 send_email_with_ics(
                     sender=sender_email,
                     to=email,
@@ -511,10 +507,10 @@ Please find the attached calendar invite.
 Best Regards,
 {sender_name}
                     """,
-                    ics_content=ics_content  # Reuse the same ICS content
+                    ics_content=ics_content
                 )
 
-            return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
+            return JsonResponse({"message": "Meeting finalized and invitations sent to attendees."}, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.exception("An error occurred while finalizing the meeting")
