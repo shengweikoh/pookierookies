@@ -157,11 +157,7 @@ const ManageMembers = () => {
                   className="table-row"
                   onClick={() => handleRowClick(member)}
                 >
-                  <div className="table-cell name-column">
-                    <div className="name-content">
-                      <span>{member.name}</span>
-                    </div>
-                  </div>
+                  <div className="table-cell name-column">{member.name}</div>
                   <div className="table-cell group-column">{member.group}</div>
                   <div className="table-cell role-column">{member.role}</div>
                 </div>
