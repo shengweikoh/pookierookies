@@ -34,10 +34,11 @@ const PollPage = () => {
         }
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/submit-response/`, {
-                id,
-                email,
-                selectedDate,
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/submit-response/`, 
+            {
+                "meeting_id": id,
+                "email": email,
+                "selected_date": selectedDate,
             });
             if (response.status === 200) {
                 setSuccess("Your response has been submitted successfully!");

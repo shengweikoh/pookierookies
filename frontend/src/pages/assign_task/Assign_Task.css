@@ -291,7 +291,7 @@ body {
   
 /*     .add-task-button {
       width: 100%; /* Full-width button */
-      text-align: center; /* Center-align text */
+ /* Center-align text */
     }
   
     .red-button {
@@ -305,3 +305,4 @@ body {
     padding: 6px 10px; /* Adjust button padding */
   }
 }
+

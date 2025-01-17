@@ -114,7 +114,8 @@ const UnfinalizedMeetings = () => {
                     Send Poll
                   </button>
                   <button
-                    className="edit-button"
+                    className="view-details-button"
+                    style={{ backgroundColor: "#ffc107" }}
                     onClick={() => openUpdatePopup(meeting)}
                   >
                     Finalise
@@ -157,10 +158,9 @@ const UnfinalizedMeetings = () => {
           />
         )}
 
-        {/* Update Meeting Pop-Up */}
+        {/* Finalised Meeting Pop-Up */}
         {isUpdatePopupOpen && (
           <FinaliseMeetingPopUp
-            meetingId={currentMeeting.meetingId}
             meeting={currentMeeting}
             onClose={closeUpdatePopup}
           />
