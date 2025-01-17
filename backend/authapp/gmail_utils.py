@@ -3,7 +3,7 @@ import pytz
 import webbrowser
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.auth.transport.requests import Request
@@ -79,22 +79,23 @@ def get_service(user_id, service_name, version):
 
         # Open the browser for authorization
         print(f"Redirecting to browser for authorization: {auth_url}")
-        webbrowser.open(auth_url)
+        return HttpResponseRedirect(auth_url)
 
-        # Poll Firestore for token until user authorizes
-        print("Waiting for user to complete the authorization flow...")
-        start_time = time.time()
-        timeout = 300  # Wait for a maximum of 5 minutes
-        while True:
-            token_data = get_token_from_firestore(user_id)
-            if token_data:
-                print("Authorization complete. Proceeding...")
-                break
-            if time.time() - start_time > timeout:
-                raise TimeoutError("Authorization timeout. User did not complete the process.")
-            time.sleep(5)  # Check every 5 seconds
+        # # Poll Firestore for token until user authorizes
+        # print("Waiting for user to complete the authorization flow...")
+        # start_time = time.time()
+        # timeout = 300  # Wait for a maximum of 5 minutes
+        # while True:
+        #     token_data = get_token_from_firestore(user_id)
+        #     if token_data:
+        #         print("Authorization complete. Proceeding...")
+        #         break
+        #     if time.time() - start_time > timeout:
+        #         raise TimeoutError("Authorization timeout. User did not complete the process.")
+        #     time.sleep(5)  # Check every 5 seconds
 
-    creds = get_credentials_from_token_data(token_data)
+    else: 
+        creds = get_credentials_from_token_data(token_data)
 
     # Refresh the access token if expired
     if creds.expired:

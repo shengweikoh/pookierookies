@@ -21,36 +21,21 @@ const LoginPage = () => {
     const handleGoogleLogin = async () => {
         setErrorMessage(""); // Clear any previous error messages
         setLoading(true);
+    
+        // Open a placeholder page immediately
+        const placeholderWindow = window.open("", "_blank");
+    
         try {
             // Google Sign-In using Firebase Auth
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-
-            // // Check if the email is authorized
-            // const email = user.email;
-            // const q = query(
-            //     collection(db, "authorisedEmails"),
-            //     where("email", "==", email)
-            // );
-            // const querySnapshot = await getDocs(q);
-
-            // console.log("Query Object:", q);
-            // console.log("Query Snapshot:", querySnapshot);
-            // console.log("Email:", email);
-
-            // if (querySnapshot.empty) {
-            //     // If email is not authorized, show an alert and sign the user out
-            //     setErrorMessage("You are not authorized to access this application.");
-            //     auth.signOut();
-            //     return;
-            // }
-
+    
             // Get the ID token for backend verification
             const idToken = await user.getIdToken();
             console.log("Token:", idToken);
-            console.log(user.email)
-
-            // Send the token to the backend for verification
+            console.log(user.email);
+    
+            // Send the token to the backend for verification   
             const backendResponse = await axios.post(
                 `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-token/`,
                 { token: idToken },
@@ -60,14 +45,41 @@ const LoginPage = () => {
                     },
                 }
             );
-
+    
             console.log("Backend Response:", backendResponse.data);
-
+    
+            // Call the verify_google_token endpoint
+            const verifyGoogleTokenResponse = await axios.post(
+                `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-google-token/`,
+                { email: user.email },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+    
+            console.log("Verify-Google-Token Response:", verifyGoogleTokenResponse.data.auth_url);
+    
+            // Redirect the placeholder window to the actual auth_url
+            if (verifyGoogleTokenResponse.data.auth_url) {
+                placeholderWindow.location.href = verifyGoogleTokenResponse.data.auth_url;
+            } else {
+                console.error("Redirect URL not provided in response");
+                placeholderWindow.close(); // Close the placeholder if no URL is provided
+                setErrorMessage("Unable to proceed. Please try again later.");
+            }
+    
             navigate("/home");
-
+    
         } catch (error) {
             console.error("Error during sign-in:", error.response?.data || error.message);
-            setErrorMessage("Sign-in failed. Please try again."); // Display error
+            setErrorMessage("Sign-in failed. Please try again.");
+    
+            // Close the placeholder window in case of an error
+            if (placeholderWindow) {
+                placeholderWindow.close();
+            }
         } finally {
             setLoading(false);
         }
