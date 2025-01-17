@@ -413,17 +413,7 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
         raise
 
 def create_or_update_calendar_event(sender_email, name, start_time, end_time, location, agenda, attendees_emails, event_id=None):
-    # Path to the tokens directory
-    TOKEN_DIR = 'tokens'
-
-    # Ensure the directory exists
-    os.makedirs(TOKEN_DIR, exist_ok=True)
-
-    # Load the token file for the sender
-    token_file_path = os.path.join(TOKEN_DIR, f'token_{sender_email}.json')
-
-    creds = Credentials.from_authorized_user_file(token_file_path, ['https://www.googleapis.com/auth/calendar'])
-    service = build('calendar', 'v3', credentials=creds)
+    service = get_google_calendar_service(sender_email)
 
     event_body = {
         "summary": name,
