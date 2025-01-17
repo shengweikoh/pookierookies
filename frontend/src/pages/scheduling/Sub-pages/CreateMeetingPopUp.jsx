@@ -72,11 +72,11 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
         newMeeting
       );
 
-      onSubmit(response.data);
 
       setSuccessMessage(true);
       setTimeout(() => setSuccessMessage(false), 3000);
       onClose();
+      window.location.reload(); // Refresh the page
     } catch (error) {
       console.error("Error creating meeting:", error);
       alert("Failed to create meeting. Please try again.");

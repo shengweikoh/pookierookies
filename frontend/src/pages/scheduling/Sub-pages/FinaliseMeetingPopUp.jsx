@@ -26,6 +26,7 @@ const FinaliseMeetingPopUp = ({ meeting, onClose }) => {
 
       alert("Meeting finalized successfully!");
       onClose();
+      window.location.reload(); // Refresh the page
     } catch (error) {
       console.error("Error finalizing meeting:", error);
       alert("Failed to finalize the meeting. Please try again.");

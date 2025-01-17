@@ -34,10 +34,12 @@ def calculate_end_time(start_time_iso, duration):
         logger.error(f"Error in calculate_end_time: {e}")
         raise
 
-def generate_ics_file(event_name, start_time, end_time, location, description, organizer, attendees):
-    attendees_str = "\n".join([f"ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN={attendee}:mailto:{attendee}" for attendee in attendees])
+def generate_ics_file(event_name, start_time, end_time, location, description, organizer, attendees, event_id):
+    attendees_str = "\n".join([
+        f"ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN={attendee}:mailto:{attendee}" 
+        for attendee in attendees
+    ])
     
-    # Use local time for event start, end, and creation time
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Company//Meeting Scheduler//EN
@@ -48,7 +50,7 @@ DTSTART:{start_time.strftime('%Y%m%dT%H%M%S')}
 DTEND:{end_time.strftime('%Y%m%dT%H%M%S')}
 DTSTAMP:{datetime.now().strftime('%Y%m%dT%H%M%S')}
 ORGANIZER;CN={organizer}:mailto:{organizer}
-UID:{event_name.replace(" ", "")}-{start_time.strftime('%Y%m%d%H%M%S')}
+UID:{event_id}  # Use the provided event_id as the unique identifier
 CREATED:{datetime.now().strftime('%Y%m%dT%H%M%S')}
 DESCRIPTION:{description}
 LAST-MODIFIED:{datetime.now().strftime('%Y%m%dT%H%M%S')}
@@ -375,6 +377,15 @@ class SubmitPollResponseAPIView(APIView):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+from collections import Counter
+from datetime import datetime
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework import status
+import logging
+
+logger = logging.getLogger(__name__)
+
 class FinalizeMeetingAPIView(APIView):
     def post(self, request):
         try:
@@ -402,10 +413,10 @@ class FinalizeMeetingAPIView(APIView):
 
             meeting_data = meeting.to_dict()
 
-            # Since `attendees` is a list of strings, handle it accordingly
+            # Extract valid poll responses
             responses = [
                 attendee for attendee in meeting_data["attendees"]
-                if isinstance(attendee, str) and attendee.strip()
+                if isinstance(attendee, dict) and "response" in attendee and attendee["response"]
             ]
 
             if not responses:
@@ -413,7 +424,7 @@ class FinalizeMeetingAPIView(APIView):
                 return JsonResponse({"error": "No valid poll responses received"}, status=status.HTTP_400_BAD_REQUEST)
 
             # Determine the most common response (date)
-            most_common_date_entry = Counter(responses).most_common(1)
+            most_common_date_entry = Counter(response["response"] for response in responses if "response" in response).most_common(1)
 
             if not most_common_date_entry or not most_common_date_entry[0]:
                 logger.error("No valid most common date found")
@@ -440,11 +451,13 @@ class FinalizeMeetingAPIView(APIView):
 
             location = meeting_data.get("location", "TBD")
             agenda = meeting_data.get("agenda", "")
-            attendees_emails = meeting_data["attendees"]
 
-            # Prepare email content
-            start_time_sgt = start_time
-            end_time_sgt = end_time
+            # Extract the emails from the attendees
+            attendees_emails = [
+                attendee["email"]
+                for attendee in meeting_data["attendees"]
+                if isinstance(attendee, dict) and "email" in attendee and attendee["email"].strip()
+            ]
 
             # Check for existing event_id
             event_id = meeting_data.get("event_id")
@@ -453,8 +466,8 @@ class FinalizeMeetingAPIView(APIView):
             updated_event_id = create_or_update_calendar_event(
                 sender_email,
                 meeting_data["name"],
-                start_time_sgt,
-                end_time_sgt,
+                start_time,
+                end_time,
                 location,
                 agenda,
                 attendees_emails,
@@ -464,19 +477,20 @@ class FinalizeMeetingAPIView(APIView):
             # Update Firestore with the event_id
             meeting_ref.update({"event_id": updated_event_id})
 
-            # Generate and send the ICS file
-            ics_content = generate_ics_file(
-                meeting_data["name"],
-                start_time,
-                end_time,
-                location,
-                agenda,
-                sender_email,
-                attendees_emails
-            )
-
             # Send emails with the ICS attachment
             for email in attendees_emails:
+
+                # Generate the ICS file content once
+                ics_content = generate_ics_file(
+                    meeting_data["name"],
+                    start_time,
+                    end_time,
+                    location,
+                    agenda,
+                    sender_email,
+                    email,
+                    event_id=updated_event_id
+                )
                 send_email_with_ics(
                     sender=sender_email,
                     to=email,
@@ -486,9 +500,9 @@ Hi,
 
 The meeting '{meeting_data['name']}' has been finalized. Details:
 
-- Date: {start_time_sgt.strftime("%d %B %Y")}
-- Start Time: {start_time_sgt.strftime("%I:%M %p")} SGT
-- End Time: {end_time_sgt.strftime('%I:%M %p')} SGT
+- Date: {start_time.strftime("%d %B %Y")}
+- Start Time: {start_time.strftime("%I:%M %p")} SGT
+- End Time: {end_time.strftime("%I:%M %p")} SGT
 - Location: {location}
 - Agenda: {agenda}
 
@@ -497,7 +511,7 @@ Please find the attached calendar invite.
 Best Regards,
 {sender_name}
                     """,
-                    ics_content=ics_content
+                    ics_content=ics_content  # Reuse the same ICS content
                 )
 
             return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
