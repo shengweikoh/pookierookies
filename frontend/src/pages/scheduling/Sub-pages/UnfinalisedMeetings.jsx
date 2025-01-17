@@ -3,12 +3,12 @@ import Sidebar from "../../../Components/Sidebar";
 import CreateMeetingPopUp from "../../../pages/scheduling/Sub-pages/CreateMeetingPopUp";
 import FinaliseMeetingPopUp from "../../../pages/scheduling/Sub-pages/FinaliseMeetingPopUp";
 import SendDetailsPopUp from "../../../pages/scheduling/Sub-pages/SendDetailsPopUp";
-import DeleteMeetingPopUp from "../../../pages/scheduling/Sub-pages/DeleteMeetingPopUp"; // Import the new component
+import DeleteMeetingPopUp from "../../../pages/scheduling/Sub-pages/DeleteMeetingPopUp";
+import ViewEditMeetingPopUp from "../../../pages/scheduling/Sub-pages/ViewEditMeetingPopUp"; // New import
 import "./UnfinalisedMeetings.css";
 import axios from "axios";
 import { getLoggedInUserId } from "../../../Components/utils";
 
-// Utility function to format date
 const formatDate = (isoDate) => {
   const options = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
   return new Date(isoDate).toLocaleString(undefined, options);
@@ -16,29 +16,41 @@ const formatDate = (isoDate) => {
 
 const UnfinalizedMeetings = () => {
   const [meetings, setMeetings] = useState([]);
-  const [showAllMeetings, setShowAllMeetings] = useState(false); // Toggle for showing more/less meetings
+  const [filteredMeetings, setFilteredMeetings] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
   const [isUpdatePopupOpen, setIsUpdatePopupOpen] = useState(false);
   const [isSendPopupOpen, setIsSendPopupOpen] = useState(false);
   const [isDeletePopupOpen, setIsDeletePopupOpen] = useState(false);
+  const [isViewEditPopupOpen, setIsViewEditPopupOpen] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
   const profileId = getLoggedInUserId();
 
-  // Fetch meetings from the API
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/${profileId}`);
         const unfinalizedMeetings = response.data.filter((meeting) => !meeting.finalized);
         setMeetings(unfinalizedMeetings);
+        setFilteredMeetings(unfinalizedMeetings);
       } catch (error) {
         console.error("Error fetching meetings:", error);
         alert("Failed to load meetings. Please try again.");
       }
     };
-
     fetchMeetings();
   }, [profileId]);
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    const filtered = meetings.filter((meeting) =>
+      meeting.name.toLowerCase().includes(value) ||
+      meeting.agenda.toLowerCase().includes(value) ||
+      meeting.location.toLowerCase().includes(value)
+    );
+    setFilteredMeetings(filtered);
+  };
 
   const openCreatePopup = () => setIsCreatePopupOpen(true);
   const closeCreatePopup = () => setIsCreatePopupOpen(false);
@@ -55,6 +67,12 @@ const UnfinalizedMeetings = () => {
   };
   const closeSendPopup = () => setIsSendPopupOpen(false);
 
+  const openViewEditPopup = (meeting) => {
+    setCurrentMeeting(meeting);
+    setIsViewEditPopupOpen(true);
+  };
+  const closeViewEditPopup = () => setIsViewEditPopupOpen(false);
+
   const openDeletePopup = (meeting) => {
     setCurrentMeeting(meeting);
     setIsDeletePopupOpen(true);
@@ -63,9 +81,8 @@ const UnfinalizedMeetings = () => {
 
   const handleDeleteSuccess = () => {
     setMeetings((prev) => prev.filter((meeting) => meeting.meetingId !== currentMeeting.meetingId));
+    setFilteredMeetings((prev) => prev.filter((meeting) => meeting.meetingId !== currentMeeting.meetingId));
   };
-
-  const visibleMeetings = showAllMeetings ? meetings : meetings.slice(0, 3); // Show all or only first 3 meetings
 
   return (
     <div className="schedule-meeting-container">
@@ -73,7 +90,14 @@ const UnfinalizedMeetings = () => {
       <div className="main-content">
         <div className="header">
           <h1 className="header-title">Unfinalised Meetings</h1>
-          <div className="header-buttons">
+          <div className="header-controls">
+            <input
+              type="text"
+              className="search-bar"
+              placeholder="Search meetings..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
             <button className="button" onClick={openCreatePopup}>
               Create New Meeting
             </button>
@@ -81,13 +105,16 @@ const UnfinalizedMeetings = () => {
         </div>
 
         <section className="upcoming-meetings">
-          {visibleMeetings.length > 0 ? (
-            visibleMeetings.map((meeting) => (
+          {filteredMeetings.length > 0 ? (
+            filteredMeetings.map((meeting) => (
               <div key={meeting.meetingId} className="meeting-item">
                 <div className="meeting-details">
                   <p className="meeting-name">{meeting.name}</p>
                   <p className="meeting-title">
                     <strong>Agenda:</strong> {meeting.agenda}
+                  </p>
+                  <p className="meeting-location">
+                    <strong>Location:</strong> {meeting.location || "TBC"}
                   </p>
                   <p className="meeting-title">
                     <strong>Proposed Dates:</strong>{" "}
@@ -102,9 +129,6 @@ const UnfinalizedMeetings = () => {
                     <strong>Poll Deadline:</strong>{" "}
                     {meeting.poll_deadline ? formatDate(meeting.poll_deadline) : "N/A"}
                   </p>
-                  <p className="meeting-location">
-                    <strong>Location:</strong> {meeting.location || "TBC"}
-                  </p>
                 </div>
                 <div className="button-group">
                   <button
@@ -112,6 +136,12 @@ const UnfinalizedMeetings = () => {
                     onClick={() => openSendPopup(meeting)}
                   >
                     Send Poll
+                  </button>
+                  <button
+                    className="view-details-button blue-button"
+                    onClick={() => openViewEditPopup(meeting)}
+                  >
+                    View & Edit
                   </button>
                   <button
                     className="view-details-button"
@@ -133,56 +163,14 @@ const UnfinalizedMeetings = () => {
           ) : (
             <p>No unfinalized meetings available.</p>
           )}
-
-          {/* See More / See Less Button */}
-          {meetings.length > 3 && (
-            <button
-              className={`see-more-button ${
-                showAllMeetings ? "see-less-button" : ""
-              }`}
-              onClick={() => setShowAllMeetings(!showAllMeetings)}
-            >
-              {showAllMeetings ? "See Less" : "See More"}
-            </button>
-          )}
         </section>
 
-        {/* Create Meeting Pop-Up */}
-        {isCreatePopupOpen && (
-          <CreateMeetingPopUp
-            onClose={closeCreatePopup}
-            onSubmit={(newMeeting) => {
-              setMeetings((prev) => [...prev, newMeeting]);
-              closeCreatePopup();
-            }}
-          />
-        )}
-
-        {/* Finalised Meeting Pop-Up */}
-        {isUpdatePopupOpen && (
-          <FinaliseMeetingPopUp
-            meeting={currentMeeting}
-            onClose={closeUpdatePopup}
-          />
-        )}
-
-        {isSendPopupOpen && currentMeeting && (
-          <SendDetailsPopUp
-            meetingId={currentMeeting.meetingId}
-            userId={profileId} // Replace with the logged-in user's ID
-            onClose={closeSendPopup}
-          />
-        )}
-
-        {/* Delete Confirmation Pop-Up */}
-        {isDeletePopupOpen && (
-          <DeleteMeetingPopUp
-            meetingId={currentMeeting.meetingId}
-            meetingName={currentMeeting.name}
-            onClose={closeDeletePopup}
-            onDeleteSuccess={handleDeleteSuccess}
-          />
-        )}
+        {/* Popups */}
+        {isCreatePopupOpen && <CreateMeetingPopUp onClose={closeCreatePopup} />}
+        {isUpdatePopupOpen && <FinaliseMeetingPopUp meeting={currentMeeting} onClose={closeUpdatePopup} />}
+        {isSendPopupOpen && <SendDetailsPopUp meetingId={currentMeeting.meetingId} userId={profileId} onClose={closeSendPopup} />}
+        {isViewEditPopupOpen && (<ViewEditMeetingPopUp meeting={currentMeeting} userId={profileId} onClose={closeViewEditPopup}/>)}
+        {isDeletePopupOpen && <DeleteMeetingPopUp meetingId={currentMeeting.meetingId} meetingName={currentMeeting.name} onClose={closeDeletePopup} onDeleteSuccess={handleDeleteSuccess} />}
       </div>
     </div>
   );

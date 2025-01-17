@@ -377,7 +377,6 @@ class SubmitPollResponseAPIView(APIView):
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class FinalizeMeetingAPIView(APIView):
-    
     def post(self, request):
         try:
             body = request.data
@@ -391,10 +390,11 @@ class FinalizeMeetingAPIView(APIView):
             if not user_profile.exists:
                 logger.error("User not found")
                 return JsonResponse({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
             sender_name = user_profile.to_dict().get("name")
             sender_email = user_profile.to_dict().get("email")
 
-            # Step 1: Authenticate the user and generate the token file
+            # Authenticate the user (if required)
             authenticate_user(sender_email)
 
             # Retrieve meeting data
@@ -406,16 +406,17 @@ class FinalizeMeetingAPIView(APIView):
 
             meeting_data = meeting.to_dict()
 
+            # Since `attendees` is a list of strings, handle it accordingly
             responses = [
-                attendee.get("response")
-                for attendee in meeting_data["attendees"]
-                if isinstance(attendee.get("response"), str) and attendee["response"].strip()
+                attendee for attendee in meeting_data["attendees"]
+                if isinstance(attendee, str) and attendee.strip()
             ]
 
             if not responses:
                 logger.error("No valid poll responses received")
                 return JsonResponse({"error": "No valid poll responses received"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Determine the most common response (date)
             most_common_date_entry = Counter(responses).most_common(1)
 
             if not most_common_date_entry or not most_common_date_entry[0]:
@@ -424,36 +425,33 @@ class FinalizeMeetingAPIView(APIView):
 
             most_common_date = most_common_date_entry[0][0]
 
-            if not isinstance(most_common_date, str):
-                logger.error(f"most_common_date is not a string: {most_common_date}")
-                return JsonResponse({"error": "Invalid date format in poll responses"}, status=status.HTTP_400_BAD_REQUEST)
-
+            # Validate date format
             try:
                 start_time = datetime.fromisoformat(most_common_date)
             except ValueError:
                 logger.error(f"Invalid ISO format for date: {most_common_date}")
                 return JsonResponse({"error": f"Invalid ISO format for date: {most_common_date}"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Calculate the end time using the duration
             duration = meeting_data.get("duration")
             end_time = calculate_end_time(start_time.isoformat(), duration)
 
-            location = meeting_data.get("location")
-            agenda = meeting_data.get("agenda")
-
+            # Update the meeting as finalized
             meeting_ref.update({
                 "finalized_date": start_time.isoformat(),
                 "finalized": True
             })
 
-            # Step 2: Create or update the event in the sender's Google Calendar
-            attendees_emails = [attendee["email"] for attendee in meeting_data["attendees"]]
+            location = meeting_data.get("location", "TBD")
+            agenda = meeting_data.get("agenda", "")
+            attendees_emails = meeting_data["attendees"]
+
+            # Prepare email content
+            start_time_sgt = start_time
+            end_time_sgt = end_time
 
             # Check for existing event_id
             event_id = meeting_data.get("event_id")
-
-            # Prepare email content for ICS file
-            start_time_sgt = (start_time)
-            end_time_sgt = (end_time)
 
             # Create or update the Google Calendar event
             updated_event_id = create_or_update_calendar_event(
@@ -470,7 +468,7 @@ class FinalizeMeetingAPIView(APIView):
             # Update Firestore with the event_id
             meeting_ref.update({"event_id": updated_event_id})
 
-
+            # Generate and send the ICS file
             ics_content = generate_ics_file(
                 meeting_data["name"],
                 start_time,
@@ -481,8 +479,7 @@ class FinalizeMeetingAPIView(APIView):
                 attendees_emails
             )
 
-            # Send the ICS email to attendees
-            logger.debug("Sending email with ICS...")
+            # Send emails with the ICS attachment
             for email in attendees_emails:
                 send_email_with_ics(
                     sender=sender_email,
@@ -506,7 +503,6 @@ Best Regards,
                     """,
                     ics_content=ics_content
                 )
-            logger.debug("Email sent.")
 
             return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
 
