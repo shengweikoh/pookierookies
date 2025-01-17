@@ -31,11 +31,7 @@ def to_sgt(dt):
 
 def calculate_end_time(start_time_iso, duration):
     try:
-        logger.debug(f"Calculating end time. start_time_iso: {start_time_iso} (type: {type(start_time_iso)}), duration: {duration}")
-        
-        if not isinstance(start_time_iso, str):
-            raise TypeError(f"start_time_iso must be a string, got {type(start_time_iso)}")
-
+        duration = float(duration)  # Ensure duration is numeric
         start_time = datetime.fromisoformat(start_time_iso)
         return start_time + timedelta(hours=duration)
     except Exception as e:
