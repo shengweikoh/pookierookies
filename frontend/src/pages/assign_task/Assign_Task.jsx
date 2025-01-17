@@ -20,7 +20,7 @@ const TasksDashboard = () => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Sidebar collapse state
+  // const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Sidebar collapse state
 
   // Fetch tasks from backend
   useEffect(() => {

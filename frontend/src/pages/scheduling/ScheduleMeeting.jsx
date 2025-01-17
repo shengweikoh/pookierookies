@@ -74,10 +74,10 @@ const ScheduleMeeting = () => {
     fetchMeetings();
   }, [profileId]);
 
-  const handleEditClick = (meeting) => {
-    setCurrentMeeting(meeting);
-    setIsPopupOpen(true);
-  };
+  // const handleEditClick = (meeting) => {
+  //   setCurrentMeeting(meeting);
+  //   setIsPopupOpen(true);
+  // };
 
   const handleViewDetailsClick = (meeting) => {
     setCurrentMeeting(meeting);
