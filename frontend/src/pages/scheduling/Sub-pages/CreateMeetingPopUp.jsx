@@ -55,16 +55,17 @@ const CreateMeetingPopUp = ({ onClose, onSubmit }) => {
       .filter((date) => date); // Filter out any empty inputs
 
     const newMeeting = {
-      name,
-      agenda,
+      name: name,
+      agenda: agenda,
       attendees: attendees.split(",").map((email) => email.trim()),
       proposed_dates: formattedDates,
       poll_deadline: pollDeadline,
       location: location.trim() || null, // If blank, send `null` to backend
-      duration,
+      duration: duration,
       profile_id: profileId, // Add profileId here
     };
 
+    console.log(newMeeting);
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}meetings/create/`,

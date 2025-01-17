@@ -90,9 +90,9 @@ class CreateMeetingAPIView(APIView):
                 "finalized_date": None,
                 "finalized": False,
                 "location": body.get("location", ""),
-                "creation_date": datetime.fromisoformat(datetime.now()).isoformat(),
+                "creation_date": datetime.now(),
                 "assigned_by": profile_id,
-                "poll_deadline": datetime.fromisoformat(body.get("poll_deadline")).isoformat()
+                "poll_deadline": body.get("poll_deadline")
             }
 
             # Save meeting data to Firestore
@@ -104,8 +104,8 @@ class CreateMeetingAPIView(APIView):
             doc_ref.set(meeting_data)
 
             # Convert times to SGT for frontend display
-            meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
-            meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
+            meeting_data["creation_date"] = meeting_data["creation_date"]
+            meeting_data["poll_deadline"] = meeting_data["poll_deadline"]
 
             # Return the meeting creation response
             return JsonResponse({"message": "Meeting created successfully", "meeting": meeting_data}, status=status.HTTP_201_CREATED)
@@ -124,11 +124,11 @@ class MeetingListAPIView(APIView):
                 meeting_data = meeting.to_dict()
                 # Convert times to SGT for frontend display
                 if meeting_data.get("creation_date"):
-                    meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
+                    meeting_data["creation_date"] = meeting_data["creation_date"]
                 if meeting_data.get("poll_deadline"):
-                    meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
+                    meeting_data["poll_deadline"] = meeting_data["poll_deadline"]
                 if meeting_data.get("finalized_date"):
-                    meeting_data["finalized_date"] = datetime.fromisoformat(meeting_data["finalized_date"])
+                    meeting_data["finalized_date"] = meeting_data["finalized_date"]
                 meetings_list.append(meeting_data)
 
             return Response(meetings_list)
@@ -146,11 +146,11 @@ class MeetingDetailAPIView(APIView):
                 meeting_data = meeting.to_dict()
                 # Convert times to SGT for frontend display
                 if meeting_data.get("creation_date"):
-                    meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
+                    meeting_data["creation_date"] = meeting_data["creation_date"]
                 if meeting_data.get("poll_deadline"):
-                    meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
+                    meeting_data["poll_deadline"] = meeting_data["poll_deadline"]
                 if meeting_data.get("finalized_date"):
-                    meeting_data["finalized_date"] = datetime.fromisoformat(meeting_data["finalized_date"])
+                    meeting_data["finalized_date"] = meeting_data["finalized_date"]
                 return Response(meeting_data)
             else:
                 return Response({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
