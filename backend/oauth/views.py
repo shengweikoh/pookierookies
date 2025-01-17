@@ -35,7 +35,7 @@ def oauth2callback(request):
         expiry_date = credentials.expiry.isoformat()  # Convert to ISO 8601 string
         save_token_to_firestore(user_id, credentials.token, credentials.refresh_token, expiry_date)
 
-        return JsonResponse({"message": "Authorization successful and token saved."}, status=200)
+        return JsonResponse({"message": "Authorization successful. You may close this page and return to the app!"}, status=200)
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
