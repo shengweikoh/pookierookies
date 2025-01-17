@@ -42,6 +42,23 @@
   background-color: #45a049;
 }
 
+/* Search Bar */
+.search-bar {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 250px;
+  margin-right: 10px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
 /* Meetings Section */
 .meeting-item {
   display: flex;
@@ -137,6 +154,14 @@
 
 .delete-button:hover {
   background-color: #d32f2f;
+}
+
+.blue-button {
+  background-color: #007bff;
+}
+
+.blue-button:hover {
+  background-color: #0056b3;
 }
 
 /* Responsive Design */
