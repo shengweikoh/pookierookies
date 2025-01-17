@@ -26,4 +26,5 @@ urlpatterns = [
     path('emails/', include('emailSummarizer.urls')),
     path('members/', include('members.urls')),
     path('calendar/', include('calendar_app.urls')),
+    path('oauth2callback/', include('oauth.urls')),
 ]

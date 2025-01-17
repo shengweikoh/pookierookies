@@ -1,9 +1,10 @@
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from firebase_admin import auth
 import json
 import logging
 from authapp.utils import create_user_profile  # Import the function
+from authapp.gmail_utils import get_service
 
 from google.oauth2.credentials import Credentials
 
@@ -78,6 +79,41 @@ def verify_token(request):
     else:
         logging.error("Invalid HTTP method used.")
         return JsonResponse({"message": "Invalid method"}, status=405)
+    
+
+@csrf_exempt
+def verify_google_token(request):
+    """
+    Verify the Google token for the user. If the token is missing or expired,
+    redirect to Google OAuth for re-authentication.
+    """
+    if request.method == "POST":
+        try:
+            # Parse the JSON body of the request
+            request_data = json.loads(request.body)
+            email = request_data.get("email")
+            
+            if not email:
+                return JsonResponse({"error": "Email is required in the request body"}, status=400)
+
+            # Check if the user has an existing Google token
+            service = get_service(email, "gmail", "v1")
+
+            if isinstance(service, HttpResponseRedirect):
+                # Extract the Google OAuth URL from the redirect response
+                auth_url = service.url
+                return JsonResponse({"auth_url": auth_url}, status=200)
+            
+            # If service is valid, return a success response
+            return JsonResponse({"message": "Google token is valid"}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON in request body"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+
+    else:
+        return JsonResponse({"error": "Invalid request method. Only POST is allowed."}, status=405)
 
 def authenticate_user(sender_email):
     """Handles the authentication process and saves the token to a file."""
