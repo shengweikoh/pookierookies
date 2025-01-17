@@ -75,7 +75,7 @@ def get_service(user_id, service_name, version):
         )
         flow.redirect_uri = "https://pookierookies-backend.duckdns.org/oauth2callback"
 
-        auth_url, _ = flow.authorization_url(prompt='consent')
+        auth_url, _ = flow.authorization_url(prompt='consent', state=user_id)
 
         # Open the browser for authorization
         print(f"Redirecting to browser for authorization: {auth_url}")
