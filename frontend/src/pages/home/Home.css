@@ -32,6 +32,10 @@
   box-shadow: 0 4px 8px rgba(128, 0, 128, 0.1); /* Faint purple shadow */
   flex: 1;
   min-width: 300px; /* Ensure a minimum width for bubbles */
+  max-width: 100%; /* Prevent bubbles from growing too wide */
+  overflow: hidden; /* Prevent content from spilling out */
+  display: flex;
+  flex-direction: column; /* Keep the content vertically aligned */
 }
 
 .bubble h2 {
@@ -45,6 +49,7 @@
   background-color: white;
   border: 1px solid #ddd;
   margin-top: 15px;
+  overflow-x: auto; /* Add horizontal scrolling for small tables */
 }
 
 .dashboard-table th,
@@ -52,6 +57,7 @@
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
+  word-wrap: break-word; /* Prevent long text from spilling out */
 }
 
 .dashboard-table th {
@@ -105,5 +111,10 @@
 
   .dashboard-content {
     flex-direction: column; /* Stack tasks and meetings vertically */
+  }
+
+  .bubble {
+    overflow-y: auto; /* Add vertical scrolling if content overflows */
+    max-height: 400px; /* Set a max height to prevent excessive bubble growth */
   }
 }
