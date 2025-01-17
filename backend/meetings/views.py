@@ -15,7 +15,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from zoneinfo import ZoneInfo
-from authapp.views import authenticate_user
 
 from pytz import timezone, UTC
 
@@ -393,9 +392,6 @@ class FinalizeMeetingAPIView(APIView):
 
             sender_name = user_profile.to_dict().get("name")
             sender_email = user_profile.to_dict().get("email")
-
-            # Authenticate the user (if required)
-            authenticate_user(sender_email)
 
             # Retrieve meeting data
             meeting_ref = db.collection("meetings").document(meeting_id)

@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore", message="file_cache is only supported with oau
 
 # Define the required Google API scopes
 SCOPES = [
-    'https://www.googleapis.com/auth/calendar.readonly',  # Read-only access to Calendar
+    'https://www.googleapis.com/auth/calendar',  # Read-only access to Calendar
     'https://www.googleapis.com/auth/gmail.readonly',     # Read-only access to Gmail
     'https://www.googleapis.com/auth/gmail.send',          # Permission to send emails
     "https://www.googleapis.com/auth/calendar.events"      # Permission to create calendar events
@@ -413,6 +413,7 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
         raise
 
 def create_or_update_calendar_event(sender_email, name, start_time, end_time, location, agenda, attendees_emails, event_id=None):
+
     service = get_google_calendar_service(sender_email)
 
     event_body = {
