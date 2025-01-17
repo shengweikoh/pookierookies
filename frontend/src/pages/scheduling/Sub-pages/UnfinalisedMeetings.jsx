@@ -28,7 +28,7 @@ const UnfinalizedMeetings = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/${profileId}`);
         const unfinalizedMeetings = response.data.filter((meeting) => !meeting.finalized);
         setMeetings(unfinalizedMeetings);
       } catch (error) {
@@ -38,7 +38,7 @@ const UnfinalizedMeetings = () => {
     };
 
     fetchMeetings();
-  }, []);
+  }, [profileId]);
 
   const openCreatePopup = () => setIsCreatePopupOpen(true);
   const closeCreatePopup = () => setIsCreatePopupOpen(false);

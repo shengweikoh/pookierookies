@@ -6,6 +6,7 @@ import EditPopUp from "./Sub-pages/UpdateMeetingPopUp";
 import SendReminderPopUp from "./Sub-pages/SendReminderPopUp";
 import ViewDetailsPopUp from "./Sub-pages/ViewDetailsPopUp";
 import axios from "axios";
+import { getLoggedInUserId } from "../../Components/utils";
 
 const ScheduleMeeting = () => {
   const [meetings, setMeetings] = useState([]);
@@ -15,6 +16,8 @@ const ScheduleMeeting = () => {
   const [isViewDetailsPopupOpen, setIsViewDetailsPopupOpen] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const profileId = getLoggedInUserId();
 
   // Helper functions
   const formatDate = (isoDate) => {
@@ -42,7 +45,7 @@ const ScheduleMeeting = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}meetings/list/${profileId}`);
         if (response.data && Array.isArray(response.data)) {
           // Filter for finalized meetings
           const finalizedMeetings = response.data.filter((meeting) => meeting.finalized);
@@ -69,7 +72,7 @@ const ScheduleMeeting = () => {
     };
 
     fetchMeetings();
-  }, []);
+  }, [profileId]);
 
   const handleEditClick = (meeting) => {
     setCurrentMeeting(meeting);
