@@ -454,12 +454,16 @@ class FinalizeMeetingAPIView(APIView):
             # Check for existing event_id
             event_id = meeting_data.get("event_id")
 
+            # Prepare email content for ICS file
+            start_time_sgt = to_sgt(start_time)
+            end_time_sgt = to_sgt(end_time)
+
             # Create or update the Google Calendar event
             updated_event_id = create_or_update_calendar_event(
                 sender_email,
                 meeting_data["name"],
-                start_time,
-                end_time,
+                start_time_sgt,
+                end_time_sgt,
                 location,
                 agenda,
                 attendees_emails,
@@ -469,9 +473,6 @@ class FinalizeMeetingAPIView(APIView):
             # Update Firestore with the event_id
             meeting_ref.update({"event_id": updated_event_id})
 
-            # Prepare email content for ICS file
-            start_time_sgt = to_sgt(start_time)
-            end_time_sgt = to_sgt(end_time)
 
             ics_content = generate_ics_file(
                 meeting_data["name"],
