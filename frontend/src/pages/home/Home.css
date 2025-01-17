@@ -1,233 +1,109 @@
-/* Page Layout */
-.home-container {
+.home-page {
   display: flex;
+  flex-direction: row; /* Default horizontal layout */
   height: 100vh; /* Full viewport height */
-  flex-direction: row; /* Sidebar and main content side-by-side */
 }
 
 .main-content {
   flex: 1;
   padding: 20px;
-  background-color: #fff;
-  overflow-y: auto; /* Allow scrolling for overflowing content */
+  overflow-y: auto;
 }
 
-/* Header Section */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.dashboard-header {
   margin-bottom: 20px;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-  gap: 15px;
 }
 
-.header h1 {
+.dashboard-header h1 {
   font-size: 24px;
   font-weight: bold;
-  margin: 0;
 }
 
-.date {
-  font-size: 1rem;
-  color: #555;
-}
-
-/* Task Categories */
-.task-category {
-  margin-bottom: 20px;
-}
-
-.category-header {
+.dashboard-content {
   display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 10px;
-  background-color: #f4f4f4;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  gap: 20px; /* Space between bubbles */
+  flex-wrap: wrap; /* Allow sections to wrap on smaller screens */
 }
 
-.task-headers {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  font-weight: bold;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  margin-bottom: 10px;
-}
-
-.header-name {
-  flex: 3;
-  text-align: left;
-}
-
-.header-priority {
+.bubble {
+  background-color: #f3e8ff; /* Faint purple background */
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(128, 0, 128, 0.1); /* Faint purple shadow */
   flex: 1;
-  text-align: center;
+  min-width: 300px; /* Ensure a minimum width for bubbles */
 }
 
-.header-due-date {
-  flex: 1;
-  text-align: right;
+.bubble h2 {
+  margin-bottom: 15px;
+  font-size: 20px;
 }
 
-.task-category ul {
-  list-style: none;
-  padding: 0;
-}
-
-.task-category li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  background-color: #fff;
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  margin-top: 15px;
 }
 
-/* Task Details */
-.task-name {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 3;
+.dashboard-table th,
+.dashboard-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-.priority {
-  flex: 1;
-  text-align: center;
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-size: 0.9rem;
-}
-
-.priority.high {
-  background-color: #ffdce0;
-  color: #ff4d4f;
-}
-
-.priority.low {
-  background-color: #d4f0e7;
-  color: #36c4a8;
-}
-
-.priority.normal {
-  background-color: #fce4d6;
-  color: #f59e0b;
-}
-
-.due-date {
-  flex: 1;
-  text-align: right;
-  font-size: 0.9rem;
+.dashboard-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
   color: #555;
+  border-bottom: 2px solid #ddd;
 }
 
-/* Subtasks */
-.subtasks {
-  margin-top: 10px;
-  padding-left: 40px; /* Indent subtasks */
-}
-
-.subtasks li {
+.pagination-controls {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 0;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 
-.subtasks li input {
-  margin: 0;
-}
-
-/* Dropdown Arrow */
-.dropdown-arrow {
-  background: none;
+.pagination-controls button {
+  background-color: #6c63ff;
+  color: white;
+  padding: 8px 16px;
   border: none;
-  font-size: 1rem;
+  border-radius: 5px;
   cursor: pointer;
-  padding: 0;
 }
 
-.dropdown-arrow:disabled {
-  visibility: hidden;
+.pagination-controls button:hover {
+  background-color: #5949db;
+}
+
+.complete {
+  color: green;
+}
+
+.incomplete {
+  color: red;
+}
+
+.pending {
+  color: orange;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  /* Sidebar stacks above content */
-  .home-container {
-    flex-direction: column;
-    height: auto; /* Let height adjust naturally */
+  .home-page {
+    flex-direction: column; /* Stack sidebar above main content */
+    height: auto; /* Allow content to adjust height */
   }
 
-  /* Header stacks vertically */
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
+  .main-content {
+    padding: 15px;
   }
 
-  .header h1 {
-    font-size: 20px; /* Adjust font size for smaller screens */
-  }
-
-  .date {
-    font-size: 0.9rem; /* Adjust font size for smaller screens */
-  }
-
-  .task-category {
-    margin-bottom: 15px; /* Reduce margin for compactness */
-  }
-
-  .category-header,
-  .task-headers {
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align text to the left */
-    padding: 8px; /* Adjust padding for smaller screens */
-  }
-
-  .task-category li {
-    flex-direction: column; /* Stack task details vertically */
-    align-items: flex-start; /* Align items to the left */
-    padding: 8px; /* Adjust padding for smaller screens */
-  }
-
-  .priority,
-  .due-date {
-    flex: none; /* Allow items to shrink naturally */
-    text-align: left; /* Align text to the left */
-    margin-top: 5px; /* Add space between stacked items */
-  }
-
-  .subtasks {
-    padding-left: 20px; /* Reduce indentation */
-  }
-}
-
-@media (max-width: 480px) {
-  /* Further adjustments for very small screens */
-  .header h1 {
-    font-size: 18px;
-  }
-
-  .date {
-    font-size: 0.8rem;
-  }
-
-  .task-category li {
-    padding: 6px;
-  }
-
-  .priority {
-    font-size: 0.8rem;
-  }
-
-  .due-date {
-    font-size: 0.8rem;
+  .dashboard-content {
+    flex-direction: column; /* Stack tasks and meetings vertically */
   }
 }
