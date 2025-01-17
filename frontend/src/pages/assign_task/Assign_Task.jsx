@@ -80,6 +80,17 @@ const TasksDashboard = () => {
     setSelectedTasks([]);
   };
 
+  const handleRemindThisTask = async (task) => {
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/${profileId}/${task.taskId}/reminder/`
+      );
+      console.log(`Successfully sent reminder for task with ID ${task.taskId}`);
+    } catch (error) {
+      console.error(`Error sending reminder for task with ID ${task.taskId}:`, error.message);
+    }
+  }
+
   const handleAssignTask = (newTask) => {
     const updatedTasks = [
       ...tasks,
@@ -191,7 +202,7 @@ const TasksDashboard = () => {
                   <th>Group</th>
                   <th>Assigned To</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th colSpan={2} className="actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -212,6 +223,11 @@ const TasksDashboard = () => {
                     <td>
                       <button className="edit-button" onClick={() => handleEditTask(task)}>
                         Edit
+                      </button>
+                    </td>
+                    <td>
+                      <button className="remind-button" onClick={() => handleRemindThisTask(task)}>
+                        Remind
                       </button>
                     </td>
                   </tr>
@@ -235,7 +251,7 @@ const TasksDashboard = () => {
         />
       )}
 
-      {isEditPopupOpen && (
+      {isEditPopupOpen && taskToEdit && (
         <EditTaskPopUp
           task={taskToEdit}
           onClose={closeEditPopup}
@@ -244,7 +260,7 @@ const TasksDashboard = () => {
               t.taskId === updatedTask.taskId ? updatedTask : t
             );
             setTasks(updatedTaskList);
-            setFilteredTasks(updatedTaskList);
+            // setFilteredTasks(updatedTaskList);
             closeEditPopup();
           }}
         />

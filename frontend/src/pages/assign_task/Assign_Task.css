@@ -127,14 +127,35 @@ body {
     width: 50px!important;
     height: auto !important;
     cursor: pointer;
+    margin-right: 0px !important;
   }
   
   .edit-button:hover {
     background-color: #223f6b!important;
     ;
   }
+
+  .remind-button {
+    background-color: #5c7faa!important;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px!important;
+    width: 70px!important;
+    height: auto !important;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 0px !important;
+  }
   
+  .remind-button:hover {
+    background-color: #223f6b!important;
+  }
   
+  /* th .actions {
+    text-align: center !important;
+  } */
+
   /* Responsive Design */
   @media (max-width: 768px) {
     /* Sidebar stacks above main content */
