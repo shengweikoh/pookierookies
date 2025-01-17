@@ -69,3 +69,5 @@ def verify_token(request):
     else:
         logging.error("Invalid HTTP method used.")
         return JsonResponse({"message": "Invalid method"}, status=405)
+    
+    

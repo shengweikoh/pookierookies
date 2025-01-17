@@ -13,6 +13,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from zoneinfo import ZoneInfo
+from datetime import timezone
+from google.auth.exceptions import RefreshError
+import pytz
+import json
 
 
 # Suppress specific warning about file_cache
@@ -20,20 +24,17 @@ warnings.filterwarnings("ignore", message="file_cache is only supported with oau
 
 # Define the required google API scopes
 SCOPES = [
-    'https://www.googleapis.com/auth/calendar.readonly',  # Read-only access to Calendar
+    'https://www.googleapis.com/auth/calendar',  # Read-only access to Calendar
     'https://www.googleapis.com/auth/gmail.readonly',     # Read-only access to Gmail
-    'https://www.googleapis.com/auth/gmail.send'          # Permission to send emails
+    'https://www.googleapis.com/auth/gmail.send',          # Permission to send emails
+    'https://www.googleapis.com/auth/calendar.events',     # Read/write access to Calendar events
 ]
 
 # Initialize Firestore client
 db = firestore.client()
 
-def get_token_from_firestore(user_id):
-    doc = db.collection("user_tokens").document(user_id).get()
-    if doc.exists:
-        return doc.to_dict()
-    return None  # Return None if the document does not exist
-    
+OAUTH_REDIRECT_URI = "https://pookierookies-backend.duckdns.org/oauth2callback"
+
 
 def save_token_to_firestore(user_id, access_token, refresh_token, expiry_date):
     """Save or update the user's token in Firestore."""
@@ -43,50 +44,74 @@ def save_token_to_firestore(user_id, access_token, refresh_token, expiry_date):
         'expiry_date': expiry_date
     })
 
-def get_gmail_service(user_id):
-    """Authenticate and return the Gmail service instance for a specific user."""
-    # Retrieve token data from Firestore
+def get_token_from_firestore(user_id):
+    """Retrieve the token data from Firestore."""
+    doc = db.collection('user_tokens').document(user_id).get()
+    return doc.to_dict() if doc.exists else None
+
+def get_credentials(user_id, force_refresh=False):
+    """Get or refresh credentials for a user."""
+    # Fetch token data from Firestore
     token_data = get_token_from_firestore(user_id)
 
-    if token_data is None:
-        print(f"No token data found for user_id: {user_id}. Triggering reauthentication...")
-        # Trigger reauthentication if no valid token exists
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=9090, prompt='consent')
-        save_token_to_firestore(
-            user_id=user_id,
-            access_token=creds.token,
-            refresh_token=creds.refresh_token,
-            expiry_date=creds.expiry.isoformat()
+    if token_data is None or force_refresh:
+        # Start the OAuth2 flow to get new credentials
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json',
+            scopes=SCOPES
         )
-    else:
-        print("Token data found. Validating credentials...")
-        expiry_date = datetime.fromisoformat(token_data.get("expiry_date"))
+        flow.redirect_uri = OAUTH_REDIRECT_URI
+
+        # Generate authorization URL
+        auth_url, _ = flow.authorization_url(prompt='consent')
+        return {
+            "auth_url": auth_url,
+            "state": json.dumps({"user_id": user_id})
+        }
+
+    try:
+        # Initialize credentials
         creds = Credentials(
             token=token_data['access_token'],
-            refresh_token=token_data['refresh_token'],
+            refresh_token=token_data.get('refresh_token'),
             token_uri="https://oauth2.googleapis.com/token",
             client_id=settings.GOOGLE_CLIENT_ID,
-            client_secret=settings.GOOGLE_CLIENT_SECRET
+            client_secret=settings.GOOGLE_CLIENT_SECRET,
+            scopes=SCOPES
         )
 
-        # Refresh the access token if it has expired
-        if creds.expired or expiry_date < datetime.now():
-            print("Token expired. Refreshing...")
-            try:
-                creds.refresh(Request())
-                save_token_to_firestore(
-                    user_id=user_id,
-                    access_token=creds.token,
-                    refresh_token=creds.refresh_token,
-                    expiry_date=creds.expiry.isoformat()
-                )
-            except HttpError as error:
-                print(f"Error during token refresh: {error}")
-                raise
+        # Handle token expiration
+        expiry_date = datetime.fromisoformat(token_data['expiry_date'])
+        if expiry_date.tzinfo is None:
+            expiry_date = expiry_date.replace(tzinfo=pytz.utc)
 
-    # Build the Gmail service instance
+        if creds.expired or expiry_date < datetime.now(pytz.utc):
+            creds.refresh(Request())
+            save_token_to_firestore(
+                user_id=user_id,
+                access_token=creds.token,
+                refresh_token=creds.refresh_token,
+                expiry_date=creds.expiry.replace(tzinfo=pytz.utc).isoformat()
+            )
+
+        return creds
+
+    except RefreshError:
+        # If refresh fails, restart OAuth2 flow
+        return get_credentials(user_id, force_refresh=True)
+    except Exception as e:
+        print(f"Unexpected error while fetching credentials: {e}")
+        return None
+
+def get_gmail_service(user_id):
+    """Authenticate and return the Gmail service instance for a specific user."""
+    creds = get_credentials(user_id)
     return build('gmail', 'v1', credentials=creds, cache_discovery=False)
+
+def get_google_calendar_service(user_id):
+    """Authenticate and return the Google Calendar service instance for a specific user."""
+    creds = get_credentials(user_id)
+    return build('calendar', 'v3', credentials=creds, cache_discovery=False)
 
 def send_email(sender, to, subject, body):
     """Send an email using Gmail API."""
@@ -250,52 +275,6 @@ def send_task_email(sender, receiver, email_content):
         print(f"An error occurred: {error}")
         raise
 
-
-def get_google_calendar_service(user_id):
-    """Authenticate and return the Google Calendar service instance for a specific user."""
-    # Retrieve token data from Firestore
-    token_data = get_token_from_firestore(user_id)
-
-    if token_data is None:
-        print(f"No token data found for user_id: {user_id}. Triggering reauthentication...")
-        # Trigger reauthentication if no valid token exists
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-        creds = flow.run_local_server(port=9090, prompt='consent')
-        save_token_to_firestore(
-            user_id=user_id,
-            access_token=creds.token,
-            refresh_token=creds.refresh_token,
-            expiry_date=creds.expiry.isoformat()
-        )
-    else:
-        print("Token data found. Validating credentials...")
-        expiry_date = datetime.fromisoformat(token_data.get("expiry_date"))
-        creds = Credentials(
-            token=token_data['access_token'],
-            refresh_token=token_data['refresh_token'],
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=settings.GOOGLE_CLIENT_ID,
-            client_secret=settings.GOOGLE_CLIENT_SECRET
-        )
-
-        # Refresh the access token if it has expired
-        if creds.expired or expiry_date < datetime.now():
-            print("Token expired. Refreshing...")
-            try:
-                creds.refresh(Request())
-                save_token_to_firestore(
-                    user_id=user_id,
-                    access_token=creds.token,
-                    refresh_token=creds.refresh_token,
-                    expiry_date=creds.expiry.isoformat()
-                )
-            except HttpError as error:
-                print(f"Error during token refresh: {error}")
-                raise
-
-    # Build the Google Calendar service instance
-    return build('calendar', 'v3', credentials=creds, cache_discovery=False)
-
 def get_google_calendar(user_id, month_year=None):
     """Retrieve the monthly calendar events for the given Gmail account."""
     try:
@@ -360,26 +339,21 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
     try:
         service = get_gmail_service(sender)
 
-        # Create message container
         message = MIMEMultipart()
         message['From'] = sender
         message['To'] = to
         message['Subject'] = subject
         
-        # Attach the body with the message
         message.attach(MIMEText(body, 'plain'))
         
-        # Create the .ics attachment
         part = MIMEBase('text', 'calendar', method='REQUEST', name='invite.ics')
         part.set_payload(ics_content)
         encoders.encode_base64(part)
         part.add_header('Content-Disposition', 'attachment; filename="invite.ics"')
         part.add_header('Content-Type', 'text/calendar; method=REQUEST; name="invite.ics"')
         
-        # Attach the .ics file to the email
         message.attach(part)
 
-        # Send email
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
         service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
 
@@ -387,63 +361,95 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
         print(f"Error sending email: {str(e)}")
         raise
 
-def send_email_with_ics(sender, to, subject, body, ics_content):
-    """Send an email with a .ics calendar invite attached."""
+def create_or_update_calendar_event(sender_email, event_name, start_time, end_time, location, agenda, attendees, event_id=None):
+    """Create or update a calendar event in the sender's Google Calendar."""
     try:
-        service = get_gmail_service(sender)
-
-        # Create message container
-        message = MIMEMultipart()
-        message['From'] = sender
-        message['To'] = to
-        message['Subject'] = subject
+        # Retrieve the token from the database
+        token_data = get_token_from_firestore(sender_email)
+        if not token_data:
+            raise ValueError(f"No token found for email: {sender_email}")
         
-        # Attach the body with the message
-        message.attach(MIMEText(body, 'plain'))
-        
-        # Create the .ics attachment
-        part = MIMEBase('text', 'calendar', method='REQUEST')
-        part.set_payload(ics_content)
-        encoders.encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="invite.ics"')
-        part.add_header('Content-Type', 'text/calendar; charset="UTF-8"; method=REQUEST')
-        
-        # Attach the .ics file to the email
-        message.attach(part)
+        # Initialize credentials from the token data
+        creds = Credentials.from_authorized_user_info(token_data, ['https://www.googleapis.com/auth/calendar'])
 
-        # Send email
-        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
+        # Build the Google Calendar API service
+        service = build('calendar', 'v3', credentials=creds)
 
+        # Convert times to SGT (Singapore Time)
+        sgt_timezone = pytz.timezone('Asia/Singapore')
+        start_time = start_time.astimezone(sgt_timezone).isoformat()
+        end_time = end_time.astimezone(sgt_timezone).isoformat()
+
+        # Event body
+        event_body = {
+            'summary': event_name,
+            'location': location,
+            'description': agenda,
+            'start': {'dateTime': start_time, 'timeZone': 'Asia/Singapore'},
+            'end': {'dateTime': end_time, 'timeZone': 'Asia/Singapore'},
+            'attendees': [{'email': email} for email in attendees],
+        }
+
+        if event_id:
+            # Update the event if event_id is provided
+            event = service.events().update(calendarId='primary', eventId=event_id, body=event_body).execute()
+            print(f"Event updated successfully: {event.get('htmlLink')}")
+        else:
+            # Create a new event
+            event = service.events().insert(calendarId='primary', body=event_body).execute()
+            print(f"Event created successfully: {event.get('htmlLink')}")
+        
+        return event.get('id')
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        raise
+    except KeyError as e:
+        print(f"Token data missing required fields: {e}")
+        raise
     except Exception as e:
-        print(f"Error sending email: {str(e)}")
+        print(f"Unexpected error: {e}")
         raise
 
-def create_calendar_event(sender_email, event_name, start_time, end_time, location, description, attendees):
-    """
-    Create a calendar event in the sender's Google Calendar.
-    """
-    creds = Credentials.from_authorized_user_file(f'token_{sender_email}.json', ['https://www.googleapis.com/auth/calendar'])
-    service = build('calendar', 'v3', credentials=creds)
+def handle_oauth2_callback(request):
+    """Handle the OAuth2 callback and save the credentials."""
+    # Extract and decode the state parameter
+    state_param = request.GET.get('state', '{}')
+    try:
+        state = json.loads(state_param)
+    except json.JSONDecodeError:
+        return {"error": "Invalid state parameter"}
+    
+    user_id = state.get('user_id')
+    if not user_id:
+        return {"error": "User ID missing in state parameter"}
+    
+    try:
+        # Initialize the flow
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'credentials.json',
+            scopes=SCOPES
+        )
+        flow.redirect_uri = OAUTH_REDIRECT_URI
 
-    event = {
-        'summary': event_name,
-        'location': location,
-        'description': description,
-        'start': {
-            'dateTime': start_time.isoformat(),
-            'timeZone': 'Asia/Singapore',
-        },
-        'end': {
-            'dateTime': end_time.isoformat(),
-            'timeZone': 'Asia/Singapore',
-        },
-        'attendees': [{'email': attendee} for attendee in attendees],
-        'reminders': {
-            'useDefault': True,
-        },
-    }
+        # Exchange the authorization code for credentials
+        auth_code = request.GET.get('code')
+        if not auth_code:
+            return {"error": "Authorization code missing in callback"}
 
-    event = service.events().insert(calendarId='primary', body=event).execute()
-    print(f'Event created: {event.get("htmlLink")}')
+        flow.fetch_token(code=auth_code)
+        credentials = flow.credentials
+
+        # Save the credentials to Firestore
+        save_token_to_firestore(
+            user_id=user_id,
+            access_token=credentials.token,
+            refresh_token=credentials.refresh_token,
+            expiry_date=credentials.expiry.replace(tzinfo=pytz.utc).isoformat()
+        )
+        
+        return {"success": True, "message": "Credentials saved successfully"}
+
+    except Exception as e:
+        return {"error": f"An error occurred: {str(e)}"}
 

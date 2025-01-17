@@ -8,13 +8,15 @@ from .serializers import MeetingSerializer
 import json
 from firebase_admin import firestore
 from collections import Counter
-from authapp.gmail_utils import send_email, format_email_body, format_email_subject, send_email_with_ics, create_calendar_event
+from authapp.gmail_utils import send_email, format_email_body, format_email_subject, send_email_with_ics, create_or_update_calendar_event
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from zoneinfo import ZoneInfo
+from google.auth.exceptions import RefreshError
+from authapp.gmail_utils import get_credentials, handle_oauth2_callback
 
 import logging
 
@@ -180,6 +182,9 @@ class EditMeetingAPIView(APIView):
             sender_name = user_profile.to_dict().get("name")
             sender_email = user_profile.to_dict().get("email")
 
+            # Store the existing calendar event ID if it exists
+            existing_event_id = meeting_data.get("calendar_event_id")
+
             for key, value in body.items():
                 if key != "user_id":
                     meeting_data[key] = value
@@ -189,8 +194,6 @@ class EditMeetingAPIView(APIView):
                 meeting_data["poll_deadline"] = datetime.fromisoformat(body["poll_deadline"]).astimezone(ZoneInfo("UTC")).isoformat()
             if "finalized_date" in body:
                 meeting_data["finalized_date"] = datetime.fromisoformat(body["finalized_date"]).astimezone(ZoneInfo("UTC")).isoformat()
-
-            meeting_ref.update(meeting_data)
 
             if meeting_data.get("finalized"):
                 start_time = datetime.fromisoformat(meeting_data["finalized_date"])
@@ -204,15 +207,19 @@ class EditMeetingAPIView(APIView):
                 end_time_sgt = to_sgt(end_time)
 
                 # Create or update event in sender's calendar
-                create_calendar_event(
+                event_id = create_or_update_calendar_event(
                     sender_email,
                     meeting_data["name"],
                     start_time,
                     end_time,
                     location,
                     agenda,
-                    attendees_emails
+                    attendees_emails,
+                    event_id=existing_event_id
                 )
+
+                # Store the calendar event ID in the meeting data
+                meeting_data["calendar_event_id"] = event_id
 
                 ics_content = generate_ics_file(
                     meeting_data["name"],
@@ -248,6 +255,9 @@ Best Regards,
                         ics_content=ics_content
                     )
 
+            # Update the meeting document with all changes
+            meeting_ref.update(meeting_data)
+
             # Convert times to SGT for frontend display
             if meeting_data.get("creation_date"):
                 meeting_data["creation_date"] = to_sgt(datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
@@ -256,12 +266,16 @@ Best Regards,
             if meeting_data.get("finalized_date"):
                 meeting_data["finalized_date"] = to_sgt(datetime.fromisoformat(meeting_data["finalized_date"])).isoformat()
 
-            return JsonResponse({"message": "Meeting details updated and notifications sent with updated calendar invites.", "meeting": meeting_data}, status=status.HTTP_200_OK)
+            return JsonResponse({
+                "message": "Meeting details updated and notifications sent with updated calendar invites.",
+                "meeting": meeting_data
+            }, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.exception("An error occurred while updating the meeting")
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        
 class DeleteMeetingAPIView(APIView):
     def delete(self, request, pk):
         try:
@@ -421,132 +435,48 @@ class FinalizeMeetingAPIView(APIView):
 
             location = meeting_data.get("location")
             agenda = meeting_data.get("agenda")
-
-            meeting_ref.update({
-                "finalized_date": start_time.isoformat(),
-                "finalized": True
-            })
-
-            # Create event in sender's calendar
-            create_calendar_event(
-                sender_email,
-                meeting_data["name"],
-                start_time,
-                end_time,
-                location,
-                agenda,
-                attendees_emails
-            )
-
             attendees_emails = [attendee["email"] for attendee in meeting_data["attendees"]]
-            start_time_sgt = to_sgt(start_time)
-            end_time_sgt = to_sgt(end_time)
 
-            ics_content = generate_ics_file(
-                meeting_data["name"],
-                start_time,
-                end_time,
-                location,
-                agenda,
-                sender_email,
-                attendees_emails
-            )
-
-            logger.debug("Sending email with ICS...")
-            for email in attendees_emails:
-                send_email_with_ics(
-                    sender=sender_email,
-                    to=email,
-                    subject=f"Meeting Finalized: {meeting_data['name']}",
-                    body=f"""
-Hi,
-
-The meeting '{meeting_data['name']}' has been finalized. Details:
-
-- Date: {start_time_sgt.strftime("%d %B %Y")}
-- Start Time: {start_time_sgt.strftime("%I:%M %p")} SGT
-- End Time: {end_time_sgt.strftime('%I:%M %p')} SGT
-- Location: {location}
-- Agenda: {agenda}
-
-Please find the attached calendar invite.
-
-Best Regards,
-{sender_name}
-                    """,
-                    ics_content=ics_content
-                )
-            logger.debug("Email sent.")
-            return JsonResponse({"message": "Meeting finalized and notifications sent with calendar invites."}, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            logger.exception("An error occurred while finalizing the meeting")
-            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    def post(self, request):
-        try:
-            body = request.data
-            meeting_id = body.get("meeting_id")
-            user_id = body.get("user_id")
-
-            user_ref = db.collection("profiles").document(user_id)
-            user_profile = user_ref.get()
-
-            if not user_profile.exists:
-                logger.error("User not found")
-                return JsonResponse({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-            sender_name = user_profile.to_dict().get("name")
-            sender_email = user_profile.to_dict().get("email")
-
-            meeting_ref = db.collection("meetings").document(meeting_id)
-            meeting = meeting_ref.get()
-
-            if not meeting.exists:
-                return JsonResponse({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            meeting_data = meeting.to_dict()
-
-            responses = [
-                attendee.get("response")
-                for attendee in meeting_data["attendees"]
-                if isinstance(attendee.get("response"), str) and attendee["response"].strip()
-            ]
-
-            if not responses:
-                logger.error("No valid poll responses received")
-                return JsonResponse({"error": "No valid poll responses received"}, status=status.HTTP_400_BAD_REQUEST)
-
-            most_common_date_entry = Counter(responses).most_common(1)
-
-            if not most_common_date_entry or not most_common_date_entry[0]:
-                logger.error("No valid most common date found")
-                return JsonResponse({"error": "No valid most common date found"}, status=status.HTTP_400_BAD_REQUEST)
-
-            most_common_date = most_common_date_entry[0][0]
-
-            logger.debug(f"Most common date: {most_common_date} (type: {type(most_common_date)})")
-
-            if not isinstance(most_common_date, str):
-                logger.error(f"most_common_date is not a string: {most_common_date}")
-                return JsonResponse({"error": "Invalid date format in poll responses"}, status=status.HTTP_400_BAD_REQUEST)
+            creds_or_auth_info = get_credentials(sender_email)
+            if isinstance(creds_or_auth_info, dict) and "auth_url" in creds_or_auth_info:
+                # We need to authenticate
+                return JsonResponse(creds_or_auth_info, status=status.HTTP_401_UNAUTHORIZED)
 
             try:
-                start_time = datetime.fromisoformat(most_common_date)
-            except ValueError as ve:
-                logger.error(f"Invalid ISO format for date: {most_common_date}")
-                return JsonResponse({"error": f"Invalid ISO format for date: {most_common_date}"}, status=status.HTTP_400_BAD_REQUEST)
+                event_id = create_or_update_calendar_event(
+                    sender_email,
+                    meeting_data["name"],
+                    start_time,
+                    end_time,
+                    location,
+                    agenda,
+                    attendees_emails
+                )
+            except RefreshError:
+                # If we get a RefreshError, we need to re-authenticate
+                creds_or_auth_info = get_credentials(sender_email, force_refresh=True)
+                if isinstance(creds_or_auth_info, dict) and "auth_url" in creds_or_auth_info:
+                    return JsonResponse(creds_or_auth_info, status=status.HTTP_401_UNAUTHORIZED)
 
-            duration = meeting_data.get("duration")
-            end_time = calculate_end_time(start_time.isoformat(), duration)
+                # Retry the operation after re-authentication
+                event_id = create_or_update_calendar_event(
+                    sender_email,
+                    None,
+                    meeting_data["name"],
+                    start_time,
+                    end_time,
+                    location,
+                    agenda,
+                    attendees_emails
+                )
 
-            location = meeting_data.get("location")
-            agenda = meeting_data.get("agenda")
-
+            # Update meeting with finalized date and calendar event ID
             meeting_ref.update({
                 "finalized_date": start_time.isoformat(),
-                "finalized": True
+                "finalized": True,
+                "calendar_event_id": event_id
             })
 
-            attendees_emails = [attendee["email"] for attendee in meeting_data["attendees"]]
             start_time_sgt = to_sgt(start_time)
             end_time_sgt = to_sgt(end_time)
 
@@ -590,7 +520,20 @@ Best Regards,
         except Exception as e:
             logger.exception("An error occurred while finalizing the meeting")
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+
+class OAuth2CallbackView(APIView):
+    def get(self, request):
+        try:
+            credentials = handle_oauth2_callback(request)
+            # Redirect to a success page or return a success response
+            return JsonResponse({"message": "Authentication successful"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.exception("An error occurred during OAuth2 callback")
+            return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 # Function to send reminder of a meeting
 class SendReminderMeetingAPIView(APIView):
     def post(self, request):
@@ -668,8 +611,6 @@ Best Regards,
         except Exception as e:
             logger.exception(f"Error occurred while sending reminder emails: {str(e)}")
             return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
         
 # Function to view poll results
 class ViewPollResultsAPIView(APIView):
