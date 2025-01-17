@@ -118,17 +118,6 @@ const MemberDetails = () => {
           </p>
         </div>
 
-        {/* Mocked tasks and meetings */}
-        <h2>Upcoming Tasks</h2>
-        <ul>
-          <li>Tasks backend integration pending</li>
-        </ul>
-
-        <h2>Upcoming Meetings</h2>
-        <ul>
-          <li>Meetings backend integration pending</li>
-        </ul>
-
         {/* Edit Member Pop-Up */}
         {isEditPopUpOpen && (
           <EditMemberPopUp
