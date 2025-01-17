@@ -16,13 +16,18 @@ const SendDetailsPopUp = ({ meetingId, userId, onClose }) => {
     setIsSending(true);
 
     try {
+      // Prepare payload with only meetingId and userId
+      const payload = {
+        meetingId,
+        userId,
+      };
+
+      // Send POST request to the API
       await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}meetings/send-emails/`,
-        {
-          meetingId,
-          userId,
-        }
+        payload
       );
+
       alert("Meeting details sent successfully!");
       onClose();
     } catch (error) {
