@@ -226,6 +226,79 @@ body {
     font-size: 12px; /* Smaller text size */
   }
 
+  .edit-button {
+    background-color: #5c7faa!important;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px!important;
+    width: 50px!important;
+    height: auto !important;
+    cursor: pointer;
+    margin-right: 0px !important;
+  }
+  
+  .edit-button:hover {
+    background-color: #223f6b!important;
+    ;
+  }
+
+  .remind-button {
+    background-color: #5c7faa!important;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px!important;
+    width: 70px!important;
+    height: auto !important;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 0px !important;
+  }
+  
+  .remind-button:hover {
+    background-color: #223f6b!important;
+  }
+  
+  /* th .actions {
+    text-align: center !important;
+  } */
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    /* Sidebar stacks above main content */
+    .tasks-dashboard {
+      flex-direction: column; /* Stack sidebar and content vertically */
+      height: auto; /* Allow height to adjust naturally */
+    }
+  
+    /* Header stacks vertically */
+    .tasks-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px; /* Smaller gap between header items */
+    }
+  
+    .filters {
+      flex-direction: column;
+      gap: 5px;
+    }
+  
+    .search-input,
+    .group-select {
+      width: 100%; /* Full-width inputs on smaller screens */
+    }
+  
+/*     .add-task-button {
+      width: 100%; /* Full-width button */
+      text-align: center; /* Center-align text */
+    }
+  
+    .red-button {
+      width: 100%; /* Full-width red button */
+      text-align: center;
+    }
+ */
   .add-task-button,
   .red-button {
     font-size: 12px; /* Smaller button text size */

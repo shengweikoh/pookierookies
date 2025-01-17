@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./AssignNewTaskPopUp.css";
 
@@ -10,6 +10,49 @@ const AssignNewTaskPopUp = ({ onClose, onSubmit }) => {
   const [personAssigned, setPersonAssigned] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState("");
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+
+      if (!taskName || !taskDetails || !group || !personAssigned || !dueDate) {
+        setError("All fields are required.");
+        return;
+      }
+
+      if (!validateEmail(personAssigned)) {
+        setError("Invalid email address.");
+        return;
+      }
+
+      setError(""); // Clear any previous error
+
+      const data = {
+        name: taskName,
+        description: taskDetails,
+        status: "Incomplete", // Default status
+        priority, // User-selected priority
+        group,
+        dueDate: new Date(dueDate).toISOString(), // ISO format date
+        assignedBy: localStorage.getItem("userEmail"), // Get logged-in user
+        assignedTo: personAssigned,
+      };
+
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/create/`,
+          data,
+          { headers: { "Content-Type": "application/json" } }
+        );
+        console.log("Task successfully created:", response.data);
+        onSubmit(response.data); // Notify parent of the new task
+        onClose(); // Close the popup
+      } catch (err) {
+        console.error("Error creating task:", err);
+        setError("Failed to assign task. Please try again later.");
+      }
+    }, [taskName, taskDetails, group, personAssigned, dueDate, priority, onSubmit, onClose]
+  );
 
   useEffect(() => {
     // Lock body scroll when the popup is open
@@ -31,50 +74,10 @@ const AssignNewTaskPopUp = ({ onClose, onSubmit }) => {
       document.body.style.overflow = "auto";
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]); // Dependency array ensures proper cleanup
+  }, [onClose, handleSubmit]); // Dependency array ensures proper cleanup
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!taskName || !taskDetails || !group || !personAssigned || !dueDate) {
-      setError("All fields are required.");
-      return;
-    }
-
-    if (!validateEmail(personAssigned)) {
-      setError("Invalid email address.");
-      return;
-    }
-
-    setError(""); // Clear any previous error
-
-    const data = {
-      name: taskName,
-      description: taskDetails,
-      status: "Incomplete", // Default status
-      priority, // User-selected priority
-      group,
-      dueDate: new Date(dueDate).toISOString(), // ISO format date
-      assignedBy: localStorage.getItem("userEmail"), // Get logged-in user
-      assignedTo: personAssigned,
-    };
-
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}tasks/create/`,
-        data,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      console.log("Task successfully created:", response.data);
-      onSubmit(response.data); // Notify parent of the new task
-      onClose(); // Close the popup
-    } catch (err) {
-      console.error("Error creating task:", err);
-      setError("Failed to assign task. Please try again later.");
-    }
-  };
 
   return (
     <div className="popup-overlay">
