@@ -25,9 +25,6 @@ logger = logging.getLogger(__name__)
 
 db = firestore.client()
 
-def to_sgt(dt):
-    """Convert datetime to Singapore Time"""
-    return dt.astimezone(ZoneInfo("Asia/Singapore"))
 
 def calculate_end_time(start_time_iso, duration):
     try:
@@ -45,20 +42,21 @@ def calculate_end_time(start_time_iso, duration):
 def generate_ics_file(event_name, start_time, end_time, location, description, organizer, attendees):
     attendees_str = "\n".join([f"ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN={attendee}:mailto:{attendee}" for attendee in attendees])
     
+    # Use local time for event start, end, and creation time
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Company//Meeting Scheduler//EN
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-DTSTART:{start_time.strftime('%Y%m%dT%H%M%SZ')}
-DTEND:{end_time.strftime('%Y%m%dT%H%M%SZ')}
-DTSTAMP:{datetime.now(ZoneInfo("UTC")).strftime('%Y%m%dT%H%M%SZ')}
+DTSTART:{start_time.strftime('%Y%m%dT%H%M%S')}
+DTEND:{end_time.strftime('%Y%m%dT%H%M%S')}
+DTSTAMP:{datetime.now().strftime('%Y%m%dT%H%M%S')}
 ORGANIZER;CN={organizer}:mailto:{organizer}
 UID:{event_name.replace(" ", "")}-{start_time.strftime('%Y%m%d%H%M%S')}
-CREATED:{datetime.now(ZoneInfo("UTC")).strftime('%Y%m%dT%H%M%SZ')}
+CREATED:{datetime.now().strftime('%Y%m%dT%H%M%S')}
 DESCRIPTION:{description}
-LAST-MODIFIED:{datetime.now(ZoneInfo("UTC")).strftime('%Y%m%dT%H%M%SZ')}
+LAST-MODIFIED:{datetime.now().strftime('%Y%m%dT%H%M%S')}
 LOCATION:{location}
 SEQUENCE:0
 STATUS:CONFIRMED
@@ -86,6 +84,7 @@ class CreateMeetingAPIView(APIView):
                 if field not in body:
                     return JsonResponse({"error": f"{field} is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Prepare meeting data
             meeting_data = {
                 "name": body.get("name"),
                 "agenda": body.get("agenda"),
@@ -95,11 +94,12 @@ class CreateMeetingAPIView(APIView):
                 "finalized_date": None,
                 "finalized": False,
                 "location": body.get("location", ""),
-                "creation_date": datetime.now(ZoneInfo("UTC")).isoformat(),
+                "creation_date": datetime.fromisoformat(datetime.now()).isoformat(),
                 "assigned_by": profile_id,
-                "poll_deadline": datetime.fromisoformat(body.get("poll_deadline")).replace(tzinfo=ZoneInfo("UTC")).isoformat()
+                "poll_deadline": datetime.fromisoformat(body.get("poll_deadline")).isoformat()
             }
 
+            # Save meeting data to Firestore
             doc_ref = db.collection("meetings").document()  
             meeting_data["meetingId"] = doc_ref.id  
             poll_link = f"https://pookie-rookies.web.app/poll/{doc_ref.id}" 
@@ -108,14 +108,15 @@ class CreateMeetingAPIView(APIView):
             doc_ref.set(meeting_data)
 
             # Convert times to SGT for frontend display
-            meeting_data["creation_date"] = to_sgt(datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
-            meeting_data["poll_deadline"] = to_sgt(datetime.fromisoformat(meeting_data["poll_deadline"])).isoformat()
+            meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
+            meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
 
+            # Return the meeting creation response
             return JsonResponse({"message": "Meeting created successfully", "meeting": meeting_data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
 class MeetingListAPIView(APIView):
     def get(self, request, profile_id):
         try:
@@ -127,11 +128,11 @@ class MeetingListAPIView(APIView):
                 meeting_data = meeting.to_dict()
                 # Convert times to SGT for frontend display
                 if meeting_data.get("creation_date"):
-                    meeting_data["creation_date"] = to_sgt(datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
+                    meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
                 if meeting_data.get("poll_deadline"):
-                    meeting_data["poll_deadline"] = to_sgt(datetime.fromisoformat(meeting_data["poll_deadline"])).isoformat()
+                    meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
                 if meeting_data.get("finalized_date"):
-                    meeting_data["finalized_date"] = to_sgt(datetime.fromisoformat(meeting_data["finalized_date"])).isoformat()
+                    meeting_data["finalized_date"] = datetime.fromisoformat(meeting_data["finalized_date"])
                 meetings_list.append(meeting_data)
 
             return Response(meetings_list)
@@ -149,11 +150,11 @@ class MeetingDetailAPIView(APIView):
                 meeting_data = meeting.to_dict()
                 # Convert times to SGT for frontend display
                 if meeting_data.get("creation_date"):
-                    meeting_data["creation_date"] = to_sgt(datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
+                    meeting_data["creation_date"] = datetime.fromisoformat(meeting_data["creation_date"])
                 if meeting_data.get("poll_deadline"):
-                    meeting_data["poll_deadline"] = to_sgt(datetime.fromisoformat(meeting_data["poll_deadline"])).isoformat()
+                    meeting_data["poll_deadline"] = datetime.fromisoformat(meeting_data["poll_deadline"])
                 if meeting_data.get("finalized_date"):
-                    meeting_data["finalized_date"] = to_sgt(datetime.fromisoformat(meeting_data["finalized_date"])).isoformat()
+                    meeting_data["finalized_date"] = datetime.fromisoformat(meeting_data["finalized_date"])
                 return Response(meeting_data)
             else:
                 return Response({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -192,9 +193,9 @@ class EditMeetingAPIView(APIView):
 
             # Convert date fields to UTC for storage
             if "poll_deadline" in body:
-                meeting_data["poll_deadline"] = datetime.fromisoformat(body["poll_deadline"]).astimezone(ZoneInfo("UTC")).isoformat()
+                meeting_data["poll_deadline"] = datetime.fromisoformat(body["poll_deadline"]).isoformat()
             if "finalized_date" in body:
-                meeting_data["finalized_date"] = datetime.fromisoformat(body["finalized_date"]).astimezone(ZoneInfo("UTC")).isoformat()
+                meeting_data["finalized_date"] = datetime.fromisoformat(body["finalized_date"]).isoformat()
 
             # Update the meeting in Firestore
             meeting_ref.update(meeting_data)
@@ -207,8 +208,8 @@ class EditMeetingAPIView(APIView):
                 agenda = meeting_data.get("agenda", "")
                 attendees_emails = [attendee["email"] for attendee in meeting_data["attendees"]]
 
-                start_time_sgt = to_sgt(start_time)
-                end_time_sgt = to_sgt(end_time)
+                start_time_sgt = (start_time)
+                end_time_sgt = (end_time)
 
                 # Fetch or create the eventId
                 event_id = meeting_data.get("event_id")
@@ -266,11 +267,11 @@ Best Regards,
 
             # Convert times to SGT for frontend display
             if meeting_data.get("creation_date"):
-                meeting_data["creation_date"] = to_sgt(datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
+                meeting_data["creation_date"] = (datetime.fromisoformat(meeting_data["creation_date"])).isoformat()
             if meeting_data.get("poll_deadline"):
-                meeting_data["poll_deadline"] = to_sgt(datetime.fromisoformat(meeting_data["poll_deadline"])).isoformat()
+                meeting_data["poll_deadline"] = (datetime.fromisoformat(meeting_data["poll_deadline"])).isoformat()
             if meeting_data.get("finalized_date"):
-                meeting_data["finalized_date"] = to_sgt(datetime.fromisoformat(meeting_data["finalized_date"])).isoformat()
+                meeting_data["finalized_date"] = (datetime.fromisoformat(meeting_data["finalized_date"])).isoformat()
 
             return JsonResponse({"message": "Meeting details updated and notifications sent with updated calendar invites.", "meeting": meeting_data}, status=status.HTTP_200_OK)
 
@@ -332,7 +333,7 @@ class SendEmailPollsAPIView(APIView):
             attendees = [attendee["email"] for attendee in meeting_data["attendees"]]
             poll_link = f"https://pookie-rookies.web.app/poll/{meeting_id}"
             poll_deadline_ISO = meeting_data.get("poll_deadline", "the specified deadline") 
-            poll_deadline_datetime = to_sgt(datetime.fromisoformat(poll_deadline_ISO))
+            poll_deadline_datetime = (datetime.fromisoformat(poll_deadline_ISO))
             poll_deadline = poll_deadline_datetime.strftime("%d %B %Y at %I:%M %p")
 
             for email in attendees:
@@ -455,8 +456,8 @@ class FinalizeMeetingAPIView(APIView):
             event_id = meeting_data.get("event_id")
 
             # Prepare email content for ICS file
-            start_time_sgt = to_sgt(start_time)
-            end_time_sgt = to_sgt(end_time)
+            start_time_sgt = (start_time)
+            end_time_sgt = (end_time)
 
             # Create or update the Google Calendar event
             updated_event_id = create_or_update_calendar_event(
@@ -560,8 +561,8 @@ class SendReminderMeetingAPIView(APIView):
             agenda = meeting_data["agenda"]
             attendees = [attendee["email"] for attendee in meeting_data["attendees"]]
 
-            start_time_sgt = to_sgt(start_time)
-            end_time_sgt = to_sgt(end_time)
+            start_time_sgt = (start_time)
+            end_time_sgt = (end_time)
 
             for email in attendees:
                 logger.info(f"Sending reminder email to: {email}")

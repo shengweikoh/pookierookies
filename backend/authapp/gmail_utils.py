@@ -372,38 +372,6 @@ def send_email_with_ics(sender, to, subject, body, ics_content):
         message.attach(MIMEText(body, 'plain'))
         
         # Create the .ics attachment
-        part = MIMEBase('text', 'calendar', method='REQUEST', name='invite.ics')
-        part.set_payload(ics_content)
-        encoders.encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="invite.ics"')
-        part.add_header('Content-Type', 'text/calendar; method=REQUEST; name="invite.ics"')
-        
-        # Attach the .ics file to the email
-        message.attach(part)
-
-        # Send email
-        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-        service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
-
-    except Exception as e:
-        print(f"Error sending email: {str(e)}")
-        raise
-
-def send_email_with_ics(sender, to, subject, body, ics_content):
-    """Send an email with a .ics calendar invite attached."""
-    try:
-        service = get_gmail_service(sender)
-
-        # Create message container
-        message = MIMEMultipart()
-        message['From'] = sender
-        message['To'] = to
-        message['Subject'] = subject
-        
-        # Attach the body with the message
-        message.attach(MIMEText(body, 'plain'))
-        
-        # Create the .ics attachment
         part = MIMEBase('text', 'calendar', method='REQUEST')
         part.set_payload(ics_content)
         encoders.encode_base64(part)
