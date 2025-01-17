@@ -1,182 +1,210 @@
+/* Sidebar */
 .sidebar {
-    /* position: fixed; Keeps the sidebar fixed in place */
-    top: 0;
-    left: 0;
-    width: 250px;
-    height: 100vh; /* Full height of the viewport */
-    background-color: #f9f9fb;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    z-index: 1000; /* Ensures it stays on top of other content */
-    transition: width 0.3s, padding 0.3s; /* Smooth transition for collapsing */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px; /* Full width when expanded */
+  height: 100vh; /* Full height of the viewport */
+  background-color: #f9f9fb;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  z-index: 1000; /* Ensures it stays on top of other content */
+  transition: width 0.3s ease, padding 0.3s ease; /* Smooth transition for collapsing */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar.collapsed {
+  width: 70px; /* Reduced width for collapsed state */
+  padding: 10px; /* Adjust padding for collapsed state */
+}
+
+/* Sidebar Header (Logo Section) */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 800;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logo span {
+  display: none; /* Hide logo text when collapsed */
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  font-size: 25px;
+  cursor: pointer;
+  color: #333;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.toggle-button:hover {
+  background-color: #ececf1; /* Light hover effect */
+}
+
+/* Navigation List */
+.nav-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-item:hover {
+  background-color: #ececf1; /* Highlight on hover */
+}
+
+.nav-text {
+  margin-left: 10px;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .nav-text {
+  display: none; /* Hide text in collapsed mode */
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+}
+
+/* Logout Section */
+.logout-section {
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.logout-button {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-button:hover {
+  color: white;
+  background-color: #d8332a; /* Bootstrap danger color */
+}
+
+.logout-icon {
+  margin-right: 8px;
+}
+
+.sidebar.collapsed .logout-button span {
+  display: none; /* Hide text in collapsed mode */
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 250px; /* Matches sidebar width */
+  padding: 20px;
+  transition: margin-left 0.3s ease; /* Smooth transition for sidebar toggle */
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 70px; /* Adjust main content margin when sidebar is collapsed */
+}
+
+/* Link Styling */
+#logo {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+#logo:hover {
+  color: #223f6b; /* Slightly darker hover effect */
+}
+
+.links,
+.links:visited,
+.links:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+.logout-section {
+  margin-top: auto;
+  padding: 10px;
+}
+
+.logout-button {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-button:hover {
+  color: white;
+  background-color: #d8332a; /* Bootstrap danger color */
+}
+
+.logout-icon {
+  font-size: 20px; /* Ensure icon size is visible */
+  margin-right: 8px;
+}
+
+.sidebar.collapsed .logout-button {
+  justify-content: center;
+}
+
+.sidebar.collapsed .logout-icon {
+  margin-right: 0; /* Remove margin to center the icon */
+}
+
+.sidebar.collapsed .logout-text {
+  display: none; /* Hide text when collapsed */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%; /* Expand to full width on small screens */
+    height: auto;
+    padding: 10px;
+    box-shadow: none; /* Remove shadow on mobile for simplicity */
+    position: relative; /* Adjust to ensure proper stacking */
   }
-  
+
   .sidebar.collapsed {
-    width: 45px; /* Reduced width for collapsed state */
-    padding: 10px; /* Adjust padding for collapsed state */
+    width: 100%; /* Full width when toggled */
   }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    font-size: 28px;
-    font-weight:800;
+  .main-content {
+    margin-left: 0; /* Ensure no sidebar overlap with content */
   }
-
-  .toggle-button {
-    background: none;
-    border: none;
-    font-size: 25px;
-    cursor: pointer;
-    color: #333;
-    padding: 5px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .toggle-button:active, .toggle-button:hover {
-    background: none;
-    border: 1px solid;
-  }
-  
-  .section {
-    margin-bottom: 20px;
-  }
-  
-  .section-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 10px;
-  }
-  
-  .nav-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-  }
-  
-  .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    font-size: 17px;
-    color: #333;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    transition: background 0.2s;
-  }
-
-  /* .nav-item2 {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    font-size: 15px;
-    color: #333;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-left: 15px;
-    margin-bottom: 8px;
-    transition: background 0.2s;
-  } */
-  
-  .nav-item:hover {
-    background-color: #ececf1;
-  }
-  
-  .sidebar.collapsed .nav-item {
-    justify-content: center;
-    font-size: 0; /* Hide text when collapsed */
-  }
-  
-  .sidebar.collapsed .nav-item::before {
-    font-size: 16px; /* Optional: Use icons if desired */
-    content: ''; /* Add specific icons here if needed */
-  }
-  
-  .sidebar.collapsed .logo span {
-    display: none; /* Hide logo text when collapsed */
-  }
-  
-  #tools:hover {
-    background-color: #f9f9fb;
-  }
-  
-  /* link styling */
-  #logo{
-    text-decoration: none;
-  }
-  
-  #logo:visited,
-  #logo:active {
-    text-decoration: none;
-    /* Ensure no underline on hover, active, or visited */
-    color: black;
-    /* Keep color black */
-  }
-  
-  #logo:hover {
-    text-decoration: none;
-    /* Ensure no underline on hover, active, or visited */
-    color: #223f6b; 
-  }
-  
-  .links,
-  .links:visited, 
-  .links:active {
-    text-decoration: none;
-    color: #333;
-  }
-
-  /* logout button */
-  .logout-section {
-    margin-bottom: 20px;
-    padding: 10px;
-  }
-  
-  .logout-button {
-    background-color: transparent;
-    border: none;
-    color: #333;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  
-  .logout-button:hover {
-    color: white;
-    background-color: #d8332a;
-  }
-  
-  .logout-icon {
-    margin-right: 8px;
-  }
-
-  /* Responsive adjustments for sidebar */
-  @media (max-width: 768px) {
-    .sidebar {
-      width: 100%; /* Full width for sidebar */
-      padding: 10px; /* Reduce padding */
-    }
-
-    .hamburger {
-        display: block;
-      }
-  
-    .logo {
-      font-size: 20px; /* Adjust logo size */
-      margin-bottom: 15px;
-    }
-  
-    .nav-item {
-      font-size: 14px; /* Adjust font size for items */
-    }
-  }
+}

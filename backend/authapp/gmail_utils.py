@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore", message="file_cache is only supported with oau
 SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',  # Read-only access to Calendar
     'https://www.googleapis.com/auth/gmail.readonly',     # Read-only access to Gmail
-    'https://www.googleapis.com/auth/gmail.send'          # Permission to send emails
+    'https://www.googleapis.com/auth/gmail.send',          # Permission to send emails
     "https://www.googleapis.com/auth/calendar.events"      # Permission to create calendar events
 ]
 

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-// import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaCalendarAlt,
+  FaUsers,
+  FaTasks,
+  FaBriefcase,
+  FaFileAlt,
+  FaSignOutAlt,
+} from "react-icons/fa";
 import "./Sidebar.css";
-import { Link } from "react-router-dom"
-import { FaSignOutAlt } from "react-icons/fa";
 import { auth } from "../firebase/firebase";
-import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -12,55 +17,84 @@ const Sidebar = () => {
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Add your logout logic here
     auth.signOut()
       .then(() => {
         localStorage.removeItem("authToken");
         localStorage.removeItem("userEmail");
-        // toast.success("You have been logged out successfully!", {
-        //   position: toast.POSITION.TOP_RIGHT,
-        // }); // Show success toast
-        alert("You have been logged out successfully.")
-        navigate("/")
-        // toast.success("You have been logged out successfully.");
-        console.log("User logged out");
+        alert("You have been logged out successfully.");
+        navigate("/");
       })
       .catch((error) => {
-        // toast.error("Error signing out. Please try again.");
-        console.error("error signing in", error)
-      })
+        console.error("Error signing out:", error);
+      });
   };
 
   return (
     <div className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="logo">
-        {!isCollapsed && <span><Link id="logo" to="/home">BookBuddy</Link></span>} {/* Header shifted right */}
+        {!isCollapsed && (
+          <span>
+            <Link id="logo" to="/home">
+              BookBuddy
+            </Link>
+          </span>
+        )}
         <button className="toggle-button" onClick={toggleSidebar}>
-          {isCollapsed ? "☰" : "×"} {/* Icon changes based on state */}
+          {isCollapsed ? "☰" : "×"}
         </button>
       </div>
-      {!isCollapsed && (
-        <>
-          <ul className="nav-list">
-            {/* <li className="nav-item section-title"><Link to="/account" className="links">Account</Link></li> */}
-            <Link to="/calendar" className="links"><li className="nav-item section-title">Calendar</li></Link>
-            {/* <li className="nav-item section-title" id="tools">Tools</li> */}
-            <Link to="/manage-people" className="links"><li className="nav-item section-title">Manage Contacts</li></Link>
-            <Link to="/assign-task" className="links"><li className="nav-item section-title">Assign Tasks</li></Link>
-            <Link to="/schedule-meeting" className="links"><li className="nav-item section-title">Manage Meetings</li></Link>
-            <Link to="/generate-summary" className="links"><li className="nav-item section-title">Generate Summary</li></Link>
-          </ul>
-          <div className="logout-section">
-            <button className="logout-button" onClick={handleLogout}>
-              <FaSignOutAlt className="logout-icon" /> Logout
-            </button>
-            {/* <ToastContainer />  */}
-          </div>
-        </>
-      )}
+      <ul className="nav-list">
+        <Link to="/calendar" className="links">
+          <li className="nav-item section-title">
+            <FaCalendarAlt className="nav-icon" />
+            <span className={`nav-text ${isCollapsed ? "hidden" : ""}`}>
+              Calendar
+            </span>
+          </li>
+        </Link>
+        <Link to="/manage-people" className="links">
+          <li className="nav-item section-title">
+            <FaUsers className="nav-icon" />
+            <span className={`nav-text ${isCollapsed ? "hidden" : ""}`}>
+              Manage Contacts
+            </span>
+          </li>
+        </Link>
+        <Link to="/assign-task" className="links">
+          <li className="nav-item section-title">
+            <FaTasks className="nav-icon" />
+            <span className={`nav-text ${isCollapsed ? "hidden" : ""}`}>
+              Assign Tasks
+            </span>
+          </li>
+        </Link>
+        <Link to="/schedule-meeting" className="links">
+          <li className="nav-item section-title">
+            <FaBriefcase className="nav-icon" />
+            <span className={`nav-text ${isCollapsed ? "hidden" : ""}`}>
+              Manage Meetings
+            </span>
+          </li>
+        </Link>
+        <Link to="/generate-summary" className="links">
+          <li className="nav-item section-title">
+            <FaFileAlt className="nav-icon" />
+            <span className={`nav-text ${isCollapsed ? "hidden" : ""}`}>
+              Generate Summary
+            </span>
+          </li>
+        </Link>
+      </ul>
+      <div className="logout-section">
+        <button className="logout-button" onClick={handleLogout}>
+          <FaSignOutAlt className="logout-icon" />
+          {!isCollapsed && <span className="logout-text">Logout</span>}
+        </button>
+      </div>
     </div>
   );
 };
