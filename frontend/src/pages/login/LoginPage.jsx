@@ -19,71 +19,55 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
 
     const handleGoogleLogin = async () => {
-        setErrorMessage(""); // Clear any previous error messages
-        setLoading(true);
-    
-        // Open a placeholder page immediately
-        const placeholderWindow = window.open("", "_blank");
-    
-        try {
-            // Google Sign-In using Firebase Auth
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-    
-            // Get the ID token for backend verification
-            const idToken = await user.getIdToken();
-            console.log("Token:", idToken);
-            console.log(user.email);
-    
-            // Send the token to the backend for verification   
-            const backendResponse = await axios.post(
-                `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-token/`,
-                { token: idToken },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
-    
-            console.log("Backend Response:", backendResponse.data);
-    
-            // Call the verify_google_token endpoint
-            const verifyGoogleTokenResponse = await axios.post(
-                `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-google-token/`,
-                { email: user.email },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
-    
-            console.log("Verify-Google-Token Response:", verifyGoogleTokenResponse.data.auth_url);
-    
-            // Redirect the placeholder window to the actual auth_url
-            if (verifyGoogleTokenResponse.data.auth_url) {
-                placeholderWindow.location.href = verifyGoogleTokenResponse.data.auth_url;
-            } else {
-                console.error("Redirect URL not provided in response");
-                placeholderWindow.close(); // Close the placeholder if no URL is provided
-                setErrorMessage("Unable to proceed. Please try again later.");
-            }
-    
-            navigate("/home");
-    
-        } catch (error) {
-            console.error("Error during sign-in:", error.response?.data || error.message);
-            setErrorMessage("Sign-in failed. Please try again.");
-    
-            // Close the placeholder window in case of an error
-            if (placeholderWindow) {
-                placeholderWindow.close();
-            }
-        } finally {
-            setLoading(false);
+    setErrorMessage(""); // Clear any previous error messages
+
+    // ✅ Open popup immediately — critical for Safari
+    let result;
+    try {
+        result = await signInWithPopup(auth, provider);
+    } catch (error) {
+        console.error("Google sign-in popup blocked or failed:", error);
+        setErrorMessage("Popup blocked or sign-in failed. Please try again.");
+        return;
+    }
+
+    // ✅ Only do async work *after* popup interaction is complete
+    setLoading(true);
+
+    const user = result.user;
+
+    try {
+        const idToken = await user.getIdToken();
+
+        const backendResponse = await axios.post(
+            `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-token/`,
+            { token: idToken },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        const verifyGoogleTokenResponse = await axios.post(
+            `${process.env.REACT_APP_BACKEND_BASE_URL}auth/verify-google-token/`,
+            { email: user.email },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        const authUrl = verifyGoogleTokenResponse.data.auth_url;
+
+        if (authUrl) {
+            // ✅ Use redirect instead of opening new window if you prefer
+            window.location.href = authUrl;
+        } else {
+            console.error("Redirect URL not provided in response");
+            setErrorMessage("Unable to proceed. Please try again later.");
         }
-    };
+
+    } catch (error) {
+        console.error("Error during backend auth:", error.response?.data || error.message);
+        setErrorMessage("Sign-in failed. Please try again.");
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div className="signin-container">
